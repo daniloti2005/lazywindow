@@ -209,17 +209,19 @@ ActivateGrid(monitorNumber) {
 - **Hotkey:** `Ctrl+Shift+O` (requer `g_hotkeysEnabled`)
 - **Propósito:** Lista persistente de projetos de software para abertura rápida no Neovim ou terminal via Windows Terminal
 - **Módulo:** `ui/ProjectBookmarks.ahk`
+- **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo WindowSwitcher)
 - **Funcionalidades:**
-  - Adicionar projetos via input manual ou browse de pasta (`DirSelect`)
-  - Cada projeto tem: nome, caminho, tag, shell (PowerShell ou WSL)
-  - Shell por projeto determina como o Windows Terminal abre:
-    - **PowerShell:** `wt.exe -d "C:\path" pwsh -NoExit -Command "nvim ."`
-    - **WSL:** `wt.exe wsl -e bash -c "cd ~/path && nvim ."`
-  - Ações: `Enter` = nvim ., `Shift+Enter` = terminal, `Del` = remover
-  - Busca por nome/caminho, filtro por tag (dropdown)
+  - Adicionar projetos via input manual (`A`) ou browse de pasta (`B`)
+  - Cada projeto tem: nome, caminho, tag e **perfil do Windows Terminal**
+  - Perfis do WT detectados automaticamente do `settings.json` (PowerShell, Ubuntu, Fedora, etc.)
+  - Tipo Windows/WSL inferido pelo perfil — determina como o wt.exe abre:
+    - **Windows:** `wt.exe -p "PowerShell" -d "C:\path" pwsh -NoExit -Command "nvim ."`
+    - **WSL:** `wt.exe -p "Ubuntu 22.04.3 LTS" wsl -e bash -c "cd ~/path && nvim ."`
+  - Ações por input: `1N`=nvim, `2T`=terminal, `3R`=remover, `4G`=tag, `5S`=shell
+  - Busca por nome/caminho (texto livre), filtro por tag (dropdown)
   - Ordenação automática por último aberto (mais recente primeiro)
   - Exibe tempo desde última abertura (agora, 2h, 3d, 1sem, 2mes)
-  - Editar tag e shell de projetos existentes
+  - Migração automática de projetos com shell antigo (powershell/wsl → perfil real)
 - **Persistência:** `~/.lazywindow/projects.json`
 - **Inicialização:** Chamada em `main.ahk` via `ProjectBookmarks.Init()`
 

@@ -220,12 +220,17 @@ COMMAND PALETTE [requer Alt+Home]:
                  Digite para filtrar, setas para navegar, Enter para executar
 
 PROJECT BOOKMARKS [requer Alt+Home]:
-  Ctrl+Shift+O = Abre lista de projetos marcados
-                 Enter = abre com nvim . (Windows Terminal)
-                 Shift+Enter = abre so o terminal na pasta
-                 Del = remove projeto da lista
-                 Busca por nome/caminho, filtro por tag
-                 Cada projeto tem shell (PowerShell ou WSL)
+  Ctrl+Shift+O = Abre lista de projetos (fullscreen)
+                 Digite [numero][acao] + Enter:
+                   1 ou 1N = nvim no projeto 1
+                   2T = terminal no projeto 2
+                   3R = remover projeto 3
+                   4G = editar tag do projeto 4
+                   5S = editar terminal do projeto 5
+                   A = adicionar projeto (digitar caminho)
+                   B = browse pasta (selecionar pasta)
+                   Texto livre = filtrar por nome/caminho
+                 Terminal por projeto = perfil do Windows Terminal
                  Ordenado por ultimo aberto (mais recente primeiro)
                  Persistido em ~/.lazywindow/projects.json
   

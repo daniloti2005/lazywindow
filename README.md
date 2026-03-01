@@ -186,27 +186,33 @@ Salve até **9 posições do mouse** e volte para elas rapidamente. Os marcadore
 
 ### 📂 Project Bookmarks (Marcadores de Projetos)
 
-Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou terminal via Windows Terminal.
+Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou terminal via Windows Terminal. Janela fullscreen com input por número+letra.
 
 **Atalho:** `Ctrl+Shift+O`
 
 **Funcionalidades:**
-- Adicionar projetos manualmente ou via browse de pasta
-- Cada projeto tem: nome, caminho, tag e shell (PowerShell ou WSL)
+- Janela fullscreen com lista de projetos
+- Cada projeto tem: nome, caminho, tag e **perfil do Windows Terminal** (PowerShell, Ubuntu, Fedora, etc.)
+- Perfis detectados automaticamente do `settings.json` do Windows Terminal
 - Ordenação automática por último aberto (mais recente primeiro)
 - Exibe tempo desde a última abertura (ex: "2h", "3d", "1sem")
 - Busca por nome/caminho e filtro por tag
 
-**Ações:**
-| Tecla | Ação |
+**Ações (digite `[nº][letra]` + Enter):**
+| Input | Ação |
 |-------|------|
-| `Enter` | Abre com `nvim .` no Windows Terminal |
-| `Shift+Enter` | Abre só o terminal na pasta |
-| `Del` | Remove o projeto da lista |
+| `1` ou `1N` | Abre projeto 1 com `nvim .` |
+| `2T` | Abre só o terminal na pasta do projeto 2 |
+| `3R` | Remove projeto 3 da lista |
+| `4G` | Edita tag do projeto 4 |
+| `5S` | Altera perfil do terminal do projeto 5 |
+| `A` | Adiciona projeto (digitar caminho) |
+| `B` | Adiciona projeto (browse de pasta) |
+| texto | Filtra por nome/caminho |
 
-**Shells suportados:**
-- **PowerShell** — para projetos em pastas Windows (ex: `C:\projetos\api`)
-- **WSL** — para projetos em Linux (ex: `~/projetos/api`)
+**Terminais suportados (perfis do Windows Terminal):**
+- Todos os perfis instalados no Windows Terminal (PowerShell, Ubuntu, Fedora, etc.)
+- Tipo (Windows/WSL) detectado automaticamente
 
 **Arquivo de persistência:** `~/.lazywindow/projects.json`
 

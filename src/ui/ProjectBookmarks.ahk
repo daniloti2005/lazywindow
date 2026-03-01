@@ -3,7 +3,7 @@
 class ProjectBookmarks {
     static gui := ""
     static listView := ""
-    static searchEdit := ""
+    static inputBox := ""
     static tagFilter := ""
     static footerText := ""
     static isVisible := false
@@ -13,11 +13,14 @@ class ProjectBookmarks {
     static configDir := ""
     static configPath := ""
     static allTags := []
+    static wtProfiles := []
 
     static Init() {
         this.configDir := EnvGet("USERPROFILE") "\.lazywindow"
         this.configPath := this.configDir "\projects.json"
+        this.LoadWTProfiles()
         this.Load()
+        this.MigrateLegacyShells()
     }
 
     static Toggle() {
@@ -42,6 +45,7 @@ class ProjectBookmarks {
         }
 
         this.Load()
+        this.MigrateLegacyShells()
         this.SortByRecency()
         this.CreateGui()
         this.isVisible := true
@@ -49,10 +53,6 @@ class ProjectBookmarks {
 
     static Hide() {
         try Hotkey("*Enter", "Off")
-        try Hotkey("+Enter", "Off")
-        try Hotkey("Delete", "Off")
-        try Hotkey("Up", "Off")
-        try Hotkey("Down", "Off")
         if (this.gui) {
             this.gui.Destroy()
             this.gui := ""
@@ -65,86 +65,280 @@ class ProjectBookmarks {
         }
     }
 
+    ; ── Windows Terminal Profiles ──
+
+    static LoadWTProfiles() {
+        this.wtProfiles := []
+        localAppData := EnvGet("LOCALAPPDATA")
+
+        ; Try standard WT, then Preview
+        paths := [
+            localAppData "\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json",
+            localAppData "\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
+        ]
+
+        settingsContent := ""
+        for p in paths {
+            if (FileExist(p)) {
+                try {
+                    settingsContent := FileRead(p, "UTF-8")
+                    break
+                }
+            }
+        }
+
+        if (settingsContent = "")
+            return
+
+        ; Parse profiles from "list": [...] array
+        ; Find each profile object within the list
+        listStart := InStr(settingsContent, '"list"')
+        if (!listStart)
+            return
+
+        ; Find the opening bracket of the list array
+        bracketStart := InStr(settingsContent, "[", , listStart)
+        if (!bracketStart)
+            return
+
+        ; Extract from bracket to matching close bracket
+        depth := 0
+        listEnd := 0
+        pos := bracketStart
+        Loop StrLen(settingsContent) - bracketStart + 1 {
+            ch := SubStr(settingsContent, pos, 1)
+            if (ch = "[")
+                depth++
+            else if (ch = "]")
+                depth--
+            if (depth = 0) {
+                listEnd := pos
+                break
+            }
+            pos++
+        }
+
+        if (listEnd = 0)
+            return
+
+        listContent := SubStr(settingsContent, bracketStart, listEnd - bracketStart + 1)
+
+        ; Parse each profile object
+        objPos := 1
+        while (objPos := RegExMatch(listContent, '\{[^{}]+\}', &m, objPos)) {
+            obj := m[0]
+            name := this.ExtractJsonField(obj, "name")
+            source := this.ExtractJsonField(obj, "source")
+            cmdline := this.ExtractJsonField(obj, "commandline")
+
+            ; Check if hidden
+            hiddenStr := ""
+            if (RegExMatch(obj, '"hidden"\s*:\s*(true|false)', &hm))
+                hiddenStr := hm[1]
+            isHidden := (hiddenStr = "true")
+
+            if (name != "" && !isHidden) {
+                shellType := this.DetectProfileType(name, source, cmdline)
+                this.wtProfiles.Push({
+                    name: name,
+                    shellType: shellType,
+                    source: source
+                })
+            }
+            objPos += StrLen(m[0])
+        }
+    }
+
+    static DetectProfileType(name, source, cmdline) {
+        ; Check source and name for WSL indicators
+        nameLower := StrLower(name)
+        sourceLower := StrLower(source)
+        cmdLower := StrLower(cmdline)
+
+        wslKeywords := ["ubuntu", "debian", "fedora", "suse", "kali", "arch", "alpine", "wsl", "canonical", "linux"]
+        for kw in wslKeywords {
+            if (InStr(nameLower, kw) || InStr(sourceLower, kw) || InStr(cmdLower, kw))
+                return "wsl"
+        }
+        return "windows"
+    }
+
+    static GetDefaultProfile(shellType) {
+        for p in this.wtProfiles {
+            if (p.shellType = shellType)
+                return p.name
+        }
+        if (this.wtProfiles.Length > 0)
+            return this.wtProfiles[1].name
+        return (shellType = "wsl") ? "Ubuntu" : "PowerShell"
+    }
+
+    static GetProfileType(profileName) {
+        for p in this.wtProfiles {
+            if (p.name = profileName)
+                return p.shellType
+        }
+        return this.DetectShellType(profileName)
+    }
+
+    static DetectShellType(name) {
+        nameLower := StrLower(name)
+        wslKeywords := ["ubuntu", "debian", "fedora", "suse", "kali", "arch", "alpine", "wsl", "linux"]
+        for kw in wslKeywords {
+            if (InStr(nameLower, kw))
+                return "wsl"
+        }
+        return "windows"
+    }
+
+    ; Migrate old "powershell"/"wsl" values to real WT profile names
+    static MigrateLegacyShells() {
+        changed := false
+        for proj in this.projects {
+            if (proj.shell = "powershell" || proj.shell = "wsl") {
+                proj.shell := this.GetDefaultProfile(proj.shell = "wsl" ? "wsl" : "windows")
+                changed := true
+            }
+        }
+        if (changed)
+            this.Persist()
+    }
+
+    ; Show numbered profile picker, returns chosen profile name or ""
+    static PickProfile(title, defaultProfile := "") {
+        if (this.wtProfiles.Length = 0)
+            return defaultProfile
+
+        msg := title "`n`n"
+        for idx, p in this.wtProfiles {
+            typeLabel := (p.shellType = "wsl") ? " [WSL]" : ""
+            marker := (p.name = defaultProfile) ? " ◄" : ""
+            msg .= idx ". " p.name typeLabel marker "`n"
+        }
+        msg .= "`nDigite o número:"
+
+        result := InputBox(msg, "Terminal", "w400 h" (100 + this.wtProfiles.Length * 22))
+        if (result.Result != "OK" || Trim(result.Value) = "")
+            return ""
+
+        val := Trim(result.Value)
+        if (RegExMatch(val, "^\d+$")) {
+            num := Integer(val)
+            if (num >= 1 && num <= this.wtProfiles.Length)
+                return this.wtProfiles[num].name
+        }
+        return ""
+    }
+
     ; ── GUI ──
 
     static CreateGui() {
-        this.gui := Gui("+AlwaysOnTop -MinimizeBox +ToolWindow", "LazyWindow - Project Bookmarks")
+        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize", "LazyWindow - Project Bookmarks")
+        this.gui.Opt("-DPIScale")
         this.gui.BackColor := "1a1a2e"
 
+        ; Header instructions
         this.gui.SetFont("s11 c0f3460", "Segoe UI")
-        this.gui.AddText("x10 y10 w700", "Enter=nvim . │ Shift+Enter=terminal │ Del=remover │ ESC=fechar")
+        this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1=nvim  2T=terminal  3R=remover  4G=tag  5S=shell")
+        this.gui.SetFont("s10 cGray", "Segoe UI")
+        this.gui.AddText("x15 y35 w900 h22", "Sem nº: A=adicionar  B=browse pasta  |  Texto livre = filtrar por nome/caminho  |  ESC=fechar")
 
-        ; Search
-        this.gui.SetFont("s10 cWhite", "Segoe UI")
-        this.gui.AddText("x10 y42 w50", "Busca:")
-        this.gui.SetFont("s11 cWhite", "Consolas")
-        this.searchEdit := this.gui.AddEdit("x65 y38 w330 h28 Background0f3460")
-        this.searchEdit.OnEvent("Change", (*) => this.OnSearchChange())
+        ; Input box
+        this.gui.SetFont("s13 cWhite", "Consolas")
+        this.inputBox := this.gui.AddEdit("x15 y65 w550 h32 Background0f3460")
+        this.inputBox.OnEvent("Change", (*) => this.OnInputChange())
 
         ; Tag filter dropdown
         this.gui.SetFont("s10 cWhite", "Segoe UI")
-        this.gui.AddText("x410 y42 w30", "Tag:")
+        this.gui.AddText("x580 y70 w35 h25", "Tag:")
         this.RefreshTags()
         tagChoices := ["Todas"]
         for t in this.allTags {
             tagChoices.Push(t)
         }
-        this.tagFilter := this.gui.AddDropDownList("x445 y38 w120 Choose1 Background0f3460", tagChoices)
-        this.tagFilter.OnEvent("Change", (*) => this.OnSearchChange())
+        this.tagFilter := this.gui.AddDropDownList("x620 y67 w140 Choose1 Background0f3460", tagChoices)
+        this.tagFilter.OnEvent("Change", (*) => this.ApplyFilter())
 
-        ; ListView
-        this.gui.SetFont("s10 cWhite", "Segoe UI")
-        this.listView := this.gui.AddListView("x10 y75 w700 h310 Background16213e +Report -Multi +Grid", ["#", "Nome", "Caminho", "Tag", "Shell", "Última Abertura"])
-        this.listView.ModifyCol(1, 30)
-        this.listView.ModifyCol(2, 130)
-        this.listView.ModifyCol(3, 270)
-        this.listView.ModifyCol(4, 75)
-        this.listView.ModifyCol(5, 50)
-        this.listView.ModifyCol(6, 120)
-        this.listView.OnEvent("DoubleClick", (*) => this.OpenInNvim())
+        ; ListView — "Terminal" column instead of "Shell"
+        this.gui.SetFont("s11 cWhite", "Consolas")
+        this.listView := this.gui.AddListView("x15 y105 w900 h450 Background16213e +Report -Multi +Grid", ["#", "Nome", "Caminho", "Tag", "Terminal", "Aberto"])
+        this.listView.ModifyCol(1, 40)
+        this.listView.ModifyCol(2, 160)
+        this.listView.ModifyCol(3, 350)
+        this.listView.ModifyCol(4, 90)
+        this.listView.ModifyCol(5, 160)
+        this.listView.ModifyCol(6, 80)
 
-        ; Buttons
-        this.gui.SetFont("s9", "Segoe UI")
-        addBtn := this.gui.AddButton("x10 y395 w100 h30", "+ Adicionar")
-        addBtn.OnEvent("Click", (*) => this.AddProjectManual())
+        ; Footer
+        this.gui.SetFont("s10 cGray", "Segoe UI")
+        this.footerText := this.gui.AddText("x15 y565 w900 h22", "")
 
-        browseBtn := this.gui.AddButton("x115 y395 w100 h30", "Browse...")
-        browseBtn.OnEvent("Click", (*) => this.BrowseProject())
-
-        removeBtn := this.gui.AddButton("x220 y395 w90 h30", "Remover")
-        removeBtn.OnEvent("Click", (*) => this.RemoveProject())
-
-        tagBtn := this.gui.AddButton("x315 y395 w80 h30", "Tag")
-        tagBtn.OnEvent("Click", (*) => this.EditTag())
-
-        shellBtn := this.gui.AddButton("x400 y395 w80 h30", "Shell")
-        shellBtn.OnEvent("Click", (*) => this.EditShell())
-
-        this.gui.SetFont("s9 cGray", "Segoe UI")
-        this.footerText := this.gui.AddText("x10 y432 w700 h20", "")
-
-        this.filtered := this.projects.Clone()
-        this.PopulateList()
-
+        this.gui.OnEvent("Size", (guiObj, minMax, w, h) => this.OnResize(w, h))
         this.gui.OnEvent("Escape", (*) => this.Hide())
         this.gui.OnEvent("Close", (*) => this.Hide())
 
-        this.gui.Show("w720 h455")
-        this.searchEdit.Focus()
+        ; Populate and show fullscreen
+        this.filtered := this.projects.Clone()
+        this.PopulateList()
+        this.ShowFullScreen()
+        this.inputBox.Focus()
 
-        Hotkey("*Enter", (*) => this.OnEnter(), "On")
-        Hotkey("+Enter", (*) => this.OpenTerminal(), "On")
-        Hotkey("Delete", (*) => this.RemoveProject(), "On")
-        Hotkey("Up", (*) => this.NavigateList(-1), "On")
-        Hotkey("Down", (*) => this.NavigateList(1), "On")
+        Hotkey("*Enter", (*) => this.Execute(), "On")
+    }
+
+    static ShowFullScreen() {
+        monitorNum := this.GetMonitorFromMouse()
+        work := Monitor.GetWorkArea(monitorNum)
+        if (!work) {
+            this.gui.Show("Maximize")
+            return
+        }
+        this.gui.Show("x" work.x " y" work.y " w" work.width " h" work.height)
+        this.OnResize(work.width, work.height)
+        WinMaximize("ahk_id " this.gui.Hwnd)
+    }
+
+    static OnResize(width, height) {
+        margin := 15
+        inputY := 65
+        listY := 105
+        footerH := 28
+        footerY := Max(listY + 50, height - footerH - margin)
+        listH := Max(50, footerY - listY - 8)
+        listW := Max(200, width - (margin * 2))
+
+        try this.inputBox.Move(margin, inputY, Max(200, width - 230), 32)
+        try this.listView.Move(margin, listY, listW, listH)
+        try this.footerText.Move(margin, footerY, listW)
+
+        if (listW > 400) {
+            this.listView.ModifyCol(1, 40)
+            this.listView.ModifyCol(2, Round(listW * 0.15))
+            this.listView.ModifyCol(3, Round(listW * 0.38))
+            this.listView.ModifyCol(4, Round(listW * 0.10))
+            this.listView.ModifyCol(5, Round(listW * 0.20))
+            this.listView.ModifyCol(6, Round(listW * 0.10))
+        }
+    }
+
+    static GetMonitorFromMouse() {
+        MouseGetPos(&mx, &my)
+        cnt := Monitor.GetCount()
+        Loop cnt {
+            b := Monitor.GetBounds(A_Index)
+            if (b && mx >= b.x && mx < b.right && my >= b.y && my < b.bottom) {
+                return A_Index
+            }
+        }
+        try return MonitorGetPrimary()
+        return 1
     }
 
     static PopulateList() {
         this.listView.Delete()
         for idx, proj in this.filtered {
-            shellLabel := (proj.shell = "wsl") ? "WSL" : "PS"
             timeAgo := this.FormatTimeAgo(proj.lastOpened)
-            this.listView.Add("", idx, proj.name, proj.path, proj.tag, shellLabel, timeAgo)
+            this.listView.Add("", idx, proj.name, proj.path, proj.tag, proj.shell, timeAgo)
         }
         if (this.filtered.Length > 0) {
             this.listView.Modify(1, "Select Focus Vis")
@@ -152,10 +346,38 @@ class ProjectBookmarks {
         this.footerText.Value := this.filtered.Length " de " this.projects.Length " projetos"
     }
 
-    static OnSearchChange() {
-        query := Trim(this.searchEdit.Value)
+    static OnInputChange() {
+        text := this.inputBox.Value
+
+        ; If starts with a number, highlight that row
+        if (RegExMatch(text, "^(\d+)", &match)) {
+            num := Integer(match[1])
+            if (num >= 1 && num <= this.filtered.Length) {
+                this.listView.Modify(num, "Select Focus Vis")
+            }
+            return
+        }
+
+        ; If starts with A or B (global actions), don't filter
+        if (RegExMatch(text, "i)^[AB]$")) {
+            return
+        }
+
+        ; Otherwise treat as search filter
+        this.ApplyFilter()
+    }
+
+    static ApplyFilter() {
+        text := Trim(this.inputBox.Value)
         tagIdx := this.tagFilter.Value
         tagText := (tagIdx <= 1) ? "" : this.tagFilter.Text
+
+        ; Don't filter if input is a command (number or A/B)
+        if (RegExMatch(text, "i)^(\d+[NTRGS]?|[AB])$")) {
+            query := ""
+        } else {
+            query := text
+        }
 
         if (query = "" && tagText = "") {
             this.filtered := this.projects.Clone()
@@ -178,66 +400,82 @@ class ProjectBookmarks {
         this.PopulateList()
     }
 
-    static NavigateList(direction) {
-        if (this.filtered.Length = 0)
+    ; ── Execução por input ──
+
+    static Execute() {
+        text := Trim(this.inputBox.Value)
+        if (text = "") {
+            this.Hide()
             return
-        currentRow := this.listView.GetNext(0, "Focused")
-        if (currentRow = 0)
-            currentRow := 1
-        newRow := currentRow + direction
-        if (newRow < 1)
-            newRow := this.filtered.Length
-        if (newRow > this.filtered.Length)
-            newRow := 1
-        this.listView.Modify(currentRow, "-Select -Focus")
-        this.listView.Modify(newRow, "Select Focus Vis")
-        this.searchEdit.Focus()
-    }
+        }
 
-    static GetSelectedProject() {
-        row := this.listView.GetNext(0, "Focused")
-        if (row = 0 && this.filtered.Length > 0)
-            row := 1
-        if (row = 0 || row > this.filtered.Length)
-            return ""
-        return this.filtered[row]
-    }
+        ; Global actions (no number)
+        if (text = "A" || text = "a") {
+            this.AddProjectManual()
+            return
+        }
+        if (text = "B" || text = "b") {
+            this.BrowseProject()
+            return
+        }
 
-    static OnEnter() {
-        this.OpenInNvim()
+        ; Number + optional action letter
+        if (!RegExMatch(text, "i)^(\d+)([NTRGS]?)$", &match)) {
+            return
+        }
+
+        num := Integer(match[1])
+        action := StrUpper(match[2])
+
+        if (num < 1 || num > this.filtered.Length) {
+            return
+        }
+
+        proj := this.filtered[num]
+
+        switch action {
+            case "", "N":
+                this.OpenInNvim(proj)
+            case "T":
+                this.OpenTerminal(proj)
+            case "R":
+                this.RemoveProject(proj)
+            case "G":
+                this.EditTag(proj)
+            case "S":
+                this.EditShell(proj)
+        }
     }
 
     ; ── Ações ──
 
-    static OpenInNvim() {
-        proj := this.GetSelectedProject()
-        if (!proj)
-            return
-
+    static OpenInNvim(proj) {
         this.UpdateLastOpened(proj)
         this.Hide()
         Sleep(50)
 
-        if (proj.shell = "wsl") {
-            Run('wt.exe wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && nvim ."')
+        profileName := proj.shell
+        shellType := this.GetProfileType(profileName)
+
+        if (shellType = "wsl") {
+            Run('wt.exe -p "' profileName '" wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && nvim ."')
         } else {
-            Run('wt.exe -d "' . proj.path . '" pwsh -NoExit -Command "nvim ."')
+            Run('wt.exe -p "' profileName '" -d "' . proj.path . '" pwsh -NoExit -Command "nvim ."')
         }
     }
 
-    static OpenTerminal() {
-        proj := this.GetSelectedProject()
-        if (!proj)
-            return
-
+    static OpenTerminal(proj) {
         this.UpdateLastOpened(proj)
         this.Hide()
         Sleep(50)
 
-        if (proj.shell = "wsl") {
-            Run('wt.exe wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && exec bash"')
+        profileName := proj.shell
+        shellType := this.GetProfileType(profileName)
+
+        if (shellType = "wsl") {
+            Run('wt.exe -p "' profileName '" wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && exec bash"')
         } else {
-            Run('wt.exe -d "' . proj.path . '"')
+            Run('wt.exe -p "' profileName '" -d "' . proj.path . '"')
         }
     }
 
@@ -255,22 +493,21 @@ class ProjectBookmarks {
             return
 
         projPath := Trim(pathInput.Value)
-        shell := this.DetectShell(projPath)
 
-        ; Ask for shell confirmation
-        shellInput := InputBox("Shell para este projeto:`n(powershell ou wsl)", "Shell", "w300 h130", shell)
-        if (shellInput.Result != "OK")
+        ; Suggest default profile based on path
+        pathType := this.DetectPathType(projPath)
+        defaultProfile := this.GetDefaultProfile(pathType)
+
+        ; Pick WT profile
+        chosenProfile := this.PickProfile("Terminal para '" this.ExtractName(projPath) "':", defaultProfile)
+        if (chosenProfile = "")
             return
-        shell := StrLower(Trim(shellInput.Value))
-        if (shell != "wsl")
-            shell := "powershell"
 
-        ; Ask for tag
         tagInput := InputBox("Tag (opcional, ex: aws, pessoal, trabalho):", "Tag", "w300 h130", "")
         tag := (tagInput.Result = "OK") ? Trim(tagInput.Value) : ""
 
         name := this.ExtractName(projPath)
-        this.AddToList(name, projPath, tag, shell)
+        this.AddToList(name, projPath, tag, chosenProfile)
         this.Show()
     }
 
@@ -282,27 +519,22 @@ class ProjectBookmarks {
         if (selectedDir = "")
             return
 
-        shell := this.DetectShell(selectedDir)
+        pathType := this.DetectPathType(selectedDir)
+        defaultProfile := this.GetDefaultProfile(pathType)
 
-        ; Ask for shell confirmation
-        shellInput := InputBox("Shell para este projeto:`n(powershell ou wsl)", "Shell", "w300 h130", shell)
-        if (shellInput.Result != "OK")
+        chosenProfile := this.PickProfile("Terminal para '" this.ExtractName(selectedDir) "':", defaultProfile)
+        if (chosenProfile = "")
             return
-        shell := StrLower(Trim(shellInput.Value))
-        if (shell != "wsl")
-            shell := "powershell"
 
-        ; Ask for tag
         tagInput := InputBox("Tag (opcional, ex: aws, pessoal, trabalho):", "Tag", "w300 h130", "")
         tag := (tagInput.Result = "OK") ? Trim(tagInput.Value) : ""
 
         name := this.ExtractName(selectedDir)
-        this.AddToList(name, selectedDir, tag, shell)
+        this.AddToList(name, selectedDir, tag, chosenProfile)
         this.Show()
     }
 
     static AddToList(name, path, tag, shell) {
-        ; Check duplicate
         for proj in this.projects {
             if (StrLower(proj.path) = StrLower(path)) {
                 ToolTip("Projeto já existe: " name)
@@ -325,12 +557,7 @@ class ProjectBookmarks {
         SetTimer(() => ToolTip(), -1500)
     }
 
-    static RemoveProject() {
-        proj := this.GetSelectedProject()
-        if (!proj)
-            return
-
-        ; Find and remove from main list
+    static RemoveProject(proj) {
         idx := 0
         for i, p in this.projects {
             if (p.path = proj.path) {
@@ -341,64 +568,52 @@ class ProjectBookmarks {
         if (idx > 0) {
             this.projects.RemoveAt(idx)
             this.Persist()
-            this.OnSearchChange()
+            this.inputBox.Value := ""
+            this.ApplyFilter()
             ToolTip("Removido: " proj.name)
             SetTimer(() => ToolTip(), -1500)
         }
     }
 
-    static EditTag() {
-        proj := this.GetSelectedProject()
-        if (!proj)
-            return
-
+    static EditTag(proj) {
         tagInput := InputBox("Nova tag para '" proj.name "':", "Editar Tag", "w300 h130", proj.tag)
         if (tagInput.Result != "OK")
             return
         proj.tag := Trim(tagInput.Value)
         this.Persist()
         this.RefreshTags()
-        this.OnSearchChange()
+        this.inputBox.Value := ""
+        this.ApplyFilter()
     }
 
-    static EditShell() {
-        proj := this.GetSelectedProject()
-        if (!proj)
+    static EditShell(proj) {
+        chosenProfile := this.PickProfile("Novo terminal para '" proj.name "':", proj.shell)
+        if (chosenProfile = "")
             return
-
-        currentShell := (proj.shell = "wsl") ? "wsl" : "powershell"
-        shellInput := InputBox("Shell para '" proj.name "':`n(powershell ou wsl)", "Editar Shell", "w300 h130", currentShell)
-        if (shellInput.Result != "OK")
-            return
-        newShell := StrLower(Trim(shellInput.Value))
-        if (newShell != "wsl")
-            newShell := "powershell"
-        proj.shell := newShell
+        proj.shell := chosenProfile
         this.Persist()
-        this.OnSearchChange()
+        this.inputBox.Value := ""
+        this.ApplyFilter()
     }
 
     ; ── Utilidades ──
 
-    static DetectShell(path) {
+    static DetectPathType(path) {
         if (RegExMatch(path, "^[A-Za-z]:\\"))
-            return "powershell"
+            return "windows"
         if (RegExMatch(path, "^(/|~)"))
             return "wsl"
-        return "powershell"
+        return "windows"
     }
 
     static ExtractName(path) {
-        ; Remove trailing slashes
         path := RegExReplace(path, "[/\\]+$", "")
-        ; Get last segment
         if (RegExMatch(path, "[/\\]([^/\\]+)$", &m))
             return m[1]
         return path
     }
 
     static EscapeBashPath(path) {
-        ; Escape spaces and special chars for bash
         return "'" RegExReplace(path, "'", "'\\''") "'"
     }
 
@@ -407,7 +622,6 @@ class ProjectBookmarks {
             return "nunca"
 
         try {
-            ; Parse ISO date to AHK timestamp (yyyyMMddHHmmss)
             ts := RegExReplace(dateStr, "[-T:]", "")
             now := FormatTime(, "yyyyMMddHHmmss")
 
@@ -436,7 +650,6 @@ class ProjectBookmarks {
     }
 
     static SortByRecency() {
-        ; Bubble sort by lastOpened descending
         n := this.projects.Length
         Loop n - 1 {
             i := A_Index
@@ -505,7 +718,6 @@ class ProjectBookmarks {
         try {
             content := FileRead(this.configPath, "UTF-8")
 
-            ; Parse each project object
             pos := 1
             while (pos := RegExMatch(content, '\{[^{}]+\}', &m, pos)) {
                 obj := m[0]
@@ -518,7 +730,7 @@ class ProjectBookmarks {
 
                 if (path != "") {
                     if (shell = "")
-                        shell := this.DetectShell(path)
+                        shell := this.GetDefaultProfile(this.DetectPathType(path))
                     if (name = "")
                         name := this.ExtractName(path)
                     this.projects.Push({
