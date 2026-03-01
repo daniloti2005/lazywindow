@@ -403,7 +403,11 @@ class ProjectBookmarks {
     ; ── Execução por input ──
 
     static Execute() {
-        text := Trim(this.inputBox.Value)
+        if (!this.gui || !this.inputBox)
+            return
+        try text := Trim(this.inputBox.Value)
+        catch
+            return
         if (text = "") {
             this.Hide()
             return
@@ -594,24 +598,34 @@ class ProjectBookmarks {
     }
 
     static EditTag(proj) {
+        try Hotkey("*Enter", "Off")
         tagInput := InputBox("Nova tag para '" proj.name "':", "Editar Tag", "w300 h130", proj.tag)
+        if (this.gui)
+            Hotkey("*Enter", (*) => this.Execute(), "On")
         if (tagInput.Result != "OK")
             return
         proj.tag := Trim(tagInput.Value)
         this.Persist()
         this.RefreshTags()
-        this.inputBox.Value := ""
-        this.ApplyFilter()
+        if (this.inputBox) {
+            this.inputBox.Value := ""
+            this.ApplyFilter()
+        }
     }
 
     static EditShell(proj) {
+        try Hotkey("*Enter", "Off")
         chosenProfile := this.PickProfile("Novo terminal para '" proj.name "':", proj.shell)
+        if (this.gui)
+            Hotkey("*Enter", (*) => this.Execute(), "On")
         if (chosenProfile = "")
             return
         proj.shell := chosenProfile
         this.Persist()
-        this.inputBox.Value := ""
-        this.ApplyFilter()
+        if (this.inputBox) {
+            this.inputBox.Value := ""
+            this.ApplyFilter()
+        }
     }
 
     ; ── Quick-Add from Terminal ──
