@@ -237,6 +237,7 @@ TakeWindowShotPathOnly() {
 }
 
 
+SetSpeed8() {
     ArrowMouse.SetSpeedPercent(8)
     ToolTip("Velocidade do cursor: 8 dpi")
     SetTimer(() => ToolTip(), -1500)
