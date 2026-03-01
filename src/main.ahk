@@ -28,6 +28,9 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 SetWorkingDir(A_ScriptDir)
 CoordMode("Mouse", "Screen")
 
+; Global toggle: hotkeys are OFF until Alt+Home activates cursor mode
+global g_hotkeysEnabled := false
+
 ; Tray icon and menu
 A_IconTip := "LazyWindow - Controle do mouse por teclado"
 TraySetIcon("shell32.dll", 25)
@@ -52,22 +55,26 @@ tray.Add("Ajuda LazyVim (F11)", (*) => LazyVimHelpWindow.Toggle())
 tray.Add("Recarregar", (*) => Reload())
 tray.Add("Sair", (*) => ExitApp())
 
-; Hotkeys
+; ── Hotkeys SEMPRE ATIVOS (grid, ajuda, toggle) ──
 ^End::ActivateGrid(1)    ; Ctrl+End = Monitor 1
 ^Del::ActivateGrid(2)    ; Ctrl+Del = Monitor 2
 ^PgDn::ActivateGrid(3)   ; Ctrl+PgDn = Monitor 3
 ^PgUp::ActivateGridOnWindow()  ; Ctrl+PgUp = Grid na janela ativa
 !PgUp::ActivateGridAroundCursor()  ; Alt+PgUp = Grid ao redor do cursor
+!Home::ArrowMouse.Toggle()    ; Alt+Home = Toggle cursor + todos os comandos
+F3::HelpWindow.Toggle()       ; F3 = Ajuda (rolável)
+F10::TeamsHelpWindow.Toggle()  ; F10 = Ajuda de atalhos do Microsoft Teams
+F11::LazyVimHelpWindow.Toggle() ; F11 = Ajuda de atalhos do LazyVim
+
+; ── Hotkeys CONDICIONAIS (só ativos quando cursor ligado) ──
+#HotIf g_hotkeysEnabled
+
 ^Home::OpenWindowSwitcher()  ; Ctrl+Home = Window Switcher
-!Home::ArrowMouse.Toggle()    ; Alt+Home = Arrow Mouse Mode
 ^F12::SpeedDialog.Show()      ; Ctrl+F12 = Set Arrow Mouse speed
 !F12::SetSpeed8()             ; Alt+F12 = Set Arrow Mouse speed to 8
 ^Ins::DecreaseSpeed()         ; Ctrl+Ins = Diminuir velocidade
 !Ins::IncreaseSpeed()         ; Alt+Ins = Aumentar velocidade
 +End::ArrowMouse.ToggleSpeed5()  ; Shift+End = Toggle velocidade 5 dpi
-F3::HelpWindow.Toggle()       ; F3 = Ajuda (rolável)
-F10::TeamsHelpWindow.Toggle()  ; F10 = Ajuda de atalhos do Microsoft Teams
-F11::LazyVimHelpWindow.Toggle() ; F11 = Ajuda de atalhos do LazyVim
 
 F7::WinMaximize("A")          ; F7 = Maximizar janela ativa
 F6::WinMinimize("A")          ; F6 = Minimizar janela ativa
@@ -88,6 +95,8 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 
 ^=::Send "^{WheelUp}"          ; Zoom in (Ctrl+ScrollUp)
 ^-::Send "^{WheelDown}"        ; Zoom out (Ctrl+ScrollDown)
+
+#HotIf  ; Fim do bloco condicional
 
 ActivateGrid(monitorNum) {
     if (!Monitor.Exists(monitorNum)) {
@@ -343,6 +352,8 @@ StatusBar.Init()
 MouseMarkers.Init()
 
 ; Hotkeys for mouse markers (Ctrl+N = save, Alt+N = go, Ctrl+Alt+N = go and click)
+#HotIf g_hotkeysEnabled
+
 ^1::MouseMarkers.Save(1)
 ^2::MouseMarkers.Save(2)
 ^3::MouseMarkers.Save(3)
@@ -373,6 +384,8 @@ MouseMarkers.Init()
 ^!8::MouseMarkers.GoToAndClick(8)
 ^!9::MouseMarkers.GoToAndClick(9)
 
+#HotIf  ; Fim do bloco condicional de markers
+
 ; Show startup notification
-ToolTip("LazyWindow iniciado!`nCtrl+End/Del/PgDn = Grid`nCtrl+Home = Janelas`nAlt+Home = Modo Setas")
+ToolTip("LazyWindow iniciado!`nAlt+Home = Ligar/Desligar comandos`nF3 = Ajuda")
 SetTimer(() => ToolTip(), -3500)

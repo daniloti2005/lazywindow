@@ -129,9 +129,16 @@ ActivateGrid(monitorNumber) {
   - `R` = Rodapé
 - **Combinações:** `TE`, `TD`, `RE`, `RD`
 
+### Toggle Global de Comandos
+
+- **Hotkey:** `Alt+Home` (liga/desliga TODOS os comandos + Modo Setas)
+- **Estado inicial:** Desligado — ao iniciar, apenas Grid, Ajuda e `Alt+Home` estão ativos
+- **Implementação:** Variável `g_hotkeysEnabled` + `#HotIf` no `main.ahk`
+- **Sempre ativos:** Grid (Ctrl+End/Del/PgDn/PgUp), Alt+PgUp, F3/F10/F11, Alt+Home
+
 ### Arrow Mouse (Modo Setas)
 
-- **Hotkey:** `Alt+Home` (toggle)
+- **Hotkey:** `Alt+Home` (toggle — liga/desliga junto com todos os comandos)
 - **Movimento:** Setas movem o mouse continuamente; duas setas simultâneas = diagonal normalizada
 - **Velocidade:** `Ctrl+F12` (modal 1–50 dpi), `Alt+F12` (8 dpi fixo), `Ctrl+Ins`/`Alt+Ins` (±1 dpi), `Shift+End` (toggle 5 dpi / restaura anterior)
 - **Cliques:** `F1` (direito), `F2` (esquerdo)
@@ -156,7 +163,7 @@ ActivateGrid(monitorNumber) {
 
 - **Módulo:** `ui/StatusBar.ahk`
 - **Propósito:** Barra semi-transparente sempre visível acima da taskbar do monitor primário
-- **Exibe:** Estado do Modo Setas (Ligado/Desligado), velocidade atual em dpi, e lembretes de atalhos (`F3`, `F10`, `F11`)
+- **Exibe:** Estado dos comandos (ON/OFF), velocidade atual em dpi quando ligado
 - **Atualização:** Refresca a cada 200 ms via `SetTimer`
 - **Inicialização:** Chamada em `main.ahk` via `StatusBar.Init()`
 

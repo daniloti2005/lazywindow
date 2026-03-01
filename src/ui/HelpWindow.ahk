@@ -105,9 +105,15 @@ class HelpWindow {
 LAZYWINDOW - AJUDA (ROLAVEL)
 
 BARRA SUPERIOR (STATUS):
-  Cursor: Ligado/Desligado | Vel: XX dpi | F3=AJUDA | F10=TEAMS | F11=VIM
+  ON | Vel: XX dpi | ...     (quando comandos ligados)
+  OFF | Alt+Home=LIGAR       (quando comandos desligados)
 
-GRID DE NAVEGACAO (MATRIZ):
+TOGGLE GERAL (Alt+Home):
+  Alt+Home    = Liga/Desliga TODOS os comandos abaixo
+  Ao iniciar, todos os comandos estao DESLIGADOS.
+  Grid (Ctrl+End/Del/PgDn/PgUp), Alt+PgUp, F3/F10/F11 funcionam sempre.
+
+GRID DE NAVEGACAO (MATRIZ) [SEMPRE ATIVO]:
   Ctrl+End    = Ativar grid no Monitor 1
   Ctrl+Del    = Ativar grid no Monitor 2
   Ctrl+PgDn   = Ativar grid no Monitor 3
@@ -145,8 +151,8 @@ SELETOR DE JANELAS:
     2C    = janela 2 (centro)
     3RD   = janela 3 (rodape-direita)
 
-MODO SETAS (MOVER MOUSE):
-  Alt+Home    = Liga/Desliga o modo setas
+MODO SETAS (MOVER MOUSE) [requer Alt+Home]:
+  Alt+Home    = Liga/Desliga todos os comandos + modo setas
   Setas       = Move o mouse (segure 2 setas para diagonal 45)
   Ctrl + Setas = Arrastar (segura clique esquerdo enquanto move)
   Soltar Ctrl = Soltar o arrasto

@@ -258,6 +258,8 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 
 ## ⌨️ Referência Rápida de Atalhos
 
+> **Nota:** Ao iniciar, apenas Grid, Ajuda e `Alt+Home` estão ativos. Pressione `Alt+Home` para ligar todos os outros comandos.
+
 | Atalho | Função |
 |--------|--------|
 | `Ctrl+End` | Grid no Monitor 1 |
@@ -266,7 +268,7 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+PgUp` | Grid na janela ativa |
 | `Alt+PgUp` | Grid ao redor do cursor (400x400px) |
 | `Ctrl+Home` | Seletor de Janelas (mostra processo + título) |
-| `Alt+Home` | Modo Setas (mover mouse) |
+| `Alt+Home` | Liga/Desliga TODOS os comandos (cursor + atalhos) |
 | `Ctrl+F12` | Ajustar velocidade do Modo Setas (DPI 1..50) |
 | `Alt+F12` | Define velocidade em 8 dpi |
 | `Ctrl+Ins` | Diminuir 1 ponto na velocidade |
