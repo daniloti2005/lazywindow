@@ -117,15 +117,15 @@ class ScreenshotRegion {
     }
 
     static EnableHotkeys() {
-        Hotkey("~*LButton",    (*) => this.OnMouseDown(), "On")
-        Hotkey("~*LButton Up", (*) => this.OnMouseUp(),   "On")
-        Hotkey("*Escape",      (*) => this.Cancel(),      "On")
+        Hotkey("*LButton",    (*) => this.OnMouseDown(), "On")
+        Hotkey("*LButton Up", (*) => this.OnMouseUp(),   "On")
+        Hotkey("*Escape",     (*) => this.Cancel(),      "On")
     }
 
     static DisableHotkeys() {
-        try Hotkey("~*LButton",    "Off")
-        try Hotkey("~*LButton Up", "Off")
-        try Hotkey("*Escape",      "Off")
+        try Hotkey("*LButton",    "Off")
+        try Hotkey("*LButton Up", "Off")
+        try Hotkey("*Escape",     "Off")
     }
 
     static OnMouseDown() {
