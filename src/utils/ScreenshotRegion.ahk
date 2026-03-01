@@ -41,7 +41,15 @@ class ScreenshotRegion {
 
         this.CreateOverlays()
         this.SetCrosshairCursor()
-        this.EnableHotkeys()
+
+        ; Only Escape as hotkey; mouse is handled by polling GetKeyState
+        Hotkey("*Escape", (*) => this.Cancel(), "On")
+
+        ; Start polling timer
+        if (!this.tickFn) {
+            this.tickFn := this.Tick.Bind(this)
+        }
+        SetTimer(this.tickFn, 16)
 
         ToolTip("Clique e arraste para selecionar a região`nESC = cancelar")
         SetTimer(() => ToolTip(), -2000)
@@ -68,7 +76,7 @@ class ScreenshotRegion {
     }
 
     static MakePanel() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow +0x80000000")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
         g.Opt("-DPIScale")
         g.BackColor := "000000"
         g.Show("x0 y0 w1 h1 NoActivate")
@@ -77,7 +85,7 @@ class ScreenshotRegion {
     }
 
     static MakeSel() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow +0x80000000")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
         g.Opt("-DPIScale")
         g.BackColor := "FFFFFF"
         g.Show("x0 y0 w1 h1 NoActivate")
@@ -86,7 +94,7 @@ class ScreenshotRegion {
     }
 
     static MakeBorder() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow +0x80000000")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
         g.Opt("-DPIScale")
         g.BackColor := "FFFFFF"
         g.Show("x0 y0 w1 h1 NoActivate")
@@ -134,65 +142,47 @@ class ScreenshotRegion {
         WinMove(x, y, w, h, "ahk_id " g.Hwnd)
     }
 
-    static EnableHotkeys() {
-        Hotkey("*LButton",    (*) => this.OnMouseDown(), "On")
-        Hotkey("*LButton Up", (*) => this.OnMouseUp(),   "On")
-        Hotkey("*Escape",     (*) => this.Cancel(),      "On")
-    }
-
-    static DisableHotkeys() {
-        try Hotkey("*LButton",    "Off")
-        try Hotkey("*LButton Up", "Off")
-        try Hotkey("*Escape",     "Off")
-    }
-
-    static OnMouseDown() {
-        if (!this.active) {
-            return
-        }
-        MouseGetPos(&mx, &my)
-        this.startX   := mx
-        this.startY   := my
-        this.dragging := true
-
-        if (!this.tickFn) {
-            this.tickFn := this.Tick.Bind(this)
-        }
-        SetTimer(this.tickFn, 30)
-    }
-
     static Tick() {
-        if (!this.active || !this.dragging) {
+        if (!this.active) {
             SetTimer(this.tickFn, 0)
             return
         }
-        MouseGetPos(&mx, &my)
-        this.UpdatePanels(this.startX, this.startY, mx, my)
-    }
 
-    static OnMouseUp() {
-        if (!this.active || !this.dragging) {
-            return
-        }
-        SetTimer(this.tickFn, 0)
-        MouseGetPos(&mx, &my)
+        lbDown := GetKeyState("LButton", "P")
 
-        lx := Min(this.startX, mx)
-        ly := Min(this.startY, my)
-        w  := Abs(mx - this.startX)
-        h  := Abs(my - this.startY)
+        if (lbDown && !this.dragging) {
+            ; Mouse button just pressed — start drag
+            MouseGetPos(&mx, &my)
+            this.startX   := mx
+            this.startY   := my
+            this.dragging := true
+        } else if (lbDown && this.dragging) {
+            ; Mouse held — update selection rectangle
+            MouseGetPos(&mx, &my)
+            this.UpdatePanels(this.startX, this.startY, mx, my)
+        } else if (!lbDown && this.dragging) {
+            ; Mouse released — finish selection
+            SetTimer(this.tickFn, 0)
+            MouseGetPos(&mx, &my)
 
-        this.Cleanup()
+            lx := Min(this.startX, mx)
+            ly := Min(this.startY, my)
+            w  := Abs(mx - this.startX)
+            h  := Abs(my - this.startY)
 
-        if (w < 5 || h < 5) {
-            ToolTip("Seleção muito pequena — cancelado")
-            SetTimer(() => ToolTip(), -1500)
-            return
-        }
+            ; Save callback BEFORE Cleanup (which clears onDone)
+            cb := this.onDone
+            this.Cleanup()
 
-        cb := this.onDone
-        if (cb) {
-            cb({x: lx, y: ly, width: w, height: h})
+            if (w < 5 || h < 5) {
+                ToolTip("Seleção muito pequena — cancelado")
+                SetTimer(() => ToolTip(), -1500)
+                return
+            }
+
+            if (cb) {
+                cb({x: lx, y: ly, width: w, height: h})
+            }
         }
     }
 
@@ -216,7 +206,7 @@ class ScreenshotRegion {
         if (this.tickFn) {
             SetTimer(this.tickFn, 0)
         }
-        this.DisableHotkeys()
+        try Hotkey("*Escape", "Off")
         this.RestoreCursor()
 
         for panel in [this.panTop, this.panBottom, this.panLeft, this.panRight,
@@ -237,22 +227,17 @@ class ScreenshotRegion {
     }
 
     static SetCrosshairCursor() {
-        ; IDC_CROSS = 32515
         crossCursor := DllCall("LoadCursor", "Ptr", 0, "Ptr", 32515, "Ptr")
-        ; Set cursor for all overlay panels
         for panel in [this.panTop, this.panBottom, this.panLeft, this.panRight, this.panSel,
                       this.borTop, this.borBottom, this.borLeft, this.borRight] {
             if (panel is Gui) {
-                ; GCL_HCURSOR = -12 (32-bit), GCLP_HCURSOR = -12 (64-bit)
                 DllCall("SetClassLongPtr", "Ptr", panel.Hwnd, "Int", -12, "Ptr", crossCursor)
             }
         }
-        ; Also set global cursor immediately
         DllCall("SetCursor", "Ptr", crossCursor)
     }
 
     static RestoreCursor() {
-        ; IDC_ARROW = 32512
         arrowCursor := DllCall("LoadCursor", "Ptr", 0, "Ptr", 32512, "Ptr")
         DllCall("SetCursor", "Ptr", arrowCursor)
     }
