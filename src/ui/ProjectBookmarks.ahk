@@ -461,7 +461,11 @@ class ProjectBookmarks {
             Run('wt.exe -p "' profileName '" wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && nvim ."')
         } else {
             cleanPath := RTrim(proj.path, "\/")
-            Run('wt.exe -p "' profileName '" -d "' cleanPath '" -- pwsh -NoExit -Command "nvim ."')
+            if (!DirExist(cleanPath)) {
+                MsgBox("Diretório não encontrado:`n" cleanPath, "LazyWindow", "Icon!")
+                return
+            }
+            Run('wt.exe -p "' profileName '" -d "' cleanPath '" pwsh -NoExit -Command "nvim ."')
         }
     }
 
@@ -477,6 +481,10 @@ class ProjectBookmarks {
             Run('wt.exe -p "' profileName '" wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && exec bash"')
         } else {
             cleanPath := RTrim(proj.path, "\/")
+            if (!DirExist(cleanPath)) {
+                MsgBox("Diretório não encontrado:`n" cleanPath, "LazyWindow", "Icon!")
+                return
+            }
             Run('wt.exe -p "' profileName '" -d "' cleanPath '"')
         }
     }
@@ -537,6 +545,14 @@ class ProjectBookmarks {
     }
 
     static AddToList(name, path, tag, shell) {
+        ; Sanitize path — remove newlines, headers, trailing slashes
+        path := RTrim(Trim(path, ' `t`r`n"'), "\/")
+        if (path = "" || InStr(path, "`n")) {
+            ToolTip("Caminho inválido")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
         for proj in this.projects {
             if (StrLower(proj.path) = StrLower(path)) {
                 ToolTip("Projeto já existe: " name)
@@ -650,8 +666,16 @@ class ProjectBookmarks {
             return
         }
 
-        projPath := RTrim(Trim(A_Clipboard, ' `t`r`n"'), "\/")
+        ; Extract last valid line from clipboard (handles PS formatted output with headers)
+        clipText := A_Clipboard
         A_Clipboard := savedClip
+        projPath := ""
+        loop parse clipText, "`n", "`r" {
+            line := Trim(A_LoopField, ' `t`r`n"')
+            if (line != "" && !RegExMatch(line, "^-+$") && line != "Path")
+                projPath := line
+        }
+        projPath := RTrim(projPath, "\/")
 
         if (projPath = "") {
             ToolTip("Caminho vazio")
