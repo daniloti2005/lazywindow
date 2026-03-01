@@ -622,8 +622,6 @@ class PromptManager {
 
         ; Default to powershell for Windows Terminal
         return "powershell"
-
-        return "powershell"
     }
 
     ; ── Persistência ──
