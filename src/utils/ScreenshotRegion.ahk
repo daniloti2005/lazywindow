@@ -8,11 +8,12 @@ class ScreenshotRegion {
     static dragging    := false
     static tickFn      := ""
 
-    ; 4 dark overlay panels + 4 border lines
+    ; 4 dark overlay panels + selection highlight + 4 border lines
     static panTop    := ""
     static panBottom := ""
     static panLeft   := ""
     static panRight  := ""
+    static panSel    := ""
     static borTop    := ""
     static borBottom := ""
     static borLeft   := ""
@@ -52,13 +53,16 @@ class ScreenshotRegion {
         this.panLeft   := this.MakePanel()
         this.panRight  := this.MakePanel()
 
-        ; 4 thin bright border lines for the selection rectangle
+        ; Light highlight panel inside the selection (white tint)
+        this.panSel    := this.MakeSel()
+
+        ; 4 bright white border lines for the selection rectangle
         this.borTop    := this.MakeBorder()
         this.borBottom := this.MakeBorder()
         this.borLeft   := this.MakeBorder()
         this.borRight  := this.MakeBorder()
 
-        ; Initially fill entire screen with the top panel (no selection yet)
+        ; Initially fill entire screen with the bottom panel (no selection yet)
         this.UpdatePanels(this.vsX, this.vsY, this.vsX, this.vsY)
     }
 
@@ -67,16 +71,25 @@ class ScreenshotRegion {
         g.Opt("-DPIScale")
         g.BackColor := "000000"
         g.Show("x0 y0 w1 h1 NoActivate")
-        WinSetTransparent(130, g)
+        WinSetTransparent(190, g)   ; ~75% opaque — dark surround
+        return g
+    }
+
+    static MakeSel() {
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        g.Opt("-DPIScale")
+        g.BackColor := "FFFFFF"
+        g.Show("x0 y0 w1 h1 NoActivate")
+        WinSetTransparent(35, g)    ; ~14% white tint — subtle highlight on selection
         return g
     }
 
     static MakeBorder() {
         g := Gui("+AlwaysOnTop -Caption +ToolWindow")
         g.Opt("-DPIScale")
-        g.BackColor := "00BFFF"
+        g.BackColor := "FFFFFF"
         g.Show("x0 y0 w1 h1 NoActivate")
-        WinSetTransparent(220, g)
+        WinSetTransparent(255, g)   ; fully opaque white border
         return g
     }
 
@@ -87,24 +100,28 @@ class ScreenshotRegion {
         rx := Max(x1, x2)
         ry := Max(y1, y2)
 
-        brd := 2   ; border thickness in px
+        brd := 3   ; border thickness in px
 
         vs := {x: this.vsX, y: this.vsY, w: this.vsW, h: this.vsH}
 
-        ; Top panel: full width, from virtual top to selection top
-        this.ShowPanel(this.panTop,    vs.x, vs.y,           vs.w,      ly - vs.y)
-        ; Bottom panel: full width, from selection bottom to virtual bottom
-        this.ShowPanel(this.panBottom, vs.x, ry,             vs.w,      vs.y + vs.h - ry)
-        ; Left panel: selection height band, left of selection
-        this.ShowPanel(this.panLeft,   vs.x, ly,             lx - vs.x, ry - ly)
-        ; Right panel: selection height band, right of selection
+        ; 4 dark panels surrounding the selection
+        this.ShowPanel(this.panTop,    vs.x, vs.y,           vs.w,           ly - vs.y)
+        this.ShowPanel(this.panBottom, vs.x, ry,             vs.w,           vs.y + vs.h - ry)
+        this.ShowPanel(this.panLeft,   vs.x, ly,             lx - vs.x,      ry - ly)
         this.ShowPanel(this.panRight,  rx,   ly,             vs.x + vs.w - rx, ry - ly)
 
-        ; Border lines
-        this.ShowPanel(this.borTop,    lx,      ly,          rx - lx, brd)
-        this.ShowPanel(this.borBottom, lx,      ry - brd,    rx - lx, brd)
-        this.ShowPanel(this.borLeft,   lx,      ly,          brd,     ry - ly)
-        this.ShowPanel(this.borRight,  rx - brd, ly,         brd,     ry - ly)
+        ; Light highlight inside selection (visible only when dragging)
+        selW := rx - lx
+        selH := ry - ly
+        if (selW > brd * 2 && selH > brd * 2) {
+            this.ShowPanel(this.panSel, lx + brd, ly + brd, selW - brd * 2, selH - brd * 2)
+        }
+
+        ; White border lines
+        this.ShowPanel(this.borTop,    lx,         ly,         rx - lx, brd)
+        this.ShowPanel(this.borBottom, lx,         ry - brd,   rx - lx, brd)
+        this.ShowPanel(this.borLeft,   lx,         ly,         brd,     ry - ly)
+        this.ShowPanel(this.borRight,  rx - brd,   ly,         brd,     ry - ly)
     }
 
     static ShowPanel(g, x, y, w, h) {
@@ -201,6 +218,7 @@ class ScreenshotRegion {
         this.DisableHotkeys()
 
         for panel in [this.panTop, this.panBottom, this.panLeft, this.panRight,
+                      this.panSel,
                       this.borTop, this.borBottom, this.borLeft, this.borRight] {
             try panel.Destroy()
         }
@@ -208,6 +226,7 @@ class ScreenshotRegion {
         this.panBottom := ""
         this.panLeft   := ""
         this.panRight  := ""
+        this.panSel    := ""
         this.borTop    := ""
         this.borBottom := ""
         this.borLeft   := ""
