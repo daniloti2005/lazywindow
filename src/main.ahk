@@ -288,7 +288,7 @@ _SaveRegionShot(bounds, pathOnly) {
             ToolTip("Falha ao capturar região (rc=" rc ")")
         }
     } else {
-        ; Capture region, save PNG, put image in clipboard
+        ; Capture region, save PNG, put image in clipboard (persist with SetDataObject)
         ps := "powershell -STA -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34)
             . "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; "
             . "$bmp=New-Object System.Drawing.Bitmap(" w "," h "); "
@@ -296,7 +296,9 @@ _SaveRegionShot(bounds, pathOnly) {
             . "$g.CopyFromScreen(" x "," y ",0,0,[System.Drawing.Size]::new(" w "," h ")); "
             . "$g.Dispose(); "
             . "$bmp.Save('" filePath "',[System.Drawing.Imaging.ImageFormat]::Png); "
-            . "[System.Windows.Forms.Clipboard]::SetImage($bmp); "
+            . "$do=New-Object System.Windows.Forms.DataObject; "
+            . "$do.SetImage($bmp); "
+            . "[System.Windows.Forms.Clipboard]::SetDataObject($do,$true); "
             . "$bmp.Dispose();"
             . Chr(34)
         rc := RunWait(ps, , "Hide")

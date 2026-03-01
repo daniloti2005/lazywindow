@@ -40,6 +40,7 @@ class ScreenshotRegion {
         this.vsH := SysGet(79)   ; SM_CYVIRTUALSCREEN
 
         this.CreateOverlays()
+        this.SetCrosshairCursor()
         this.EnableHotkeys()
 
         ToolTip("Clique e arraste para selecionar a região`nESC = cancelar")
@@ -67,29 +68,29 @@ class ScreenshotRegion {
     }
 
     static MakePanel() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow +0x80000000")
         g.Opt("-DPIScale")
         g.BackColor := "000000"
         g.Show("x0 y0 w1 h1 NoActivate")
-        WinSetTransparent(190, g)   ; ~75% opaque — dark surround
+        WinSetTransparent(190, "ahk_id " g.Hwnd)
         return g
     }
 
     static MakeSel() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow +0x80000000")
         g.Opt("-DPIScale")
         g.BackColor := "FFFFFF"
         g.Show("x0 y0 w1 h1 NoActivate")
-        WinSetTransparent(35, g)    ; ~14% white tint — subtle highlight on selection
+        WinSetTransparent(35, "ahk_id " g.Hwnd)
         return g
     }
 
     static MakeBorder() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow +0x80000000")
         g.Opt("-DPIScale")
         g.BackColor := "FFFFFF"
         g.Show("x0 y0 w1 h1 NoActivate")
-        WinSetTransparent(255, g)   ; fully opaque white border
+        WinSetTransparent(255, "ahk_id " g.Hwnd)
         return g
     }
 
@@ -216,6 +217,7 @@ class ScreenshotRegion {
             SetTimer(this.tickFn, 0)
         }
         this.DisableHotkeys()
+        this.RestoreCursor()
 
         for panel in [this.panTop, this.panBottom, this.panLeft, this.panRight,
                       this.panSel,
@@ -232,5 +234,26 @@ class ScreenshotRegion {
         this.borLeft   := ""
         this.borRight  := ""
         this.onDone    := ""
+    }
+
+    static SetCrosshairCursor() {
+        ; IDC_CROSS = 32515
+        crossCursor := DllCall("LoadCursor", "Ptr", 0, "Ptr", 32515, "Ptr")
+        ; Set cursor for all overlay panels
+        for panel in [this.panTop, this.panBottom, this.panLeft, this.panRight, this.panSel,
+                      this.borTop, this.borBottom, this.borLeft, this.borRight] {
+            if (panel is Gui) {
+                ; GCL_HCURSOR = -12 (32-bit), GCLP_HCURSOR = -12 (64-bit)
+                DllCall("SetClassLongPtr", "Ptr", panel.Hwnd, "Int", -12, "Ptr", crossCursor)
+            }
+        }
+        ; Also set global cursor immediately
+        DllCall("SetCursor", "Ptr", crossCursor)
+    }
+
+    static RestoreCursor() {
+        ; IDC_ARROW = 32512
+        arrowCursor := DllCall("LoadCursor", "Ptr", 0, "Ptr", 32512, "Ptr")
+        DllCall("SetCursor", "Ptr", arrowCursor)
     }
 }
