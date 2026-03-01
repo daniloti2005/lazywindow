@@ -598,34 +598,29 @@ class ProjectBookmarks {
     }
 
     static EditTag(proj) {
-        try Hotkey("*Enter", "Off")
+        this.Hide()
+        Sleep(50)
         tagInput := InputBox("Nova tag para '" proj.name "':", "Editar Tag", "w300 h130", proj.tag)
-        if (this.gui)
-            Hotkey("*Enter", (*) => this.Execute(), "On")
-        if (tagInput.Result != "OK")
+        if (tagInput.Result != "OK") {
+            this.Show()
             return
+        }
         proj.tag := Trim(tagInput.Value)
         this.Persist()
-        this.RefreshTags()
-        if (this.inputBox) {
-            this.inputBox.Value := ""
-            this.ApplyFilter()
-        }
+        this.Show()
     }
 
     static EditShell(proj) {
-        try Hotkey("*Enter", "Off")
+        this.Hide()
+        Sleep(50)
         chosenProfile := this.PickProfile("Novo terminal para '" proj.name "':", proj.shell)
-        if (this.gui)
-            Hotkey("*Enter", (*) => this.Execute(), "On")
-        if (chosenProfile = "")
+        if (chosenProfile = "") {
+            this.Show()
             return
+        }
         proj.shell := chosenProfile
         this.Persist()
-        if (this.inputBox) {
-            this.inputBox.Value := ""
-            this.ApplyFilter()
-        }
+        this.Show()
     }
 
     ; ── Quick-Add from Terminal ──
