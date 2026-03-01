@@ -30,49 +30,59 @@ class PromptManager {
         now := FormatTime(, "yyyy-MM-ddTHH:mm:ss")
 
         ; PowerShell prompts
+        minimalCode := 'function prompt { "$($executionContext.SessionState.Path.CurrentLocation)> " }'
         this.prompts.Push({
             id: "minimal-ps",
             name: "Minimal",
             shellType: "powershell",
-            code: 'function prompt { "$($executionContext.SessionState.Path.CurrentLocation)> " }',
+            code: minimalCode,
             builtin: true,
             favorite: false,
             lastUsed: ""
         })
+
+        gitBranchCode := 'function prompt { $loc = $executionContext.SessionState.Path.CurrentLocation; $b = ""; try { $b = (git branch --show-current 2>$null) } catch {}'
+        gitBranchCode .= '; if ($b) { "$loc '
+        gitBranchCode .= '`e[32m($b)`e[0m> " } else { "$loc> " } }'
         this.prompts.Push({
             id: "git-branch-ps",
             name: "Git Branch",
             shellType: "powershell",
-            code: 'function prompt { $loc = $executionContext.SessionState.Path.CurrentLocation; $b = ""; try { $b = (git branch --show-current 2>$null) } catch {}; if ($b) { "$loc `e[32m($b)`e[0m> " } else { "$loc> " } }',
+            code: gitBranchCode,
             builtin: true,
             favorite: false,
             lastUsed: ""
         })
+
+        timestampCode := "function prompt { " Chr(34) "[$(Get-Date -Format 'HH:mm:ss')] $($executionContext.SessionState.Path.CurrentLocation)> " Chr(34) " }"
         this.prompts.Push({
             id: "timestamp-ps",
             name: "Timestamp",
             shellType: "powershell",
-            code: 'function prompt { "[$(Get-Date -Format ''HH:mm:ss'')] $($executionContext.SessionState.Path.CurrentLocation)> " }',
+            code: timestampCode,
             builtin: true,
             favorite: false,
             lastUsed: ""
         })
 
         ; Bash prompts
+        minimalBash := "export PS1='\[\033[01;34m\]\w\[\033[00m\]\$ '"
         this.prompts.Push({
             id: "minimal-bash",
             name: "Minimal Color",
             shellType: "bash",
-            code: "export PS1='\[\033[01;34m\]\w\[\033[00m\]\$ '",
+            code: minimalBash,
             builtin: true,
             favorite: false,
             lastUsed: ""
         })
+
+        gitColorBash := "export PS1='\[\033[01;34m\]\w\[\033[00;32m\]$(git branch --show-current 2>/dev/null | sed " Chr(34) "s/^/ (/;s/$/)/" Chr(34) ")\[\033[00m\]\$ '"
         this.prompts.Push({
             id: "git-color-bash",
             name: "Git Color",
             shellType: "bash",
-            code: "export PS1='\[\033[01;34m\]\w\[\033[00;32m\]$(git branch --show-current 2>/dev/null | sed ""s/^/ (/;s/$/)/"")\[\033[00m\]\$ '",
+            code: gitColorBash,
             builtin: true,
             favorite: false,
             lastUsed: ""
