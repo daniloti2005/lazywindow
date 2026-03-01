@@ -96,7 +96,10 @@ class StatusBar {
         try cursorOn := ArrowMouse.IsEnabled()
         try vel := ArrowMouse.GetSpeedPercent()
 
-        cursorText := cursorOn ? "Ligado" : "Desligado"
-        this.text.Value := "Cursor: " cursorText " | Vel: " vel " dpi | F3=AJUDA | F10=TEAMS | F11=VIM"
+        if (cursorOn) {
+            this.text.Value := "ON | Vel: " vel " dpi | F3=AJUDA | F10=TEAMS | F11=VIM | Alt+Home=OFF"
+        } else {
+            this.text.Value := "OFF | Alt+Home=LIGAR | F3=AJUDA"
+        }
     }
 }

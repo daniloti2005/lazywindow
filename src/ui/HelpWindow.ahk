@@ -105,9 +105,15 @@ class HelpWindow {
 LAZYWINDOW - AJUDA (ROLAVEL)
 
 BARRA SUPERIOR (STATUS):
-  Cursor: Ligado/Desligado | Vel: XX dpi | F3=AJUDA | F10=TEAMS | F11=VIM
+  ON | Vel: XX dpi | ...     (quando comandos ligados)
+  OFF | Alt+Home=LIGAR       (quando comandos desligados)
 
-GRID DE NAVEGACAO (MATRIZ):
+TOGGLE GERAL (Alt+Home):
+  Alt+Home    = Liga/Desliga TODOS os comandos abaixo
+  Ao iniciar, todos os comandos estao DESLIGADOS.
+  Grid (Ctrl+End/Del/PgDn/PgUp), Alt+PgUp, F3/F10/F11 funcionam sempre.
+
+GRID DE NAVEGACAO (MATRIZ) [SEMPRE ATIVO]:
   Ctrl+End    = Ativar grid no Monitor 1
   Ctrl+Del    = Ativar grid no Monitor 2
   Ctrl+PgDn   = Ativar grid no Monitor 3
@@ -123,7 +129,7 @@ GRID DE NAVEGACAO (MATRIZ):
     Enter       = Clique direito no centro da area atual
     ESC         = Cancelar/fechar grid
 
-SELETOR DE JANELAS:
+SELETOR DE JANELAS [requer Alt+Home]:
   Ctrl+Home   = Abrir seletor (mostra # | Processo | Titulo)
   Digite: [numero][posicao] e Enter
 
@@ -145,8 +151,8 @@ SELETOR DE JANELAS:
     2C    = janela 2 (centro)
     3RD   = janela 3 (rodape-direita)
 
-MODO SETAS (MOVER MOUSE):
-  Alt+Home    = Liga/Desliga o modo setas
+MODO SETAS (MOVER MOUSE) [requer Alt+Home]:
+  Alt+Home    = Liga/Desliga todos os comandos + modo setas
   Setas       = Move o mouse (segure 2 setas para diagonal 45)
   Ctrl + Setas = Arrastar (segura clique esquerdo enquanto move)
   Soltar Ctrl = Soltar o arrasto
@@ -164,48 +170,52 @@ MODO SETAS (MOVER MOUSE):
     Alt+F12     = Define velocidade em 8 dpi
     Ctrl+Ins    = Diminuir 1 ponto na velocidade
     Alt+Ins     = Aumentar 1 ponto na velocidade
+    Shift+End   = Toggle velocidade 5 dpi (alterna com anterior)
 
-SCROLL (QUALQUER HORA):
+SCROLL [requer Alt+Home]:
   [           = Scroll para cima
   ]           = Scroll para baixo
 
-ZOOM (CTRL + SCROLL):
+ZOOM [requer Alt+Home]:
   Ctrl +      = Zoom +
   Ctrl -      = Zoom -
 
-JANELA ATIVA:
+JANELA ATIVA [requer Alt+Home]:
   F7          = Maximizar
   F6          = Minimizar
   F8          = Fechar
   Ctrl+F6     = Print da janela ativa (clipboard + arquivo em ~\.screenshot)
+  Ctrl+Shift+F6 = Print da janela ativa (caminho do arquivo no clipboard)
+  Ctrl+F7     = Selecionar região com mouse (imagem no clipboard + arquivo)
+  Ctrl+Shift+F7 = Selecionar região com mouse (caminho do arquivo no clipboard)
 
-MARCADORES DE POSICAO (salvar/restaurar posicoes do mouse):
+MARCADORES DE POSICAO [requer Alt+Home]:
   Ctrl+1..9   = Salvar posicao atual no marcador
   Alt+1..9    = Mover cursor para o marcador
   Ctrl+Alt+1..9 = Mover e clicar no marcador
   (marcadores persistem em ~/.lazywindow/markers.json)
 
-BEAUTIFY CODIGO (formatar JSON/XML/YAML):
+BEAUTIFY CODIGO [requer Alt+Home]:
   Ctrl+Shift+B = Formata o conteudo do clipboard e sobrescreve
                  (detecta JSON, XML ou YAML automaticamente)
 
-BASE64 (encode/decode):
+BASE64 [requer Alt+Home]:
   Ctrl+Shift+A = Encode texto do clipboard para Base64
   Ctrl+Alt+A   = Decode Base64 do clipboard para texto
 
-TIMESTAMP (epoch <-> data):
+TIMESTAMP [requer Alt+Home]:
   Ctrl+Shift+T = Data para Epoch (clipboard vazio = agora)
   Ctrl+Alt+T   = Epoch para Data ISO 8601
 
-AJUDA:
+AJUDA [SEMPRE ATIVO]:
   F3          = Abre/Fecha esta janela
   F10         = Ajuda de atalhos do Microsoft Teams
   F11         = Ajuda de atalhos do LazyVim
 
-SNIPPET MANAGER (gestor de snippets):
+SNIPPET MANAGER [requer Alt+Home]:
   Ctrl+Alt+F10 = Abre/Fecha o Snippet Manager
   
-  Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go
+  Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
   
   Snippets incluidos:
     - SOLID (SRP, OCP, LSP, ISP, DIP com exemplos)
@@ -217,6 +227,7 @@ SNIPPET MANAGER (gestor de snippets):
     - PowerShell (Try-Catch, REST API)
     - Bash (Function, AWS CLI)
     - Go (Struct, HTTP Handler)
+    - Windows (ms-settings URIs, comandos de sistema, rede, dispositivos, apps, shell)
   
   Como usar:
     1. Selecione uma palavra (nome de classe/funcao) no editor

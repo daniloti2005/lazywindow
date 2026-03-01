@@ -64,6 +64,8 @@ class ArrowMouse {
         if (this.enabled) {
             return
         }
+        global g_hotkeysEnabled
+        g_hotkeysEnabled := true
         this.UpdateStep()
         if (!this.moveTickFn) {
             this.moveTickFn := this.MoveTick.Bind(this)
@@ -77,11 +79,24 @@ class ArrowMouse {
         if (!this.enabled) {
             return
         }
+        global g_hotkeysEnabled
         this.StopTimer()
         this.EndDrag()
         this.DisableHotkeys()
         this.enabled := false
+        g_hotkeysEnabled := false
         this.ShowStatusTip(false)
+    }
+
+    static PauseForSwitcher() {
+        ; Pause arrow mouse without changing g_hotkeysEnabled
+        if (!this.enabled) {
+            return
+        }
+        this.StopTimer()
+        this.EndDrag()
+        this.DisableHotkeys()
+        this.enabled := false
     }
 
     static EnableHotkeys() {
@@ -222,7 +237,7 @@ class ArrowMouse {
     }
 
     static ShowStatusTip(isOn) {
-        msg := isOn ? ("Modo Setas: ON | Vel: " this.speedPercent " dpi (Alt+Home para desligar)") : "Modo Setas: OFF"
+        msg := isOn ? ("Comandos: ON | Modo Setas: ON | Vel: " this.speedPercent " dpi") : "Comandos: OFF | Modo Setas: OFF"
         ToolTip(msg)
         SetTimer(() => ToolTip(), -1200)
     }

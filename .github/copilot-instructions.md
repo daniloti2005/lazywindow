@@ -18,8 +18,7 @@ lazywindow/
 │   ├── main.ahk              # Entry point - inicialização e hotkeys principais
 │   ├── grid/
 │   │   ├── GridOverlay.ahk   # Classe GUI do overlay semi-transparente
-│   │   ├── GridNavigation.ahk # Lógica de navegação e subdivisão
-│   │   └── GridRenderer.ahk  # Renderização visual do grid
+│   │   └── GridNavigation.ahk # Lógica de navegação e subdivisão recursiva
 │   ├── window/
 │   │   ├── WindowSwitcher.ahk # Seletor de janelas (mostra processo + título)
 │   │   └── WindowList.ahk    # Enumeração de janelas abertas
@@ -28,15 +27,18 @@ lazywindow/
 │   │   ├── ArrowMouse.ahk    # Modo setas para mover mouse
 │   │   └── MouseMarkers.ahk  # 9 marcadores de posição persistentes
 │   ├── ui/
+│   │   ├── StatusBar.ahk     # Barra de status acima da taskbar (sempre visível)
+│   │   ├── SpeedDialog.ahk   # Modal para ajustar velocidade do Modo Setas
 │   │   ├── HelpWindow.ahk    # Janela de ajuda principal (F3)
 │   │   ├── TeamsHelpWindow.ahk # Atalhos do Microsoft Teams (F10)
 │   │   └── LazyVimHelpWindow.ahk # Atalhos do LazyVim (F11)
 │   ├── snippets/
-│   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Shift+S)
+│   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Alt+F10)
 │   │   ├── SnippetStore.ahk   # Armazena e carrega snippets
 │   │   └── ContextDetector.ahk # Detecta linguagem e palavra sob cursor
 │   └── utils/
 │       ├── Monitor.ahk       # Detecção e informações de monitores
+│       ├── ScreenshotRegion.ahk # Seleção interativa de região para screenshot
 │       ├── CodeBeautify.ahk  # Formatador JSON/XML/YAML
 │       ├── Base64.ahk        # Encode/Decode Base64
 │       └── Timestamp.ahk     # Conversor Epoch <-> Data
@@ -127,13 +129,20 @@ ActivateGrid(monitorNumber) {
   - `R` = Rodapé
 - **Combinações:** `TE`, `TD`, `RE`, `RD`
 
+### Toggle Global de Comandos
+
+- **Hotkey:** `Alt+Home` (liga/desliga TODOS os comandos + Modo Setas)
+- **Estado inicial:** Desligado — ao iniciar, apenas Grid, Ajuda e `Alt+Home` estão ativos
+- **Implementação:** Variável `g_hotkeysEnabled` + `#HotIf` no `main.ahk`
+- **Sempre ativos:** Grid (Ctrl+End/Del/PgDn/PgUp), Alt+PgUp, F3/F10/F11, Alt+Home
+
 ### Arrow Mouse (Modo Setas)
 
-- **Hotkey:** `Alt+Home` (toggle)
-- **Movimento:** Setas movem o mouse continuamente
-- **Velocidade:** `Ctrl+F12` (modal), `Alt+F12` (8dpi), `Ctrl+Ins`/`Alt+Ins` (±1)
+- **Hotkey:** `Alt+Home` (toggle — liga/desliga junto com todos os comandos)
+- **Movimento:** Setas movem o mouse continuamente; duas setas simultâneas = diagonal normalizada
+- **Velocidade:** `Ctrl+F12` (modal 1–50 dpi), `Alt+F12` (8 dpi fixo), `Ctrl+Ins`/`Alt+Ins` (±1 dpi), `Shift+End` (toggle 5 dpi / restaura anterior)
 - **Cliques:** `F1` (direito), `F2` (esquerdo)
-- **Arrastar:** `Ctrl+Setas` (segura clique)
+- **Arrastar:** `Ctrl+Setas` (segura clique esquerdo enquanto move)
 - **Scroll horizontal:** `Alt+-` (esq), `Alt+=` (dir)
 
 ### Mouse Markers (Marcadores)
@@ -148,12 +157,22 @@ ActivateGrid(monitorNumber) {
 - **Code Beautify:** `Ctrl+Shift+B` - Formata JSON/XML/YAML do clipboard
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
+- **Screenshot:** `Ctrl+F6` (janela ativa → clipboard + PNG), `Ctrl+Shift+F6` (janela ativa → PNG + caminho no clipboard), `Ctrl+F7` (seleção de região → clipboard + PNG), `Ctrl+Shift+F7` (seleção de região → PNG + caminho no clipboard)
+
+### StatusBar (Barra de Status)
+
+- **Módulo:** `ui/StatusBar.ahk`
+- **Propósito:** Barra semi-transparente sempre visível acima da taskbar do monitor primário
+- **Exibe:** Estado dos comandos (ON/OFF), velocidade atual em dpi quando ligado
+- **Atualização:** Refresca a cada 200 ms via `SetTimer`
+- **Inicialização:** Chamada em `main.ahk` via `StatusBar.Init()`
 
 ### Snippet Manager (Gestor de Snippets)
 
 - **Hotkey:** `Ctrl+Alt+F10`
 - **Propósito:** Inserir snippets de código com placeholders automáticos
-- **Linguagens:** TypeScript, Python, SQL, PowerShell, Bash, Go
+- **Linguagens:** TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
+- **Modos de busca:** `Nome` (busca por nome/descrição) e `Código` (busca no conteúdo do snippet) — alternável pelo botão ou `Tab`
 - **Snippets incluídos:**
   - SOLID: SRP, OCP, LSP, ISP, DIP (com exemplos práticos)
   - Clean Code: Guard Clauses, Extract Method, Null Object, Constants
@@ -164,8 +183,9 @@ ActivateGrid(monitorNumber) {
   - PowerShell: Try-Catch, REST API
   - Bash: Function, AWS CLI
   - Go: Struct, HTTP Handler
+  - Windows: ms-settings URIs, comandos de sistema, rede, dispositivos, apps, shell
 - **Detecção automática:** Linguagem baseada no título da janela
-- **Placeholders:** `${ClassName}`, `${FunctionName}` → palavra selecionada
+- **Placeholders:** `${ClassName}`, `${FunctionName}`, `${date}`, `${user}` → substituídos pela palavra selecionada / data / usuário
 
 ## Guia de Implementação
 
@@ -258,11 +278,17 @@ GetWindowList() {
 
 Para testar manualmente:
 1. Execute `src/main.ahk` ou use `ToggleLazyWindow.ps1`
-2. Pressione `Ctrl+End` para testar grid no monitor 1
-3. Navegue com `A/S/D/Z/X/C`
-4. Pressione `Backspace` para clique esquerdo
-5. Pressione `Ctrl+Home` para testar seletor de janelas
-6. Pressione `Ctrl+PgUp` para testar grid na janela ativa
-7. Pressione `Alt+PgUp` para testar grid ao redor do cursor
-8. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
-9. Pressione `F3` para ver a ajuda completa
+2. Verifique a StatusBar acima da taskbar (exibe "OFF | Alt+Home=LIGAR | F3=AJUDA")
+3. Pressione `Alt+Home` para ligar todos os comandos (StatusBar muda para "ON | Vel: 25 dpi | ...")
+4. Pressione `Ctrl+End` para testar grid no monitor 1
+5. Navegue com `A/S/D/Z/X/C`
+6. Pressione `Backspace` para clique esquerdo
+7. Pressione `Ctrl+Home` para testar seletor de janelas
+8. Pressione `Ctrl+PgUp` para testar grid na janela ativa
+9. Pressione `Alt+PgUp` para testar grid ao redor do cursor
+10. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
+11. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
+12. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
+13. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
+14. Pressione `F3` para ver a ajuda completa
+15. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"
