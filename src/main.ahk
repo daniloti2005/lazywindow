@@ -169,8 +169,10 @@ ActivateGridAroundCursor() {
 }
 
 OpenWindowSwitcher() {
-    if (ArrowMouse.IsEnabled()) {
-        ArrowMouse.Disable()
+    wasArrowOn := ArrowMouse.IsEnabled()
+    if (wasArrowOn) {
+        ; Pause ArrowMouse without turning off g_hotkeysEnabled
+        ArrowMouse.PauseForSwitcher()
     }
     WindowSwitcher.Show()
 }

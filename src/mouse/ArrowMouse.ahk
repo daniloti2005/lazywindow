@@ -88,6 +88,17 @@ class ArrowMouse {
         this.ShowStatusTip(false)
     }
 
+    static PauseForSwitcher() {
+        ; Pause arrow mouse without changing g_hotkeysEnabled
+        if (!this.enabled) {
+            return
+        }
+        this.StopTimer()
+        this.EndDrag()
+        this.DisableHotkeys()
+        this.enabled := false
+    }
+
     static EnableHotkeys() {
         ; Arrow keys: block normal behavior and move mouse while held
         Hotkey("*Up", (*) => this.OnArrowDown(), "On")
