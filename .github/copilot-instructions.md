@@ -38,6 +38,7 @@ lazywindow/
 │   │   └── ContextDetector.ahk # Detecta linguagem e palavra sob cursor
 │   └── utils/
 │       ├── Monitor.ahk       # Detecção e informações de monitores
+│       ├── ScreenshotRegion.ahk # Seleção interativa de região para screenshot
 │       ├── CodeBeautify.ahk  # Formatador JSON/XML/YAML
 │       ├── Base64.ahk        # Encode/Decode Base64
 │       └── Timestamp.ahk     # Conversor Epoch <-> Data
@@ -149,7 +150,7 @@ ActivateGrid(monitorNumber) {
 - **Code Beautify:** `Ctrl+Shift+B` - Formata JSON/XML/YAML do clipboard
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
-- **Screenshot:** `Ctrl+F6` (imagem → clipboard + salva PNG), `Ctrl+Shift+F6` (salva PNG + caminho absoluto → clipboard)
+- **Screenshot:** `Ctrl+F6` (janela ativa → clipboard + PNG), `Ctrl+Shift+F6` (janela ativa → PNG + caminho no clipboard), `Ctrl+F7` (seleção de região → clipboard + PNG), `Ctrl+Shift+F7` (seleção de região → PNG + caminho no clipboard)
 
 ### StatusBar (Barra de Status)
 

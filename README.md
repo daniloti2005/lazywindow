@@ -288,6 +288,8 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `F8` | Fechar janela ativa |
 | `Ctrl+F6` | Print da janela ativa (clipboard + salva PNG em `~\.screenshot`) |
 | `Ctrl+Shift+F6` | Print da janela ativa (caminho do arquivo PNG → clipboard) |
+| `Ctrl+F7` | Selecionar região com mouse (imagem no clipboard + salva PNG) |
+| `Ctrl+Shift+F7` | Selecionar região com mouse (caminho do arquivo PNG → clipboard) |
 | `Ctrl+Shift+B` | Beautify clipboard (formata JSON/XML/YAML automaticamente) |
 | `Ctrl+Shift+A` | Encode clipboard para Base64 |
 | `Ctrl+Alt+A` | Decode Base64 do clipboard |

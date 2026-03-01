@@ -17,6 +17,7 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "utils\CodeBeautify.ahk"
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
+#Include "utils\ScreenshotRegion.ahk"
 #Include "grid\GridOverlay.ahk"
 #Include "grid\GridNavigation.ahk"
 #Include "window\WindowList.ahk"
@@ -73,6 +74,8 @@ F6::WinMinimize("A")          ; F6 = Minimizar janela ativa
 F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^F6::TakeActiveWindowShot()    ; Ctrl+F6 = Print da janela ativa
 ^+F6::TakeWindowShotPathOnly() ; Ctrl+Shift+F6 = Print da janela ativa (caminho no clipboard)
+^F7::TakeRegionShot()          ; Ctrl+F7 = Selecionar região (imagem no clipboard + arquivo)
+^+F7::TakeRegionShotPathOnly() ; Ctrl+Shift+F7 = Selecionar região (caminho no clipboard)
 ^+b::CodeBeautify.Beautify()   ; Ctrl+Shift+B = Beautify clipboard (JSON/XML)
 ^+a::Base64.Encode()           ; Ctrl+Shift+A = Encode clipboard para Base64
 ^!a::Base64.Decode()           ; Ctrl+Alt+A = Decode Base64 do clipboard
@@ -236,8 +239,77 @@ TakeWindowShotPathOnly() {
     SetTimer(() => ToolTip(), -2500)
 }
 
+TakeRegionShot() {
+    ScreenshotRegion.Select((bounds) => _SaveRegionShot(bounds, false))
+}
 
-SetSpeed8() {
+TakeRegionShotPathOnly() {
+    ScreenshotRegion.Select((bounds) => _SaveRegionShot(bounds, true))
+}
+
+_SaveRegionShot(bounds, pathOnly) {
+    screenshotDir := EnvGet("USERPROFILE") "\\.screenshot"
+    try DirCreate(screenshotDir)
+
+    seq := 1
+    Loop Files screenshotDir "\\LazyWindow_*.png" {
+        if RegExMatch(A_LoopFileName, "^LazyWindow_(\\d+)_", &m) {
+            n := m[1] + 0
+            if (n >= seq)
+                seq := n + 1
+        }
+    }
+
+    seqStr   := Format("{:03}", seq)
+    ts       := FormatTime(, "yyyyMMdd_HHmmss")
+    filePath := screenshotDir "\\LazyWindow_" seqStr "_" ts ".png"
+
+    x := bounds.x
+    y := bounds.y
+    w := bounds.width
+    h := bounds.height
+
+    if (pathOnly) {
+        ; Capture region, save PNG, put file path in clipboard
+        ps := "powershell -STA -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34)
+            . "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; "
+            . "$bmp=New-Object System.Drawing.Bitmap(" w "," h "); "
+            . "$g=[System.Drawing.Graphics]::FromImage($bmp); "
+            . "$g.CopyFromScreen(" x "," y ",0,0,[System.Drawing.Size]::new(" w "," h ")); "
+            . "$g.Dispose(); "
+            . "$bmp.Save('" filePath "',[System.Drawing.Imaging.ImageFormat]::Png); "
+            . "$bmp.Dispose();"
+            . Chr(34)
+        rc := RunWait(ps, , "Hide")
+        if (rc = 0) {
+            A_Clipboard := filePath
+            ToolTip("Caminho copiado:`n" filePath)
+        } else {
+            ToolTip("Falha ao capturar região (rc=" rc ")")
+        }
+    } else {
+        ; Capture region, save PNG, put image in clipboard
+        ps := "powershell -STA -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34)
+            . "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; "
+            . "$bmp=New-Object System.Drawing.Bitmap(" w "," h "); "
+            . "$g=[System.Drawing.Graphics]::FromImage($bmp); "
+            . "$g.CopyFromScreen(" x "," y ",0,0,[System.Drawing.Size]::new(" w "," h ")); "
+            . "$g.Dispose(); "
+            . "$bmp.Save('" filePath "',[System.Drawing.Imaging.ImageFormat]::Png); "
+            . "[System.Windows.Forms.Clipboard]::SetImage($bmp); "
+            . "$bmp.Dispose();"
+            . Chr(34)
+        rc := RunWait(ps, , "Hide")
+        if (rc = 0) {
+            ToolTip("Região copiada e salva:`n" filePath)
+        } else {
+            ToolTip("Falha ao capturar região (rc=" rc ")")
+        }
+    }
+    SetTimer(() => ToolTip(), -2500)
+}
+
+
     ArrowMouse.SetSpeedPercent(8)
     ToolTip("Velocidade do cursor: 8 dpi")
     SetTimer(() => ToolTip(), -1500)
