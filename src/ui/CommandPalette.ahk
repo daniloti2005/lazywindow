@@ -63,6 +63,7 @@ class CommandPalette {
 
         ; -- Project Bookmarks --
         this.Add("Project Bookmarks", "Ctrl+Shift+O", "Abrir lista de projetos marcados", (*) => ProjectBookmarks.Toggle())
+        this.Add("Quick-Add Projeto", "Ctrl+Alt+O", "Adiciona pasta atual do terminal como projeto", (*) => ProjectBookmarks.QuickAddFromTerminal())
 
         ; -- Sistema --
         this.Add("Recarregar LazyWindow", "", "Recarrega o script completamente", (*) => Reload())

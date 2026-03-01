@@ -95,6 +95,7 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^!F10::SnippetManager.Toggle()  ; Ctrl+Alt+F10 = Snippet Manager
 ^+p::CommandPalette.Toggle()    ; Ctrl+Shift+P = Command Palette
 ^+o::ProjectBookmarks.Toggle()  ; Ctrl+Shift+O = Project Bookmarks
+^!o::ProjectBookmarks.QuickAddFromTerminal()  ; Ctrl+Alt+O = Quick-add pasta atual
 
 [::Send "{WheelUp}"           ; Scroll up
 ]::Send "{WheelDown}"         ; Scroll down

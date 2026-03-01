@@ -188,7 +188,7 @@ Salve até **9 posições do mouse** e volte para elas rapidamente. Os marcadore
 
 Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou terminal via Windows Terminal. Janela fullscreen com input por número+letra.
 
-**Atalho:** `Ctrl+Shift+O`
+**Atalho:** `Ctrl+Shift+O` | **Quick-Add:** `Ctrl+Alt+O` (adiciona pasta atual do terminal)
 
 **Funcionalidades:**
 - Janela fullscreen com lista de projetos
@@ -360,6 +360,7 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Alt+F10` | Snippet Manager (gestor de snippets de código) |
 | `Ctrl+Shift+P` | Command Palette (busca unificada de comandos) |
 | `Ctrl+Shift+O` | Project Bookmarks (lista de projetos → nvim/terminal) |
+| `Ctrl+Alt+O` | Quick-add pasta atual do terminal como projeto |
 | `Ctrl+1..9` | Salvar posição do mouse no marcador |
 | `Alt+1..9` | Mover cursor para o marcador |
 | `Ctrl+Alt+1..9` | Mover e clicar no marcador |

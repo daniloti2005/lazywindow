@@ -596,6 +596,93 @@ class ProjectBookmarks {
         this.ApplyFilter()
     }
 
+    ; ── Quick-Add from Terminal ──
+
+    static QuickAddFromTerminal() {
+        ; Check if active window is Windows Terminal
+        try {
+            processName := WinGetProcessName("A")
+        } catch {
+            ToolTip("Nenhuma janela ativa")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        if (processName != "WindowsTerminal.exe") {
+            ToolTip("Janela ativa não é Windows Terminal")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        title := WinGetTitle("A")
+
+        ; Detect shell type from WT title to send the right command
+        isWSL := false
+        titleLower := StrLower(title)
+        wslKeywords := ["ubuntu", "debian", "fedora", "suse", "kali", "arch", "alpine", "wsl", "linux", "bash", "@"]
+        for kw in wslKeywords {
+            if (InStr(titleLower, kw)) {
+                isWSL := true
+                break
+            }
+        }
+
+        ; Save current clipboard
+        savedClip := A_Clipboard
+        A_Clipboard := ""
+
+        ; Send command to copy pwd to clipboard (leading space = no history in many shells)
+        if (isWSL) {
+            SendInput(" pwd | clip.exe{Enter}")
+        } else {
+            SendInput(" Set-Clipboard (Get-Location).Path{Enter}")
+        }
+
+        ; Wait for clipboard to be populated
+        success := ClipWait(2, 1)
+        if (!success || A_Clipboard = "") {
+            A_Clipboard := savedClip
+            ToolTip("Não foi possível obter o diretório atual")
+            SetTimer(() => ToolTip(), -2500)
+            return
+        }
+
+        projPath := Trim(A_Clipboard, " `t`r`n")
+        A_Clipboard := savedClip
+
+        if (projPath = "") {
+            ToolTip("Caminho vazio")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        ; Check if already bookmarked
+        this.Load()
+        for proj in this.projects {
+            if (StrLower(proj.path) = StrLower(projPath)) {
+                ToolTip("Já marcado: " proj.name)
+                SetTimer(() => ToolTip(), -2000)
+                return
+            }
+        }
+
+        ; Detect profile from WT title
+        detectedProfile := ""
+        for p in this.wtProfiles {
+            if (InStr(titleLower, StrLower(p.name))) {
+                detectedProfile := p.name
+                break
+            }
+        }
+        if (detectedProfile = "") {
+            pathType := this.DetectPathType(projPath)
+            detectedProfile := this.GetDefaultProfile(pathType)
+        }
+
+        name := this.ExtractName(projPath)
+        this.AddToList(name, projPath, "", detectedProfile)
+    }
+
     ; ── Utilidades ──
 
     static DetectPathType(path) {

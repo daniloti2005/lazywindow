@@ -233,6 +233,7 @@ PROJECT BOOKMARKS [requer Alt+Home]:
                  Terminal por projeto = perfil do Windows Terminal
                  Ordenado por ultimo aberto (mais recente primeiro)
                  Persistido em ~/.lazywindow/projects.json
+  Ctrl+Alt+O  = Quick-add: marca pasta atual do terminal como projeto
   
   Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
   

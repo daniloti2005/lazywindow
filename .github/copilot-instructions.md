@@ -207,6 +207,7 @@ ActivateGrid(monitorNumber) {
 ### Project Bookmarks (Marcadores de Projetos)
 
 - **Hotkey:** `Ctrl+Shift+O` (requer `g_hotkeysEnabled`)
+- **Quick-Add:** `Ctrl+Alt+O` — adiciona pasta atual do terminal ativo como projeto (detecta shell pelo título do WT, obtém path via clipboard)
 - **Propósito:** Lista persistente de projetos de software para abertura rápida no Neovim ou terminal via Windows Terminal
 - **Módulo:** `ui/ProjectBookmarks.ahk`
 - **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo WindowSwitcher)
