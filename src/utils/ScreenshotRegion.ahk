@@ -63,7 +63,7 @@ class ScreenshotRegion {
     }
 
     static MakePanel() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
         g.Opt("-DPIScale")
         g.BackColor := "000000"
         g.Show("x0 y0 w1 h1 NoActivate")
@@ -72,7 +72,7 @@ class ScreenshotRegion {
     }
 
     static MakeBorder() {
-        g := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
+        g := Gui("+AlwaysOnTop -Caption +ToolWindow")
         g.Opt("-DPIScale")
         g.BackColor := "00BFFF"
         g.Show("x0 y0 w1 h1 NoActivate")
