@@ -1,0 +1,235 @@
+#Requires AutoHotkey v2.0
+
+class HelpWindow {
+    static gui := ""
+    static edit := ""
+    static footer := ""
+    static isVisible := false
+    static wasArrowMouseOn := false
+
+    static Toggle() {
+        if (this.isVisible) {
+            this.Hide()
+        } else {
+            this.Show()
+        }
+    }
+
+    static Show() {
+        ; If ArrowMouse is active, disable it while Help is open to avoid conflicts.
+        if (ArrowMouse.IsEnabled()) {
+            this.wasArrowMouseOn := true
+            ArrowMouse.Disable()
+        } else {
+            this.wasArrowMouseOn := false
+        }
+
+        if (!this.gui) {
+            this.CreateGui()
+        }
+
+        this.edit.Value := this.GetHelpText()
+        this.ShowFullScreen()
+        this.edit.Focus()
+        this.isVisible := true
+    }
+
+    static Hide() {
+        if (this.gui) {
+            try this.gui.Hide()
+        }
+        this.isVisible := false
+
+        if (this.wasArrowMouseOn) {
+            this.wasArrowMouseOn := false
+            ArrowMouse.Enable()
+        }
+    }
+
+    static CreateGui() {
+        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize", "LazyWindow - Ajuda")
+        this.gui.Opt("-DPIScale")
+        this.gui.BackColor := "1a1a2e"
+        this.gui.SetFont("s10 cFFFFFF", "Consolas")
+
+        this.edit := this.gui.AddEdit("x10 y10 w740 h460 +ReadOnly +VScroll +Multi -Wrap")
+        this.edit.Opt("Background16213e")
+
+        this.gui.SetFont("s10 cFFFFFF", "Segoe UI")
+        this.footer := this.gui.AddText("x10 y478 w740", "Use [ / ] (scroll), PgUp/PgDn ou a barra de rolagem | ESC fecha")
+
+        this.gui.OnEvent("Size", (guiObj, minMax, width, height) => this.OnResize(width, height))
+        this.gui.OnEvent("Escape", (*) => this.Hide())
+        this.gui.OnEvent("Close", (*) => this.Hide())
+    }
+
+    static ShowFullScreen() {
+        monitorNum := this.GetMonitorFromMouse()
+        work := Monitor.GetWorkArea(monitorNum)
+        if (!work) {
+            this.gui.Show("Maximize")
+            return
+        }
+
+        this.gui.Show("x" work.x " y" work.y " w" work.width " h" work.height)
+        this.OnResize(work.width, work.height)
+        WinMaximize("ahk_id " this.gui.Hwnd)
+    }
+
+    static OnResize(width, height) {
+        margin := 10
+        footerH := 26
+        editW := Max(50, width - (margin * 2))
+        editH := Max(50, height - (margin * 2) - footerH)
+
+        try this.edit.Move(margin, margin, editW, editH)
+        try this.footer.Move(margin, height - footerH - margin, editW)
+    }
+
+    static GetMonitorFromMouse() {
+        MouseGetPos(&mx, &my)
+        cnt := Monitor.GetCount()
+        Loop cnt {
+            b := Monitor.GetBounds(A_Index)
+            if (b && mx >= b.x && mx < b.right && my >= b.y && my < b.bottom) {
+                return A_Index
+            }
+        }
+        try return MonitorGetPrimary()
+        return 1
+    }
+
+    static GetHelpText() {
+        help := "
+(
+LAZYWINDOW - AJUDA (ROLAVEL)
+
+BARRA SUPERIOR (STATUS):
+  Cursor: Ligado/Desligado | Vel: XX dpi | F3=AJUDA | F10=TEAMS | F11=VIM
+
+GRID DE NAVEGACAO (MATRIZ):
+  Ctrl+End    = Ativar grid no Monitor 1
+  Ctrl+Del    = Ativar grid no Monitor 2
+  Ctrl+PgDn   = Ativar grid no Monitor 3
+  Ctrl+PgUp   = Ativar grid na janela ativa
+  Alt+PgUp    = Ativar grid ao redor do cursor (400x400px)
+
+  Navegacao no grid:
+    A S D       = Selecionar celula superior
+    Z X C       = Selecionar celula inferior
+
+  Acoes no grid:
+    Backspace   = Clique esquerdo no centro da area atual
+    Enter       = Clique direito no centro da area atual
+    ESC         = Cancelar/fechar grid
+
+SELETOR DE JANELAS:
+  Ctrl+Home   = Abrir seletor (mostra # | Processo | Titulo)
+  Digite: [numero][posicao] e Enter
+
+  Posicoes:
+    C = Centro
+    T = Topo
+    E = Esquerda
+    D = Direita
+    R = Rodape
+
+  Combinacoes (2 letras):
+    TE = topo-esquerda
+    TD = topo-direita
+    RE = rodape-esquerda
+    RD = rodape-direita
+
+  Exemplos:
+    1     = janela 1 (centro)
+    2C    = janela 2 (centro)
+    3RD   = janela 3 (rodape-direita)
+
+MODO SETAS (MOVER MOUSE):
+  Alt+Home    = Liga/Desliga o modo setas
+  Setas       = Move o mouse (segure 2 setas para diagonal 45)
+  Ctrl + Setas = Arrastar (segura clique esquerdo enquanto move)
+  Soltar Ctrl = Soltar o arrasto
+
+  Cliques (quando Modo Setas esta ativo):
+    F1         = Clique direito
+    F2         = Clique esquerdo
+
+  Scroll horizontal (quando Modo Setas esta ativo):
+    Alt+-      = Scroll para esquerda
+    Alt+=      = Scroll para direita
+
+  Velocidade do Modo Setas:
+    Ctrl+F12    = Abre modal para digitar DPI 1..50
+    Alt+F12     = Define velocidade em 8 dpi
+    Ctrl+Ins    = Diminuir 1 ponto na velocidade
+    Alt+Ins     = Aumentar 1 ponto na velocidade
+
+SCROLL (QUALQUER HORA):
+  [           = Scroll para cima
+  ]           = Scroll para baixo
+
+ZOOM (CTRL + SCROLL):
+  Ctrl +      = Zoom +
+  Ctrl -      = Zoom -
+
+JANELA ATIVA:
+  F7          = Maximizar
+  F6          = Minimizar
+  F8          = Fechar
+  Ctrl+F6     = Print da janela ativa (clipboard + arquivo em ~\.screenshot)
+
+MARCADORES DE POSICAO (salvar/restaurar posicoes do mouse):
+  Ctrl+1..9   = Salvar posicao atual no marcador
+  Alt+1..9    = Mover cursor para o marcador
+  Ctrl+Alt+1..9 = Mover e clicar no marcador
+  (marcadores persistem em ~/.lazywindow/markers.json)
+
+BEAUTIFY CODIGO (formatar JSON/XML/YAML):
+  Ctrl+Shift+B = Formata o conteudo do clipboard e sobrescreve
+                 (detecta JSON, XML ou YAML automaticamente)
+
+BASE64 (encode/decode):
+  Ctrl+Shift+A = Encode texto do clipboard para Base64
+  Ctrl+Alt+A   = Decode Base64 do clipboard para texto
+
+TIMESTAMP (epoch <-> data):
+  Ctrl+Shift+T = Data para Epoch (clipboard vazio = agora)
+  Ctrl+Alt+T   = Epoch para Data ISO 8601
+
+AJUDA:
+  F3          = Abre/Fecha esta janela
+  F10         = Ajuda de atalhos do Microsoft Teams
+  F11         = Ajuda de atalhos do LazyVim
+
+SNIPPET MANAGER (gestor de snippets):
+  Ctrl+Alt+F10 = Abre/Fecha o Snippet Manager
+  
+  Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go
+  
+  Snippets incluidos:
+    - SOLID (SRP, OCP, LSP, ISP, DIP com exemplos)
+    - Clean Code (Guard Clauses, Extract Method, Null Object, Constants)
+    - Design Patterns (Singleton, Factory, Observer)
+    - TypeScript (Interface, Async/Await, React useState)
+    - Python (Class, Dataclass)
+    - SQL (SELECT JOIN, CTE)
+    - PowerShell (Try-Catch, REST API)
+    - Bash (Function, AWS CLI)
+    - Go (Struct, HTTP Handler)
+  
+  Como usar:
+    1. Selecione uma palavra (nome de classe/funcao) no editor
+    2. Pressione Ctrl+Alt+F10
+    3. O sistema detecta a linguagem pela janela ativa
+    4. Busque ou navegue pelos snippets
+    5. Pressione Enter para inserir (substitui placeholders)
+  
+  Placeholders automaticos:
+    - ${ClassName}, ${FunctionName} = palavra selecionada
+    - ${date} = data atual
+    - ${user} = nome do usuario
+)"
+        return Trim(help)
+    }
+}

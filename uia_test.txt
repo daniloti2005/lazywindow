@@ -1,0 +1,3 @@
+1-CLSID: (0x80004002) Não há suporte para esta interface
+2-ProgID: (0x800401F3) Cadeia de caracteres de classe inválida
+3-Active: (0x800401F3) Cadeia de caracteres de classe inválida
