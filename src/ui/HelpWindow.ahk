@@ -223,10 +223,10 @@ PROJECT BOOKMARKS [requer Alt+Home]:
   Ctrl+Shift+O = Abre lista de projetos (fullscreen)
                  Digite [numero][acao] + Enter:
                    1 ou 1N = nvim no projeto 1
-                   2T = terminal no projeto 2
+                   2S = shell (terminal) no projeto 2
                    3R = remover projeto 3
                    4G = editar tag do projeto 4
-                   5S = editar terminal do projeto 5
+                   5P = mudar perfil do terminal do projeto 5
                    A = adicionar projeto (digitar caminho)
                    B = browse pasta (selecionar pasta)
                    Texto livre = filtrar por nome/caminho

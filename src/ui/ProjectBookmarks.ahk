@@ -239,7 +239,7 @@ class ProjectBookmarks {
 
         ; Header instructions
         this.gui.SetFont("s11 c0f3460", "Segoe UI")
-        this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1=nvim  2T=terminal  3R=remover  4G=tag  5S=shell")
+        this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1N=nvim  2S=shell  3R=remover  4G=tag  5P=perfil")
         this.gui.SetFont("s10 cGray", "Segoe UI")
         this.gui.AddText("x15 y35 w900 h22", "Sem nº: A=adicionar  B=browse pasta  |  Texto livre = filtrar por nome/caminho  |  ESC=fechar")
 
@@ -424,7 +424,7 @@ class ProjectBookmarks {
         }
 
         ; Number + optional action letter
-        if (!RegExMatch(text, "i)^(\d+)([NTRGS]?)$", &match)) {
+        if (!RegExMatch(text, "i)^(\d+)([NTRSGP]?)$", &match)) {
             return
         }
 
@@ -440,13 +440,13 @@ class ProjectBookmarks {
         switch action {
             case "", "N":
                 this.OpenInNvim(proj)
-            case "T":
+            case "T", "S":
                 this.OpenTerminal(proj)
             case "R":
                 this.RemoveProject(proj)
             case "G":
                 this.EditTag(proj)
-            case "S":
+            case "P":
                 this.EditShell(proj)
         }
     }
@@ -471,6 +471,7 @@ class ProjectBookmarks {
             }
             Run('wt.exe -p "' profileName '" -d "' cleanPath '" pwsh -NoExit -Command "nvim ."')
         }
+        this.MaximizeWT()
     }
 
     static OpenTerminal(proj) {
@@ -491,6 +492,12 @@ class ProjectBookmarks {
             }
             Run('wt.exe -p "' profileName '" -d "' cleanPath '"')
         }
+        this.MaximizeWT()
+    }
+
+    static MaximizeWT() {
+        if (WinWait("ahk_exe WindowsTerminal.exe",, 3))
+            WinMaximize("ahk_exe WindowsTerminal.exe")
     }
 
     static UpdateLastOpened(proj) {
@@ -599,7 +606,8 @@ class ProjectBookmarks {
 
     static EditTag(proj) {
         this.Hide()
-        Sleep(50)
+        KeyWait("Enter")
+        Sleep(100)
         tagInput := InputBox("Nova tag para '" proj.name "':", "Editar Tag", "w300 h130", proj.tag)
         if (tagInput.Result != "OK") {
             this.Show()
@@ -612,7 +620,8 @@ class ProjectBookmarks {
 
     static EditShell(proj) {
         this.Hide()
-        Sleep(50)
+        KeyWait("Enter")
+        Sleep(100)
         chosenProfile := this.PickProfile("Novo terminal para '" proj.name "':", proj.shell)
         if (chosenProfile = "") {
             this.Show()

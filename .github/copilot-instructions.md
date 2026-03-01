@@ -218,7 +218,7 @@ ActivateGrid(monitorNumber) {
   - Tipo Windows/WSL inferido pelo perfil — determina como o wt.exe abre:
     - **Windows:** `wt.exe -p "PowerShell" -d "C:\path" pwsh -NoExit -Command "nvim ."`
     - **WSL:** `wt.exe -p "Ubuntu 22.04.3 LTS" wsl -e bash -c "cd ~/path && nvim ."`
-  - Ações por input: `1N`=nvim, `2T`=terminal, `3R`=remover, `4G`=tag, `5S`=shell
+  - Ações por input: `1N`=nvim, `2S`=shell, `3R`=remover, `4G`=tag, `5P`=perfil
   - Busca por nome/caminho (texto livre), filtro por tag (dropdown)
   - Ordenação automática por último aberto (mais recente primeiro)
   - Exibe tempo desde última abertura (agora, 2h, 3d, 1sem, 2mes)

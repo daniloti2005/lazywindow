@@ -202,10 +202,10 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 | Input | Ação |
 |-------|------|
 | `1` ou `1N` | Abre projeto 1 com `nvim .` |
-| `2T` | Abre só o terminal na pasta do projeto 2 |
+| `2S` | Abre o shell/terminal na pasta do projeto 2 |
 | `3R` | Remove projeto 3 da lista |
 | `4G` | Edita tag do projeto 4 |
-| `5S` | Altera perfil do terminal do projeto 5 |
+| `5P` | Altera perfil do terminal do projeto 5 |
 | `A` | Adiciona projeto (digitar caminho) |
 | `B` | Adiciona projeto (browse de pasta) |
 | texto | Filtra por nome/caminho |
