@@ -324,6 +324,7 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+T` | Data para Epoch (clipboard vazio = agora) |
 | `Ctrl+Alt+T` | Epoch para Data ISO 8601 |
 | `Ctrl+Alt+F10` | Snippet Manager (gestor de snippets de código) |
+| `Ctrl+Shift+P` | Command Palette (busca unificada de comandos) |
 | `Ctrl+1..9` | Salvar posição do mouse no marcador |
 | `Alt+1..9` | Mover cursor para o marcador |
 | `Ctrl+Alt+1..9` | Mover e clicar no marcador |

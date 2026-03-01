@@ -14,6 +14,7 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "ui\HelpWindow.ahk"
 #Include "ui\TeamsHelpWindow.ahk"
 #Include "ui\LazyVimHelpWindow.ahk"
+#Include "ui\CommandPalette.ahk"
 #Include "utils\CodeBeautify.ahk"
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
@@ -49,6 +50,7 @@ tray.Add("Modo Setas (Alt+Home)", (*) => ArrowMouse.Toggle())
 tray.Add("Velocidade do Mouse (Ctrl+F12)", (*) => SpeedDialog.Show())
 tray.Add()
 tray.Add("Snippet Manager (Ctrl+Alt+F10)", (*) => SnippetManager.Toggle())
+tray.Add("Command Palette (Ctrl+Shift+P)", (*) => CommandPalette.Toggle())
 tray.Add("Ajuda (F3)", (*) => HelpWindow.Toggle())
 tray.Add("Atalhos Teams (F10)", (*) => TeamsHelpWindow.Toggle())
 tray.Add("Ajuda LazyVim (F11)", (*) => LazyVimHelpWindow.Toggle())
@@ -89,6 +91,7 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^+t::Timestamp.ToEpoch()       ; Ctrl+Shift+T = Data para Epoch
 ^!t::Timestamp.FromEpoch()     ; Ctrl+Alt+T = Epoch para Data
 ^!F10::SnippetManager.Toggle()  ; Ctrl+Alt+F10 = Snippet Manager
+^+p::CommandPalette.Toggle()    ; Ctrl+Shift+P = Command Palette
 
 [::Send "{WheelUp}"           ; Scroll up
 ]::Send "{WheelDown}"         ; Scroll down
@@ -352,6 +355,9 @@ StatusBar.Init()
 
 ; Initialize mouse markers
 MouseMarkers.Init()
+
+; Initialize command palette
+CommandPalette.Init()
 
 ; Hotkeys for mouse markers (Ctrl+N = save, Alt+N = go, Ctrl+Alt+N = go and click)
 #HotIf g_hotkeysEnabled

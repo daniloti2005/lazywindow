@@ -214,6 +214,10 @@ AJUDA [SEMPRE ATIVO]:
 
 SNIPPET MANAGER [requer Alt+Home]:
   Ctrl+Alt+F10 = Abre/Fecha o Snippet Manager
+
+COMMAND PALETTE [requer Alt+Home]:
+  Ctrl+Shift+P = Abre busca unificada de todos os comandos
+                 Digite para filtrar, setas para navegar, Enter para executar
   
   Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
   
