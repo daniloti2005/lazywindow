@@ -460,7 +460,8 @@ class ProjectBookmarks {
         if (shellType = "wsl") {
             Run('wt.exe -p "' profileName '" wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && nvim ."')
         } else {
-            Run('wt.exe -p "' profileName '" -d "' . proj.path . '" pwsh -NoExit -Command "nvim ."')
+            cleanPath := RTrim(proj.path, "\/")
+            Run('wt.exe -p "' profileName '" -d "' cleanPath '" -- pwsh -NoExit -Command "nvim ."')
         }
     }
 
@@ -475,7 +476,8 @@ class ProjectBookmarks {
         if (shellType = "wsl") {
             Run('wt.exe -p "' profileName '" wsl -e bash -c "cd ' . this.EscapeBashPath(proj.path) . ' && exec bash"')
         } else {
-            Run('wt.exe -p "' profileName '" -d "' . proj.path . '"')
+            cleanPath := RTrim(proj.path, "\/")
+            Run('wt.exe -p "' profileName '" -d "' cleanPath '"')
         }
     }
 
@@ -632,10 +634,11 @@ class ProjectBookmarks {
         A_Clipboard := ""
 
         ; Send command to copy pwd to clipboard (leading space = no history in many shells)
+        ; Use clip.exe pipe — more reliable than Set-Clipboard (works in PS5, PS7, cmd)
         if (isWSL) {
             SendInput(" pwd | clip.exe{Enter}")
         } else {
-            SendInput(" Set-Clipboard (Get-Location).Path{Enter}")
+            SendInput(" (Get-Location).Path | clip{Enter}")
         }
 
         ; Wait for clipboard to be populated
@@ -647,7 +650,7 @@ class ProjectBookmarks {
             return
         }
 
-        projPath := Trim(A_Clipboard, " `t`r`n")
+        projPath := RTrim(Trim(A_Clipboard, ' `t`r`n"'), "\/")
         A_Clipboard := savedClip
 
         if (projPath = "") {
