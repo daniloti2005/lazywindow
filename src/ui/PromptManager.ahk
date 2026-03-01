@@ -42,8 +42,7 @@ class PromptManager {
         })
 
         gitBranchCode := 'function prompt { $loc = $executionContext.SessionState.Path.CurrentLocation; $b = ""; try { $b = (git branch --show-current 2>$null) } catch {}'
-        gitBranchCode .= '; if ($b) { "$loc '
-        gitBranchCode .= '`e[32m($b)`e[0m> " } else { "$loc> " } }'
+        gitBranchCode .= "; if ($b) { " Chr(34) "$loc ``e[32m($b)``e[0m> " Chr(34) " } else { " Chr(34) "$loc> " Chr(34) " } }"
         this.prompts.Push({
             id: "git-branch-ps",
             name: "Git Branch",
@@ -417,9 +416,9 @@ class PromptManager {
         A_Clipboard := ""
 
         if (shellType = "powershell") {
-            SendInput(" (Get-Command prompt).ScriptBlock.ToString() | clip{Enter}")
+            SendInput(" (Get-Command prompt).Definition | clip{Enter}")
         } else {
-            SendInput(' echo "$PS1" | clip.exe{Enter}')
+            SendInput(" echo " Chr(34) "$PS1" Chr(34) " | clip.exe{Enter}")
         }
 
         success := ClipWait(3, 1)
@@ -607,12 +606,22 @@ class PromptManager {
         title := WinGetTitle("A")
         titleLower := StrLower(title)
 
-        ; WSL/bash keywords
-        wslKeywords := ["ubuntu", "debian", "fedora", "suse", "kali", "arch", "alpine", "wsl", "linux", "bash", "@"]
+        ; Check PowerShell first (higher priority)
+        psKeywords := ["powershell", "pwsh", "ps "]
+        for kw in psKeywords {
+            if (InStr(titleLower, kw))
+                return "powershell"
+        }
+
+        ; Then check WSL/bash
+        wslKeywords := ["ubuntu", "debian", "fedora", "suse", "kali", "arch", "alpine", "wsl", "linux"]
         for kw in wslKeywords {
             if (InStr(titleLower, kw))
                 return "bash"
         }
+
+        ; Default to powershell for Windows Terminal
+        return "powershell"
 
         return "powershell"
     }
