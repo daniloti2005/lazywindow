@@ -216,6 +216,46 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 
 **Arquivo de persistência:** `~/.lazywindow/projects.json`
 
+### 🎨 Prompt Manager (Gestor de Prompts)
+
+**Hotkeys:**
+| Hotkey | Ação |
+|--------|------|
+| `Ctrl+Shift+F8` | Abre gestor de prompts (fullscreen) |
+| `Ctrl+F8` | Quick-Apply: aplica prompt favorito no terminal ativo |
+| `Ctrl+Alt+F8` | Quick-Save: captura prompt atual e salva |
+
+**Ações na GUI (requer `Alt+Home`):**
+
+| Input | Ação |
+|-------|------|
+| `1` ou `1A` | Aplica prompt 1 no terminal ativo |
+| `2E` | Edita código do prompt 2 |
+| `3D` | Deleta prompt 3 (só custom, built-in não pode) |
+| `4F` | Toggle favorito do prompt 4 |
+| `5S` | Define prompt 5 como default para o tipo de shell |
+| `N` | Novo prompt customizado |
+
+**5 Prompts Built-in:**
+
+| Nome | Shell | Descrição |
+|------|-------|-----------|
+| Minimal | PowerShell | Apenas pasta e `>` |
+| Git Branch | PowerShell | Pasta + branch git em verde |
+| Timestamp | PowerShell | Hora + pasta |
+| Minimal Color | Bash | Pasta em azul + `$` |
+| Git Color | Bash | Pasta em azul + branch em verde |
+
+**Como funciona:**
+- Aplica o prompt **na sessão atual** do terminal (temporário)
+- Para PowerShell: envia `function prompt { ... }`
+- Para Bash/WSL: envia `export PS1='...'`
+- Detecta automaticamente o tipo de shell pelo título do Windows Terminal
+- Prompts custom podem ser criados, editados e deletados
+- Built-ins podem ser editados mas não deletados
+
+**Arquivo de persistência:** `~/.lazywindow/prompts.json`
+
 ---
 
 ## 📋 Casos de Uso
@@ -361,6 +401,9 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+P` | Command Palette (busca unificada de comandos) |
 | `Ctrl+Shift+O` | Project Bookmarks (lista de projetos → nvim/terminal) |
 | `Ctrl+Alt+O` | Quick-add pasta atual do terminal como projeto |
+| `Ctrl+Shift+F8` | Prompt Manager (gestor de prompts de terminal) |
+| `Ctrl+F8` | Quick-Apply prompt favorito no terminal ativo |
+| `Ctrl+Alt+F8` | Quick-Save prompt do terminal ativo |
 | `Ctrl+1..9` | Salvar posição do mouse no marcador |
 | `Alt+1..9` | Mover cursor para o marcador |
 | `Ctrl+Alt+1..9` | Mover e clicar no marcador |

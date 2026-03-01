@@ -16,6 +16,7 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "ui\LazyVimHelpWindow.ahk"
 #Include "ui\CommandPalette.ahk"
 #Include "ui\ProjectBookmarks.ahk"
+#Include "ui\PromptManager.ahk"
 #Include "utils\CodeBeautify.ahk"
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
@@ -96,6 +97,9 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^+p::CommandPalette.Toggle()    ; Ctrl+Shift+P = Command Palette
 ^+o::ProjectBookmarks.Toggle()  ; Ctrl+Shift+O = Project Bookmarks
 ^!o::ProjectBookmarks.QuickAddFromTerminal()  ; Ctrl+Alt+O = Quick-add pasta atual
+^+F8::PromptManager.Toggle()                ; Ctrl+Shift+F8 = Prompt Manager
+^F8::PromptManager.QuickApply()             ; Ctrl+F8 = Quick-Apply prompt
+^!F8::PromptManager.QuickSave()             ; Ctrl+Alt+F8 = Quick-Save prompt
 
 [::Send "{WheelUp}"           ; Scroll up
 ]::Send "{WheelDown}"         ; Scroll down
@@ -365,6 +369,9 @@ CommandPalette.Init()
 
 ; Initialize project bookmarks
 ProjectBookmarks.Init()
+
+; Initialize prompt manager
+PromptManager.Init()
 
 ; Hotkeys for mouse markers (Ctrl+N = save, Alt+N = go, Ctrl+Alt+N = go and click)
 #HotIf g_hotkeysEnabled

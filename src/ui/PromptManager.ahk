@@ -1,0 +1,792 @@
+#Requires AutoHotkey v2.0
+
+class PromptManager {
+    static gui := ""
+    static listView := ""
+    static inputBox := ""
+    static shellFilter := ""
+    static footerText := ""
+    static isVisible := false
+    static prompts := []
+    static filtered := []
+    static wasArrowMouseOn := false
+    static configDir := ""
+    static configPath := ""
+    static defaults := Map()
+
+    static Init() {
+        this.configDir := EnvGet("USERPROFILE") "\.lazywindow"
+        this.configPath := this.configDir "\prompts.json"
+        if (!DirExist(this.configDir))
+            DirCreate(this.configDir)
+        this.Load()
+        if (this.prompts.Length = 0)
+            this.LoadBuiltIns()
+    }
+
+    ; ── Built-in Prompts ──
+
+    static LoadBuiltIns() {
+        now := FormatTime(, "yyyy-MM-ddTHH:mm:ss")
+
+        ; PowerShell prompts
+        this.prompts.Push({
+            id: "minimal-ps",
+            name: "Minimal",
+            shellType: "powershell",
+            code: 'function prompt { "$($executionContext.SessionState.Path.CurrentLocation)> " }',
+            builtin: true,
+            favorite: false,
+            lastUsed: ""
+        })
+        this.prompts.Push({
+            id: "git-branch-ps",
+            name: "Git Branch",
+            shellType: "powershell",
+            code: 'function prompt { $loc = $executionContext.SessionState.Path.CurrentLocation; $b = ""; try { $b = (git branch --show-current 2>$null) } catch {}; if ($b) { "$loc `e[32m($b)`e[0m> " } else { "$loc> " } }',
+            builtin: true,
+            favorite: false,
+            lastUsed: ""
+        })
+        this.prompts.Push({
+            id: "timestamp-ps",
+            name: "Timestamp",
+            shellType: "powershell",
+            code: 'function prompt { "[$(Get-Date -Format ''HH:mm:ss'')] $($executionContext.SessionState.Path.CurrentLocation)> " }',
+            builtin: true,
+            favorite: false,
+            lastUsed: ""
+        })
+
+        ; Bash prompts
+        this.prompts.Push({
+            id: "minimal-bash",
+            name: "Minimal Color",
+            shellType: "bash",
+            code: "export PS1='\[\033[01;34m\]\w\[\033[00m\]\$ '",
+            builtin: true,
+            favorite: false,
+            lastUsed: ""
+        })
+        this.prompts.Push({
+            id: "git-color-bash",
+            name: "Git Color",
+            shellType: "bash",
+            code: "export PS1='\[\033[01;34m\]\w\[\033[00;32m\]$(git branch --show-current 2>/dev/null | sed ""s/^/ (/;s/$/)/"")\[\033[00m\]\$ '",
+            builtin: true,
+            favorite: false,
+            lastUsed: ""
+        })
+
+        this.defaults["powershell"] := "minimal-ps"
+        this.defaults["bash"] := "minimal-bash"
+        this.Persist()
+    }
+
+    ; ── Toggle / Show / Hide ──
+
+    static Toggle() {
+        if (this.isVisible)
+            this.Hide()
+        else
+            this.Show()
+    }
+
+    static Show() {
+        if (this.isVisible) {
+            this.Hide()
+            return
+        }
+
+        if (ArrowMouse.IsEnabled()) {
+            this.wasArrowMouseOn := true
+            ArrowMouse.PauseForSwitcher()
+        } else {
+            this.wasArrowMouseOn := false
+        }
+
+        this.Load()
+        this.CreateGui()
+        this.isVisible := true
+    }
+
+    static Hide() {
+        try Hotkey("*Enter", "Off")
+        if (this.gui) {
+            this.gui.Destroy()
+            this.gui := ""
+        }
+        this.isVisible := false
+
+        if (this.wasArrowMouseOn) {
+            this.wasArrowMouseOn := false
+            ArrowMouse.Enable()
+        }
+    }
+
+    ; ── GUI ──
+
+    static CreateGui() {
+        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "LazyWindow - Prompt Manager")
+        this.gui.Opt("-DPIScale")
+        this.gui.BackColor := "1a1a2e"
+
+        ; Header instructions
+        this.gui.SetFont("s11 cWhite", "Consolas")
+        this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1A=aplicar  2E=editar  3F=favorito  5S=default")
+        this.gui.AddText("x15 y35 w900 h25", "Ações: A=aplicar  E=editar  D=deletar  F=favorito  S=default | N=novo prompt")
+
+        ; Input box
+        this.gui.SetFont("s14 cWhite", "Consolas")
+        this.gui.AddText("x15 y70 w20 h30", ">")
+        this.inputBox := this.gui.AddEdit("x35 y65 w400 h30 Background0d1117 cWhite -Border")
+        this.inputBox.OnEvent("Change", (*) => this.ApplyFilter())
+
+        ; Shell filter
+        this.gui.SetFont("s10 cWhite", "Consolas")
+        this.gui.AddText("x470 y70 w50 h25", "Shell:")
+        this.shellFilter := this.gui.AddDropDownList("x520 y65 w150 h200 Background0d1117", ["Todos", "PowerShell", "Bash"])
+        this.shellFilter.OnEvent("Change", (*) => this.ApplyFilter())
+
+        ; ListView
+        this.gui.SetFont("s11 cWhite", "Consolas")
+        this.listView := this.gui.AddListView("x15 y105 w960 h440 Background0d1117 c00ff88 -Hdr +Grid +ReadOnly", ["#", "★", "Nome", "Shell", "Preview", "Usado"])
+        this.listView.ModifyCol(1, 40)
+        this.listView.ModifyCol(2, 30)
+        this.listView.ModifyCol(3, 160)
+        this.listView.ModifyCol(4, 100)
+        this.listView.ModifyCol(5, 480)
+        this.listView.ModifyCol(6, 80)
+
+        ; Footer
+        this.gui.SetFont("s10 cGray", "Segoe UI")
+        this.footerText := this.gui.AddText("x15 y565 w900 h22", "")
+
+        this.gui.OnEvent("Size", (guiObj, minMax, w, h) => this.OnResize(w, h))
+        this.gui.OnEvent("Escape", (*) => this.Hide())
+        this.gui.OnEvent("Close", (*) => this.Hide())
+
+        ; Populate and show fullscreen
+        this.filtered := this.prompts.Clone()
+        this.PopulateList()
+        this.ShowFullScreen()
+        this.inputBox.Focus()
+
+        Hotkey("*Enter", (*) => this.Execute(), "On")
+    }
+
+    static ShowFullScreen() {
+        monitorNum := this.GetMonitorFromMouse()
+        work := Monitor.GetWorkArea(monitorNum)
+        if (!work) {
+            this.gui.Show("Maximize")
+            return
+        }
+        this.gui.Show("x" work.x " y" work.y " w" work.width " h" work.height)
+        this.OnResize(work.width, work.height)
+        WinMaximize("ahk_id " this.gui.Hwnd)
+    }
+
+    static OnResize(w, h) {
+        if (this.listView)
+            this.listView.Move(15, 105, w - 30, h - 160)
+        if (this.footerText)
+            this.footerText.Move(15, h - 35, w - 30, 22)
+    }
+
+    static GetMonitorFromMouse() {
+        MouseGetPos(&mx, &my)
+        count := MonitorGetCount()
+        Loop count {
+            MonitorGet(A_Index, &left, &top, &right, &bottom)
+            if (mx >= left && mx < right && my >= top && my < bottom)
+                return A_Index
+        }
+        return 1
+    }
+
+    static PopulateList() {
+        this.listView.Delete()
+        defPs := this.defaults.Has("powershell") ? this.defaults["powershell"] : ""
+        defBash := this.defaults.Has("bash") ? this.defaults["bash"] : ""
+        for idx, p in this.filtered {
+            fav := p.favorite ? "★" : ""
+            shellLabel := (p.shellType = "powershell") ? "PowerShell" : "Bash"
+            isDefault := (p.id = defPs || p.id = defBash)
+            if (isDefault)
+                shellLabel .= " ◄"
+            preview := StrLen(p.code) > 60 ? SubStr(p.code, 1, 60) "..." : p.code
+            preview := StrReplace(preview, "`n", " ")
+            timeAgo := this.FormatTimeAgo(p.lastUsed)
+            this.listView.Add(, idx, fav, p.name, shellLabel, preview, timeAgo)
+        }
+        total := this.prompts.Length
+        shown := this.filtered.Length
+        footer := shown " de " total " prompts"
+        footer .= " | ★=favorito  Ctrl+F8=Quick-Apply  Ctrl+Alt+F8=Quick-Save"
+        if (this.footerText)
+            this.footerText.Value := footer
+    }
+
+    static ApplyFilter() {
+        if (!this.inputBox)
+            return
+        try query := Trim(this.inputBox.Value)
+        catch
+            return
+
+        shellSel := ""
+        try shellSel := this.shellFilter.Text
+
+        this.filtered := []
+        queryLower := StrLower(query)
+
+        ; If query matches action pattern, don't filter
+        if (RegExMatch(query, "i)^(\d+)([AEDFNS]?)$") || query = "N" || query = "n")
+            query := ""
+
+        for p in this.prompts {
+            ; Shell filter
+            if (shellSel = "PowerShell" && p.shellType != "powershell")
+                continue
+            if (shellSel = "Bash" && p.shellType != "bash")
+                continue
+
+            ; Text filter
+            if (query != "") {
+                searchText := StrLower(p.name . " " . p.code)
+                if (!InStr(searchText, queryLower))
+                    continue
+            }
+            this.filtered.Push(p)
+        }
+        this.PopulateList()
+    }
+
+    ; ── Execução por input ──
+
+    static Execute() {
+        if (!this.gui || !this.inputBox)
+            return
+        try text := Trim(this.inputBox.Value)
+        catch
+            return
+
+        if (text = "") {
+            this.Hide()
+            return
+        }
+
+        ; Global actions
+        if (text = "N" || text = "n") {
+            this.AddPromptManual()
+            return
+        }
+
+        ; Number + optional action letter
+        if (!RegExMatch(text, "i)^(\d+)([AEDFNS]?)$", &match))
+            return
+
+        num := Integer(match[1])
+        action := StrUpper(match[2])
+
+        if (num < 1 || num > this.filtered.Length)
+            return
+
+        prompt := this.filtered[num]
+
+        switch action {
+            case "", "A":
+                this.ApplyToTerminal(prompt)
+            case "E":
+                this.EditPrompt(prompt)
+            case "D":
+                this.DeletePrompt(prompt)
+            case "F":
+                this.ToggleFavorite(prompt)
+            case "S":
+                this.SetDefault(prompt)
+        }
+    }
+
+    ; ── Ações ──
+
+    static ApplyToTerminal(prompt) {
+        this.UpdateLastUsed(prompt)
+        this.Hide()
+        Sleep(100)
+
+        shellType := this.DetectActiveShell()
+        if (shellType = "") {
+            MsgBox("Janela ativa não é Windows Terminal", "LazyWindow", "Icon!")
+            return
+        }
+
+        ; Check compatibility
+        if (prompt.shellType = "powershell" && shellType != "powershell") {
+            MsgBox("Este prompt é para PowerShell, mas o terminal ativo é Bash.", "LazyWindow", "Icon!")
+            return
+        }
+        if (prompt.shellType = "bash" && shellType != "bash") {
+            MsgBox("Este prompt é para Bash, mas o terminal ativo é PowerShell.", "LazyWindow", "Icon!")
+            return
+        }
+
+        ; Send command with leading space (no history)
+        SendInput(" " prompt.code "{Enter}")
+        ToolTip("Prompt aplicado: " prompt.name)
+        SetTimer(() => ToolTip(), -2000)
+    }
+
+    static QuickApply() {
+        shellType := this.DetectActiveShell()
+        if (shellType = "") {
+            ToolTip("Janela ativa não é Windows Terminal")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        ; Find favorite or default for this shellType
+        target := ""
+
+        ; First try favorite
+        for p in this.prompts {
+            if (p.favorite && p.shellType = shellType) {
+                target := p
+                break
+            }
+        }
+
+        ; Then try default
+        if (target = "") {
+            defId := this.defaults.Has(shellType) ? this.defaults[shellType] : ""
+            if (defId != "") {
+                for p in this.prompts {
+                    if (p.id = defId) {
+                        target := p
+                        break
+                    }
+                }
+            }
+        }
+
+        ; Then try most recently used
+        if (target = "") {
+            latest := ""
+            for p in this.prompts {
+                if (p.shellType = shellType && p.lastUsed != "") {
+                    if (latest = "" || p.lastUsed > latest.lastUsed)
+                        latest := p
+                }
+            }
+            target := latest
+        }
+
+        if (target = "") {
+            ToolTip("Nenhum prompt configurado para " shellType)
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        this.UpdateLastUsed(target)
+        SendInput(" " target.code "{Enter}")
+        ToolTip("Prompt aplicado: " target.name)
+        SetTimer(() => ToolTip(), -2000)
+    }
+
+    static QuickSave() {
+        shellType := this.DetectActiveShell()
+        if (shellType = "") {
+            ToolTip("Janela ativa não é Windows Terminal")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        ; Capture current prompt
+        savedClip := A_Clipboard
+        A_Clipboard := ""
+
+        if (shellType = "powershell") {
+            SendInput(" (Get-Command prompt).ScriptBlock.ToString() | clip{Enter}")
+        } else {
+            SendInput(' echo "$PS1" | clip.exe{Enter}')
+        }
+
+        success := ClipWait(3, 1)
+        if (!success || A_Clipboard = "") {
+            A_Clipboard := savedClip
+            ToolTip("Não foi possível capturar o prompt")
+            SetTimer(() => ToolTip(), -2500)
+            return
+        }
+
+        capturedCode := Trim(A_Clipboard, " `t`r`n")
+        A_Clipboard := savedClip
+
+        if (capturedCode = "") {
+            ToolTip("Prompt capturado vazio")
+            SetTimer(() => ToolTip(), -2000)
+            return
+        }
+
+        ; Wrap captured code
+        if (shellType = "powershell") {
+            ; Wrap in function prompt { ... }
+            if (!InStr(capturedCode, "function prompt"))
+                capturedCode := "function prompt { " capturedCode " }"
+        } else {
+            ; Wrap in export PS1='...'
+            if (!InStr(capturedCode, "export PS1"))
+                capturedCode := "export PS1='" capturedCode "'"
+        }
+
+        KeyWait("Enter")
+        Sleep(100)
+        nameInput := InputBox("Nome para o prompt salvo:", "Salvar Prompt", "w350 h130")
+        if (nameInput.Result != "OK" || Trim(nameInput.Value) = "")
+            return
+
+        name := Trim(nameInput.Value)
+        id := "custom-" A_TickCount
+        now := FormatTime(, "yyyy-MM-ddTHH:mm:ss")
+
+        this.prompts.Push({
+            id: id,
+            name: name,
+            shellType: shellType,
+            code: capturedCode,
+            builtin: false,
+            favorite: false,
+            lastUsed: now
+        })
+        this.Persist()
+        ToolTip("Prompt salvo: " name)
+        SetTimer(() => ToolTip(), -2000)
+    }
+
+    static AddPromptManual() {
+        this.Hide()
+        KeyWait("Enter")
+        Sleep(100)
+
+        nameInput := InputBox("Nome do prompt:", "Novo Prompt", "w350 h130")
+        if (nameInput.Result != "OK" || Trim(nameInput.Value) = "")
+            return
+        name := Trim(nameInput.Value)
+
+        ; Ask shell type
+        shellInput := InputBox("Tipo de shell:`n1. PowerShell`n2. Bash`n`nDigite 1 ou 2:", "Shell", "w300 h180")
+        if (shellInput.Result != "OK")
+            return
+        shellType := (Trim(shellInput.Value) = "2") ? "bash" : "powershell"
+
+        ; Ask code
+        hint := (shellType = "powershell")
+            ? "Cole o código do prompt:`nEx: function prompt { `"$($PWD)> `" }"
+            : "Cole o código do prompt:`nEx: export PS1='\w\$ '"
+        codeInput := InputBox(hint, "Código do Prompt", "w600 h200")
+        if (codeInput.Result != "OK" || Trim(codeInput.Value) = "")
+            return
+
+        code := Trim(codeInput.Value)
+        id := "custom-" A_TickCount
+        now := FormatTime(, "yyyy-MM-ddTHH:mm:ss")
+
+        this.prompts.Push({
+            id: id,
+            name: name,
+            shellType: shellType,
+            code: code,
+            builtin: false,
+            favorite: false,
+            lastUsed: ""
+        })
+        this.Persist()
+        this.Show()
+    }
+
+    static EditPrompt(prompt) {
+        this.Hide()
+        KeyWait("Enter")
+        Sleep(100)
+
+        codeInput := InputBox("Editar código do prompt '" prompt.name "':", "Editar Prompt", "w600 h200", prompt.code)
+        if (codeInput.Result != "OK") {
+            this.Show()
+            return
+        }
+
+        newCode := Trim(codeInput.Value)
+        if (newCode != "")
+            prompt.code := newCode
+        this.Persist()
+        this.Show()
+    }
+
+    static DeletePrompt(prompt) {
+        if (prompt.builtin) {
+            ToolTip("Prompts built-in não podem ser deletados")
+            SetTimer(() => ToolTip(), -2000)
+            if (this.inputBox) {
+                this.inputBox.Value := ""
+                this.ApplyFilter()
+            }
+            return
+        }
+
+        idx := 0
+        for i, p in this.prompts {
+            if (p.id = prompt.id) {
+                idx := i
+                break
+            }
+        }
+        if (idx > 0) {
+            this.prompts.RemoveAt(idx)
+            this.Persist()
+            if (this.inputBox) {
+                this.inputBox.Value := ""
+                this.ApplyFilter()
+            }
+            ToolTip("Deletado: " prompt.name)
+            SetTimer(() => ToolTip(), -1500)
+        }
+    }
+
+    static ToggleFavorite(prompt) {
+        prompt.favorite := !prompt.favorite
+        this.Persist()
+        if (this.inputBox) {
+            this.inputBox.Value := ""
+            this.ApplyFilter()
+        }
+        label := prompt.favorite ? "★ Favorito" : "Removido favorito"
+        ToolTip(label ": " prompt.name)
+        SetTimer(() => ToolTip(), -1500)
+    }
+
+    static SetDefault(prompt) {
+        this.defaults[prompt.shellType] := prompt.id
+        this.Persist()
+        if (this.inputBox) {
+            this.inputBox.Value := ""
+            this.ApplyFilter()
+        }
+        shellLabel := (prompt.shellType = "powershell") ? "PowerShell" : "Bash"
+        ToolTip("Default " shellLabel ": " prompt.name)
+        SetTimer(() => ToolTip(), -1500)
+    }
+
+    static UpdateLastUsed(prompt) {
+        prompt.lastUsed := FormatTime(, "yyyy-MM-ddTHH:mm:ss")
+        this.Persist()
+    }
+
+    ; ── Detecção de shell ──
+
+    static DetectActiveShell() {
+        try {
+            processName := WinGetProcessName("A")
+        } catch {
+            return ""
+        }
+
+        if (processName != "WindowsTerminal.exe")
+            return ""
+
+        title := WinGetTitle("A")
+        titleLower := StrLower(title)
+
+        ; WSL/bash keywords
+        wslKeywords := ["ubuntu", "debian", "fedora", "suse", "kali", "arch", "alpine", "wsl", "linux", "bash", "@"]
+        for kw in wslKeywords {
+            if (InStr(titleLower, kw))
+                return "bash"
+        }
+
+        return "powershell"
+    }
+
+    ; ── Persistência ──
+
+    static Persist() {
+        if (!DirExist(this.configDir))
+            DirCreate(this.configDir)
+
+        json := '{"prompts": [`n'
+        for idx, p in this.prompts {
+            json .= '    {'
+            json .= '"id": "' this.EscapeJson(p.id) '", '
+            json .= '"name": "' this.EscapeJson(p.name) '", '
+            json .= '"shellType": "' this.EscapeJson(p.shellType) '", '
+            json .= '"code": "' this.EscapeJson(p.code) '", '
+            json .= '"builtin": ' (p.builtin ? "true" : "false") ', '
+            json .= '"favorite": ' (p.favorite ? "true" : "false") ', '
+            json .= '"lastUsed": "' this.EscapeJson(p.lastUsed) '"'
+            json .= '}'
+            if (idx < this.prompts.Length)
+                json .= ','
+            json .= '`n'
+        }
+        json .= '],`n"defaults": {'
+
+        first := true
+        for key, val in this.defaults {
+            if (!first)
+                json .= ', '
+            json .= '"' this.EscapeJson(key) '": "' this.EscapeJson(val) '"'
+            first := false
+        }
+        json .= '}}'
+
+        try FileDelete(this.configPath)
+        FileAppend(json, this.configPath, "UTF-8")
+    }
+
+    static Load() {
+        this.prompts := []
+        this.defaults := Map()
+
+        if (!FileExist(this.configPath))
+            return
+
+        try content := FileRead(this.configPath, "UTF-8")
+        catch
+            return
+
+        if (content = "")
+            return
+
+        ; Parse prompts array
+        arrStart := InStr(content, '"prompts"')
+        if (!arrStart)
+            return
+
+        bracketStart := InStr(content, "[", , arrStart)
+        if (!bracketStart)
+            return
+
+        ; Find matching ]
+        depth := 0
+        bracketEnd := 0
+        pos := bracketStart
+        Loop StrLen(content) - bracketStart + 1 {
+            ch := SubStr(content, pos, 1)
+            if (ch = "[")
+                depth++
+            else if (ch = "]")
+                depth--
+            if (depth = 0) {
+                bracketEnd := pos
+                break
+            }
+            pos++
+        }
+        if (bracketEnd = 0)
+            return
+
+        listContent := SubStr(content, bracketStart, bracketEnd - bracketStart + 1)
+
+        ; Parse each prompt object
+        objPos := 1
+        while (objPos := RegExMatch(listContent, '\{[^{}]+\}', &m, objPos)) {
+            obj := m[0]
+            id := this.ExtractJsonField(obj, "id")
+            name := this.ExtractJsonField(obj, "name")
+            shellType := this.ExtractJsonField(obj, "shellType")
+            code := this.ExtractJsonField(obj, "code")
+            lastUsed := this.ExtractJsonField(obj, "lastUsed")
+
+            builtin := false
+            if (RegExMatch(obj, '"builtin"\s*:\s*(true|false)', &bm))
+                builtin := (bm[1] = "true")
+
+            favorite := false
+            if (RegExMatch(obj, '"favorite"\s*:\s*(true|false)', &fm))
+                favorite := (fm[1] = "true")
+
+            if (id != "" && name != "") {
+                this.prompts.Push({
+                    id: id,
+                    name: name,
+                    shellType: shellType,
+                    code: this.UnescapeJson(code),
+                    builtin: builtin,
+                    favorite: favorite,
+                    lastUsed: lastUsed
+                })
+            }
+            objPos += StrLen(m[0])
+        }
+
+        ; Parse defaults
+        defStart := InStr(content, '"defaults"')
+        if (defStart) {
+            defBrace := InStr(content, "{", , defStart)
+            if (defBrace) {
+                defEnd := InStr(content, "}", , defBrace)
+                if (defEnd) {
+                    defContent := SubStr(content, defBrace, defEnd - defBrace + 1)
+                    defPos := 1
+                    while (defPos := RegExMatch(defContent, '"(\w+)"\s*:\s*"([^"]*)"', &dm, defPos)) {
+                        this.defaults[dm[1]] := dm[2]
+                        defPos += StrLen(dm[0])
+                    }
+                }
+            }
+        }
+    }
+
+    static ExtractJsonField(obj, field) {
+        if (RegExMatch(obj, '"' field '"\s*:\s*"((?:[^"\\]|\\.)*)"', &m))
+            return m[1]
+        return ""
+    }
+
+    static EscapeJson(str) {
+        str := StrReplace(str, "\", "\\")
+        str := StrReplace(str, '"', '\"')
+        str := StrReplace(str, "`n", "\n")
+        str := StrReplace(str, "`r", "\r")
+        str := StrReplace(str, "`t", "\t")
+        return str
+    }
+
+    static UnescapeJson(str) {
+        str := StrReplace(str, "\n", "`n")
+        str := StrReplace(str, "\r", "`r")
+        str := StrReplace(str, "\t", "`t")
+        str := StrReplace(str, '\"', '"')
+        str := StrReplace(str, "\\", "\")
+        return str
+    }
+
+    ; ── Utils ──
+
+    static FormatTimeAgo(dateStr) {
+        if (dateStr = "")
+            return "-"
+        try {
+            now := FormatTime(, "yyyyMMddHHmmss")
+            then := StrReplace(StrReplace(StrReplace(dateStr, "-"), "T"), ":")
+            diff := DateDiff(now, then, "Minutes")
+            if (diff < 1)
+                return "agora"
+            if (diff < 60)
+                return diff "min"
+            hours := diff // 60
+            if (hours < 24)
+                return hours "h"
+            days := hours // 24
+            if (days < 7)
+                return days "d"
+            weeks := days // 7
+            if (weeks < 5)
+                return weeks "sem"
+            months := days // 30
+            return months "mes"
+        } catch {
+            return "-"
+        }
+    }
+}

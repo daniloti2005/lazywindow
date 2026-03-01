@@ -33,7 +33,8 @@ lazywindow/
 │   │   ├── TeamsHelpWindow.ahk # Atalhos do Microsoft Teams (F10)
 │   │   ├── LazyVimHelpWindow.ahk # Atalhos do LazyVim (F11)
 │   │   ├── CommandPalette.ahk # Busca unificada de comandos (Ctrl+Shift+P)
-│   │   └── ProjectBookmarks.ahk # Marcadores de projetos (Ctrl+Shift+O)
+│   │   ├── ProjectBookmarks.ahk # Marcadores de projetos (Ctrl+Shift+O)
+│   │   └── PromptManager.ahk  # Gestor de prompts de terminal (Ctrl+Shift+F8)
 │   ├── snippets/
 │   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Alt+F10)
 │   │   ├── SnippetStore.ahk   # Armazena e carrega snippets
@@ -226,6 +227,23 @@ ActivateGrid(monitorNumber) {
 - **Persistência:** `~/.lazywindow/projects.json`
 - **Inicialização:** Chamada em `main.ahk` via `ProjectBookmarks.Init()`
 
+### Prompt Manager (Gestor de Prompts)
+
+- **Hotkeys:** `Ctrl+Shift+F8` (GUI), `Ctrl+F8` (quick-apply), `Ctrl+Alt+F8` (quick-save) — requerem `g_hotkeysEnabled`
+- **Propósito:** Salvar, visualizar e aplicar prompts customizados no terminal ativo
+- **Módulo:** `ui/PromptManager.ahk`
+- **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo ProjectBookmarks)
+- **Funcionalidades:**
+  - 5 prompts built-in: Minimal, Git Branch, Timestamp (PowerShell) + Minimal Color, Git Color (Bash)
+  - Ações por input: `1A`=aplicar, `2E`=editar, `3D`=deletar, `4F`=favorito, `5S`=default, `N`=novo
+  - Quick-Apply (`Ctrl+F8`): aplica prompt favorito/default no terminal ativo sem abrir GUI
+  - Quick-Save (`Ctrl+Alt+F8`): captura prompt atual do terminal e salva
+  - Detecta tipo de shell (PowerShell/Bash) pelo título do Windows Terminal
+  - Apply envia comando direto ao terminal via SendInput (temporário, não edita $PROFILE)
+  - PowerShell: `function prompt { ... }`, Bash: `export PS1='...'`
+- **Persistência:** `~/.lazywindow/prompts.json`
+- **Inicialização:** Chamada em `main.ahk` via `PromptManager.Init()`
+
 ## Guia de Implementação
 
 ### Criar GUI Semi-Transparente
@@ -331,5 +349,7 @@ Para testar manualmente:
 13. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
 14. Pressione `Ctrl+Shift+P` para testar Command Palette (buscar "grid", "base64", etc.)
 15. Pressione `Ctrl+Shift+O` para testar Project Bookmarks (adicionar projeto, abrir com nvim)
-16. Pressione `F3` para ver a ajuda completa
-17. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"
+16. Pressione `Ctrl+Shift+F8` para testar Prompt Manager (aplicar prompt, criar custom)
+17. Pressione `Ctrl+F8` no terminal para testar Quick-Apply de prompt
+18. Pressione `F3` para ver a ajuda completa
+19. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"

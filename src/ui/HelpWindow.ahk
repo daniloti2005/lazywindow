@@ -234,6 +234,20 @@ PROJECT BOOKMARKS [requer Alt+Home]:
                  Ordenado por ultimo aberto (mais recente primeiro)
                  Persistido em ~/.lazywindow/projects.json
   Ctrl+Alt+O  = Quick-add: marca pasta atual do terminal como projeto
+
+PROMPT MANAGER [requer Alt+Home]:
+  Ctrl+Shift+F8 = Abre gestor de prompts (fullscreen)
+                  Digite [numero][acao] + Enter:
+                    1 ou 1A = aplicar prompt 1 no terminal ativo
+                    2E = editar codigo do prompt 2
+                    3D = deletar prompt 3 (so custom)
+                    4F = toggle favorito do prompt 4
+                    5S = definir prompt 5 como default
+                    N = novo prompt customizado
+                  5 prompts built-in: Minimal, Git Branch, Timestamp (PS)
+                                      Minimal Color, Git Color (Bash)
+  Ctrl+F8     = Quick-Apply: aplica prompt favorito/default no terminal
+  Ctrl+Alt+F8 = Quick-Save: captura prompt atual do terminal e salva
   
   Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
   

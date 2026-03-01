@@ -65,6 +65,11 @@ class CommandPalette {
         this.Add("Project Bookmarks", "Ctrl+Shift+O", "Abrir lista de projetos marcados", (*) => ProjectBookmarks.Toggle())
         this.Add("Quick-Add Projeto", "Ctrl+Alt+O", "Adiciona pasta atual do terminal como projeto", (*) => ProjectBookmarks.QuickAddFromTerminal())
 
+        ; -- Prompt Manager --
+        this.Add("Prompt Manager", "Ctrl+Shift+F8", "Gerenciar prompts de terminal", (*) => PromptManager.Toggle())
+        this.Add("Quick-Apply Prompt", "Ctrl+F8", "Aplica prompt favorito no terminal ativo", (*) => PromptManager.QuickApply())
+        this.Add("Quick-Save Prompt", "Ctrl+Alt+F8", "Salva prompt atual do terminal ativo", (*) => PromptManager.QuickSave())
+
         ; -- Sistema --
         this.Add("Recarregar LazyWindow", "", "Recarrega o script completamente", (*) => Reload())
         this.Add("Sair do LazyWindow", "", "Encerra o aplicativo", (*) => ExitApp())
