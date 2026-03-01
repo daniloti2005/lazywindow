@@ -149,6 +149,7 @@ ActivateGrid(monitorNumber) {
 - **Code Beautify:** `Ctrl+Shift+B` - Formata JSON/XML/YAML do clipboard
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
+- **Screenshot:** `Ctrl+F6` (imagem → clipboard + salva PNG), `Ctrl+Shift+F6` (salva PNG + caminho absoluto → clipboard)
 
 ### StatusBar (Barra de Status)
 

@@ -178,6 +178,7 @@ JANELA ATIVA:
   F6          = Minimizar
   F8          = Fechar
   Ctrl+F6     = Print da janela ativa (clipboard + arquivo em ~\.screenshot)
+  Ctrl+Shift+F6 = Print da janela ativa (caminho do arquivo no clipboard)
 
 MARCADORES DE POSICAO (salvar/restaurar posicoes do mouse):
   Ctrl+1..9   = Salvar posicao atual no marcador

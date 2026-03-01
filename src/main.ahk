@@ -72,6 +72,7 @@ F7::WinMaximize("A")          ; F7 = Maximizar janela ativa
 F6::WinMinimize("A")          ; F6 = Minimizar janela ativa
 F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^F6::TakeActiveWindowShot()    ; Ctrl+F6 = Print da janela ativa
+^+F6::TakeWindowShotPathOnly() ; Ctrl+Shift+F6 = Print da janela ativa (caminho no clipboard)
 ^+b::CodeBeautify.Beautify()   ; Ctrl+Shift+B = Beautify clipboard (JSON/XML)
 ^+a::Base64.Encode()           ; Ctrl+Shift+A = Encode clipboard para Base64
 ^!a::Base64.Decode()           ; Ctrl+Alt+A = Decode Base64 do clipboard
@@ -198,7 +199,44 @@ TakeActiveWindowShot() {
     SetTimer(() => ToolTip(), -2500)
 }
 
-SetSpeed8() {
+TakeWindowShotPathOnly() {
+    ; Same capture/save logic as TakeActiveWindowShot, but puts the file path in clipboard instead of the image
+    Send "!{PrintScreen}"
+    Sleep 150
+
+    screenshotDir := EnvGet("USERPROFILE") "\\.screenshot"
+    try DirCreate(screenshotDir)
+
+    seq := 1
+    Loop Files screenshotDir "\\LazyWindow_*.png" {
+        if RegExMatch(A_LoopFileName, "^LazyWindow_(\\d+)_", &m) {
+            n := m[1] + 0
+            if (n >= seq)
+                seq := n + 1
+        }
+    }
+
+    seqStr := Format("{:03}", seq)
+    ts := FormatTime(, "yyyyMMdd_HHmmss")
+    filePath := screenshotDir "\\LazyWindow_" seqStr "_" ts ".png"
+
+    ps := "powershell -STA -NoProfile -ExecutionPolicy Bypass -Command " . Chr(34)
+        . "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; "
+        . "$img=[System.Windows.Forms.Clipboard]::GetImage(); if($null -eq $img){ exit 2 }; "
+        . "$path='" filePath "'; $img.Save($path,[System.Drawing.Imaging.ImageFormat]::Png);"
+        . Chr(34)
+
+    rc := RunWait(ps, , "Hide")
+    if (rc = 0) {
+        A_Clipboard := filePath
+        ToolTip("Caminho copiado:`n" filePath)
+    } else {
+        ToolTip("Print copiado; falha ao salvar (rc=" rc ")")
+    }
+    SetTimer(() => ToolTip(), -2500)
+}
+
+
     ArrowMouse.SetSpeedPercent(8)
     ToolTip("Velocidade do cursor: 8 dpi")
     SetTimer(() => ToolTip(), -1500)
