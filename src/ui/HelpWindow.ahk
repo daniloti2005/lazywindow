@@ -218,6 +218,16 @@ SNIPPET MANAGER [requer Alt+Home]:
 COMMAND PALETTE [requer Alt+Home]:
   Ctrl+Shift+P = Abre busca unificada de todos os comandos
                  Digite para filtrar, setas para navegar, Enter para executar
+
+PROJECT BOOKMARKS [requer Alt+Home]:
+  Ctrl+Shift+O = Abre lista de projetos marcados
+                 Enter = abre com nvim . (Windows Terminal)
+                 Shift+Enter = abre so o terminal na pasta
+                 Del = remove projeto da lista
+                 Busca por nome/caminho, filtro por tag
+                 Cada projeto tem shell (PowerShell ou WSL)
+                 Ordenado por ultimo aberto (mais recente primeiro)
+                 Persistido em ~/.lazywindow/projects.json
   
   Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
   

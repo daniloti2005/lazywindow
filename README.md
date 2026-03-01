@@ -184,6 +184,34 @@ Salve até **9 posições do mouse** e volte para elas rapidamente. Os marcadore
 
 ---
 
+### 📂 Project Bookmarks (Marcadores de Projetos)
+
+Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou terminal via Windows Terminal.
+
+**Atalho:** `Ctrl+Shift+O`
+
+**Funcionalidades:**
+- Adicionar projetos manualmente ou via browse de pasta
+- Cada projeto tem: nome, caminho, tag e shell (PowerShell ou WSL)
+- Ordenação automática por último aberto (mais recente primeiro)
+- Exibe tempo desde a última abertura (ex: "2h", "3d", "1sem")
+- Busca por nome/caminho e filtro por tag
+
+**Ações:**
+| Tecla | Ação |
+|-------|------|
+| `Enter` | Abre com `nvim .` no Windows Terminal |
+| `Shift+Enter` | Abre só o terminal na pasta |
+| `Del` | Remove o projeto da lista |
+
+**Shells suportados:**
+- **PowerShell** — para projetos em pastas Windows (ex: `C:\projetos\api`)
+- **WSL** — para projetos em Linux (ex: `~/projetos/api`)
+
+**Arquivo de persistência:** `~/.lazywindow/projects.json`
+
+---
+
 ## 📋 Casos de Uso
 
 ### UC01: Clicar em um botão específico na tela
@@ -325,6 +353,7 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Alt+T` | Epoch para Data ISO 8601 |
 | `Ctrl+Alt+F10` | Snippet Manager (gestor de snippets de código) |
 | `Ctrl+Shift+P` | Command Palette (busca unificada de comandos) |
+| `Ctrl+Shift+O` | Project Bookmarks (lista de projetos → nvim/terminal) |
 | `Ctrl+1..9` | Salvar posição do mouse no marcador |
 | `Alt+1..9` | Mover cursor para o marcador |
 | `Ctrl+Alt+1..9` | Mover e clicar no marcador |

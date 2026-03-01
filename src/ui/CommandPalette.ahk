@@ -61,6 +61,9 @@ class CommandPalette {
         ; -- Snippets --
         this.Add("Snippet Manager", "Ctrl+Alt+F10", "Gestor de snippets de código", (*) => SnippetManager.Toggle())
 
+        ; -- Project Bookmarks --
+        this.Add("Project Bookmarks", "Ctrl+Shift+O", "Abrir lista de projetos marcados", (*) => ProjectBookmarks.Toggle())
+
         ; -- Sistema --
         this.Add("Recarregar LazyWindow", "", "Recarrega o script completamente", (*) => Reload())
         this.Add("Sair do LazyWindow", "", "Encerra o aplicativo", (*) => ExitApp())
