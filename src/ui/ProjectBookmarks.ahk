@@ -233,7 +233,7 @@ class ProjectBookmarks {
     ; ── GUI ──
 
     static CreateGui() {
-        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize", "LazyWindow - Project Bookmarks")
+        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "LazyWindow - Project Bookmarks")
         this.gui.Opt("-DPIScale")
         this.gui.BackColor := "1a1a2e"
 
