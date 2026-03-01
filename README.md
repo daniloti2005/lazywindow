@@ -12,12 +12,15 @@ LazyWindow é um aplicativo para Windows que permite usuários navegarem e clica
 
 Ative um modo onde as **setas do teclado movem o mouse** continuamente. Você pode segurar duas setas ao mesmo tempo para movimento diagonal (45°).
 
+> **Nota:** `Alt+Home` liga/desliga **todos** os comandos do LazyWindow junto com o Modo Setas. Ao iniciar, todos os comandos estão desligados — apenas Grid, Ajuda e `Alt+Home` funcionam.
+
 **Atalhos:**
-- `Alt+Home` (liga/desliga)
+- `Alt+Home` (liga/desliga todos os comandos + modo setas)
 - `Ctrl+F12` abre um modal para ajustar a **velocidade** (DPI 1–50)
 - `Alt+F12` define velocidade em 8 dpi
 - `Ctrl+Ins` diminui 1 ponto na velocidade
 - `Alt+Ins` aumenta 1 ponto na velocidade
+- `Shift+End` toggle velocidade 5 dpi (alterna entre 5 dpi e velocidade anterior)
 
 Enquanto o modo estiver ativo:
 - `F1` = clique direito
@@ -69,7 +72,7 @@ Alterne rapidamente entre janelas abertas e posicione o mouse em pontos específ
 
 A lista exibe 3 colunas: **#** (número), **Processo** (nome do programa) e **Janela** (título).
 
-> Dica: se o **Modo Setas** estiver ativo, `Ctrl+Home` desativa o modo antes de abrir o seletor.
+> Dica: se o **Modo Setas** estiver ativo, `Ctrl+Home` pausa as setas temporariamente para abrir o seletor.
 
 **Uso:**
 1. Pressione `Ctrl+Home` para abrir a lista de janelas
@@ -99,6 +102,28 @@ A lista exibe 3 colunas: **#** (número), **Processo** (nome do programa) e **Ja
 - `1` ou `1C` → Foca janela 1, mouse no centro
 - `2TD` → Foca janela 2, mouse no canto superior direito
 - `3RE` → Foca janela 3, mouse no canto inferior esquerdo
+
+---
+
+### 📸 Screenshot
+
+Capture screenshots da janela ativa ou de uma região selecionada. As imagens são salvas em `~\.screenshot\` com nome sequencial.
+
+**Atalhos:**
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+F6` | Print da janela ativa (imagem no clipboard + salva PNG) |
+| `Ctrl+Shift+F6` | Print da janela ativa (caminho do arquivo PNG → clipboard) |
+| `Ctrl+F7` | Selecionar região com mouse (imagem no clipboard + salva PNG) |
+| `Ctrl+Shift+F7` | Selecionar região com mouse (caminho do arquivo PNG → clipboard) |
+
+**Seleção de região (`Ctrl+F7`/`Ctrl+Shift+F7`):**
+1. A tela escurece com overlay semi-transparente
+2. Cursor muda para mira (crosshair)
+3. Clique e arraste para desenhar o retângulo de seleção
+4. Retângulo claro com borda branca mostra a área selecionada
+5. Solte o botão para capturar
+6. `ESC` cancela
 
 ---
 
@@ -273,6 +298,7 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Alt+F12` | Define velocidade em 8 dpi |
 | `Ctrl+Ins` | Diminuir 1 ponto na velocidade |
 | `Alt+Ins` | Aumentar 1 ponto na velocidade |
+| `Shift+End` | Toggle velocidade 5 dpi (alterna com anterior) |
 | `F1` | Clique direito (no Modo Setas) |
 | `F2` | Clique esquerdo (no Modo Setas) |
 | `Ctrl` + `Setas` | Arrastar (segura clique esquerdo enquanto move) |

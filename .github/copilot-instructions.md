@@ -278,14 +278,17 @@ GetWindowList() {
 
 Para testar manualmente:
 1. Execute `src/main.ahk` ou use `ToggleLazyWindow.ps1`
-2. Verifique a StatusBar acima da taskbar (exibe "Cursor: Desligado | Vel: 25 dpi")
-3. Pressione `Ctrl+End` para testar grid no monitor 1
-4. Navegue com `A/S/D/Z/X/C`
-5. Pressione `Backspace` para clique esquerdo
-6. Pressione `Ctrl+Home` para testar seletor de janelas
-7. Pressione `Ctrl+PgUp` para testar grid na janela ativa
-8. Pressione `Alt+PgUp` para testar grid ao redor do cursor
-9. Pressione `Alt+Home` para ativar Modo Setas e verificar StatusBar atualiza
+2. Verifique a StatusBar acima da taskbar (exibe "OFF | Alt+Home=LIGAR | F3=AJUDA")
+3. Pressione `Alt+Home` para ligar todos os comandos (StatusBar muda para "ON | Vel: 25 dpi | ...")
+4. Pressione `Ctrl+End` para testar grid no monitor 1
+5. Navegue com `A/S/D/Z/X/C`
+6. Pressione `Backspace` para clique esquerdo
+7. Pressione `Ctrl+Home` para testar seletor de janelas
+8. Pressione `Ctrl+PgUp` para testar grid na janela ativa
+9. Pressione `Alt+PgUp` para testar grid ao redor do cursor
 10. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
-11. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
-12. Pressione `F3` para ver a ajuda completa
+11. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
+12. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
+13. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
+14. Pressione `F3` para ver a ajuda completa
+15. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"
