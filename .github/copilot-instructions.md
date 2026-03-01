@@ -31,7 +31,9 @@ lazywindow/
 │   │   ├── SpeedDialog.ahk   # Modal para ajustar velocidade do Modo Setas
 │   │   ├── HelpWindow.ahk    # Janela de ajuda principal (F3)
 │   │   ├── TeamsHelpWindow.ahk # Atalhos do Microsoft Teams (F10)
-│   │   └── LazyVimHelpWindow.ahk # Atalhos do LazyVim (F11)
+│   │   ├── LazyVimHelpWindow.ahk # Atalhos do LazyVim (F11)
+│   │   ├── CommandPalette.ahk # Busca unificada de comandos (Ctrl+Shift+P)
+│   │   └── ProjectBookmarks.ahk # Marcadores de projetos (Ctrl+Shift+O)
 │   ├── snippets/
 │   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Alt+F10)
 │   │   ├── SnippetStore.ahk   # Armazena e carrega snippets
@@ -187,6 +189,40 @@ ActivateGrid(monitorNumber) {
 - **Detecção automática:** Linguagem baseada no título da janela
 - **Placeholders:** `${ClassName}`, `${FunctionName}`, `${date}`, `${user}` → substituídos pela palavra selecionada / data / usuário
 
+### Command Palette (Busca Unificada)
+
+- **Hotkey:** `Ctrl+Shift+P` (requer `g_hotkeysEnabled`)
+- **Propósito:** Campo de busca fuzzy que lista todos os comandos do LazyWindow pelo nome, hotkey e descrição
+- **Módulo:** `ui/CommandPalette.ahk`
+- **Funcionalidades:**
+  - Filtro multi-palavras em tempo real (ex: "base64 encode", "grid mon")
+  - Navegação com ↑↓ mantendo foco no campo de busca
+  - Enter executa o comando selecionado, ESC fecha
+  - DoubleClick na lista também executa
+  - Footer mostra "X de Y comandos" ao filtrar
+  - Pausa ArrowMouse automaticamente ao abrir
+- **Registro de comandos:** Todos os comandos são registrados em `Init()` via `this.Add(nome, hotkey, descrição, ação)`
+- **Inicialização:** Chamada em `main.ahk` via `CommandPalette.Init()`
+
+### Project Bookmarks (Marcadores de Projetos)
+
+- **Hotkey:** `Ctrl+Shift+O` (requer `g_hotkeysEnabled`)
+- **Propósito:** Lista persistente de projetos de software para abertura rápida no Neovim ou terminal via Windows Terminal
+- **Módulo:** `ui/ProjectBookmarks.ahk`
+- **Funcionalidades:**
+  - Adicionar projetos via input manual ou browse de pasta (`DirSelect`)
+  - Cada projeto tem: nome, caminho, tag, shell (PowerShell ou WSL)
+  - Shell por projeto determina como o Windows Terminal abre:
+    - **PowerShell:** `wt.exe -d "C:\path" pwsh -NoExit -Command "nvim ."`
+    - **WSL:** `wt.exe wsl -e bash -c "cd ~/path && nvim ."`
+  - Ações: `Enter` = nvim ., `Shift+Enter` = terminal, `Del` = remover
+  - Busca por nome/caminho, filtro por tag (dropdown)
+  - Ordenação automática por último aberto (mais recente primeiro)
+  - Exibe tempo desde última abertura (agora, 2h, 3d, 1sem, 2mes)
+  - Editar tag e shell de projetos existentes
+- **Persistência:** `~/.lazywindow/projects.json`
+- **Inicialização:** Chamada em `main.ahk` via `ProjectBookmarks.Init()`
+
 ## Guia de Implementação
 
 ### Criar GUI Semi-Transparente
@@ -290,5 +326,7 @@ Para testar manualmente:
 11. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
 12. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
 13. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
-14. Pressione `F3` para ver a ajuda completa
-15. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"
+14. Pressione `Ctrl+Shift+P` para testar Command Palette (buscar "grid", "base64", etc.)
+15. Pressione `Ctrl+Shift+O` para testar Project Bookmarks (adicionar projeto, abrir com nvim)
+16. Pressione `F3` para ver a ajuda completa
+17. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"
