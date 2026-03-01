@@ -18,8 +18,7 @@ lazywindow/
 │   ├── main.ahk              # Entry point - inicialização e hotkeys principais
 │   ├── grid/
 │   │   ├── GridOverlay.ahk   # Classe GUI do overlay semi-transparente
-│   │   ├── GridNavigation.ahk # Lógica de navegação e subdivisão
-│   │   └── GridRenderer.ahk  # Renderização visual do grid
+│   │   └── GridNavigation.ahk # Lógica de navegação e subdivisão recursiva
 │   ├── window/
 │   │   ├── WindowSwitcher.ahk # Seletor de janelas (mostra processo + título)
 │   │   └── WindowList.ahk    # Enumeração de janelas abertas
@@ -28,11 +27,13 @@ lazywindow/
 │   │   ├── ArrowMouse.ahk    # Modo setas para mover mouse
 │   │   └── MouseMarkers.ahk  # 9 marcadores de posição persistentes
 │   ├── ui/
+│   │   ├── StatusBar.ahk     # Barra de status acima da taskbar (sempre visível)
+│   │   ├── SpeedDialog.ahk   # Modal para ajustar velocidade do Modo Setas
 │   │   ├── HelpWindow.ahk    # Janela de ajuda principal (F3)
 │   │   ├── TeamsHelpWindow.ahk # Atalhos do Microsoft Teams (F10)
 │   │   └── LazyVimHelpWindow.ahk # Atalhos do LazyVim (F11)
 │   ├── snippets/
-│   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Shift+S)
+│   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Alt+F10)
 │   │   ├── SnippetStore.ahk   # Armazena e carrega snippets
 │   │   └── ContextDetector.ahk # Detecta linguagem e palavra sob cursor
 │   └── utils/
@@ -130,10 +131,10 @@ ActivateGrid(monitorNumber) {
 ### Arrow Mouse (Modo Setas)
 
 - **Hotkey:** `Alt+Home` (toggle)
-- **Movimento:** Setas movem o mouse continuamente
-- **Velocidade:** `Ctrl+F12` (modal), `Alt+F12` (8dpi), `Ctrl+Ins`/`Alt+Ins` (±1)
+- **Movimento:** Setas movem o mouse continuamente; duas setas simultâneas = diagonal normalizada
+- **Velocidade:** `Ctrl+F12` (modal 1–50 dpi), `Alt+F12` (8 dpi fixo), `Ctrl+Ins`/`Alt+Ins` (±1 dpi), `Shift+End` (toggle 5 dpi / restaura anterior)
 - **Cliques:** `F1` (direito), `F2` (esquerdo)
-- **Arrastar:** `Ctrl+Setas` (segura clique)
+- **Arrastar:** `Ctrl+Setas` (segura clique esquerdo enquanto move)
 - **Scroll horizontal:** `Alt+-` (esq), `Alt+=` (dir)
 
 ### Mouse Markers (Marcadores)
@@ -149,11 +150,20 @@ ActivateGrid(monitorNumber) {
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
 
+### StatusBar (Barra de Status)
+
+- **Módulo:** `ui/StatusBar.ahk`
+- **Propósito:** Barra semi-transparente sempre visível acima da taskbar do monitor primário
+- **Exibe:** Estado do Modo Setas (Ligado/Desligado), velocidade atual em dpi, e lembretes de atalhos (`F3`, `F10`, `F11`)
+- **Atualização:** Refresca a cada 200 ms via `SetTimer`
+- **Inicialização:** Chamada em `main.ahk` via `StatusBar.Init()`
+
 ### Snippet Manager (Gestor de Snippets)
 
 - **Hotkey:** `Ctrl+Alt+F10`
 - **Propósito:** Inserir snippets de código com placeholders automáticos
-- **Linguagens:** TypeScript, Python, SQL, PowerShell, Bash, Go
+- **Linguagens:** TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
+- **Modos de busca:** `Nome` (busca por nome/descrição) e `Código` (busca no conteúdo do snippet) — alternável pelo botão ou `Tab`
 - **Snippets incluídos:**
   - SOLID: SRP, OCP, LSP, ISP, DIP (com exemplos práticos)
   - Clean Code: Guard Clauses, Extract Method, Null Object, Constants
@@ -164,8 +174,9 @@ ActivateGrid(monitorNumber) {
   - PowerShell: Try-Catch, REST API
   - Bash: Function, AWS CLI
   - Go: Struct, HTTP Handler
+  - Windows: ms-settings URIs, comandos de sistema, rede, dispositivos, apps, shell
 - **Detecção automática:** Linguagem baseada no título da janela
-- **Placeholders:** `${ClassName}`, `${FunctionName}` → palavra selecionada
+- **Placeholders:** `${ClassName}`, `${FunctionName}`, `${date}`, `${user}` → substituídos pela palavra selecionada / data / usuário
 
 ## Guia de Implementação
 
@@ -258,11 +269,14 @@ GetWindowList() {
 
 Para testar manualmente:
 1. Execute `src/main.ahk` ou use `ToggleLazyWindow.ps1`
-2. Pressione `Ctrl+End` para testar grid no monitor 1
-3. Navegue com `A/S/D/Z/X/C`
-4. Pressione `Backspace` para clique esquerdo
-5. Pressione `Ctrl+Home` para testar seletor de janelas
-6. Pressione `Ctrl+PgUp` para testar grid na janela ativa
-7. Pressione `Alt+PgUp` para testar grid ao redor do cursor
-8. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
-9. Pressione `F3` para ver a ajuda completa
+2. Verifique a StatusBar acima da taskbar (exibe "Cursor: Desligado | Vel: 25 dpi")
+3. Pressione `Ctrl+End` para testar grid no monitor 1
+4. Navegue com `A/S/D/Z/X/C`
+5. Pressione `Backspace` para clique esquerdo
+6. Pressione `Ctrl+Home` para testar seletor de janelas
+7. Pressione `Ctrl+PgUp` para testar grid na janela ativa
+8. Pressione `Alt+PgUp` para testar grid ao redor do cursor
+9. Pressione `Alt+Home` para ativar Modo Setas e verificar StatusBar atualiza
+10. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
+11. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
+12. Pressione `F3` para ver a ajuda completa
