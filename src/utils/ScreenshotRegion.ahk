@@ -108,6 +108,9 @@ class ScreenshotRegion {
     }
 
     static ShowPanel(g, x, y, w, h) {
+        if (!(g is Gui)) {
+            return
+        }
         w := Max(w, 1)
         h := Max(h, 1)
         WinMove(x, y, w, h, "ahk_id " g.Hwnd)
@@ -188,15 +191,27 @@ class ScreenshotRegion {
     }
 
     static Cleanup() {
+        ; Set flags first so any in-flight timer/hotkey returns early
+        this.active   := false
+        this.dragging := false
+
+        if (this.tickFn) {
+            SetTimer(this.tickFn, 0)
+        }
         this.DisableHotkeys()
+
         for panel in [this.panTop, this.panBottom, this.panLeft, this.panRight,
                       this.borTop, this.borBottom, this.borLeft, this.borRight] {
             try panel.Destroy()
         }
-        this.panTop := this.panBottom := this.panLeft := this.panRight := ""
-        this.borTop := this.borBottom := this.borLeft := this.borRight := ""
-        this.active   := false
-        this.dragging := false
-        this.onDone   := ""
+        this.panTop    := ""
+        this.panBottom := ""
+        this.panLeft   := ""
+        this.panRight  := ""
+        this.borTop    := ""
+        this.borBottom := ""
+        this.borLeft   := ""
+        this.borRight  := ""
+        this.onDone    := ""
     }
 }
