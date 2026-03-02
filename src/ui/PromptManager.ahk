@@ -40,9 +40,16 @@ class PromptManager {
         needMerge := false
         for bid in builtinIds {
             found := false
-            for eid in existingIds
-                if (eid = bid) { found := true; break }
-            if (!found) { needMerge := true; break }
+            for eid in existingIds {
+                if (eid = bid) {
+                    found := true
+                    break
+                }
+            }
+            if (!found) {
+                needMerge := true
+                break
+            }
         }
         if (!needMerge)
             return
