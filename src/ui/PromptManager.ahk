@@ -125,7 +125,8 @@ class PromptManager {
         })
 
         ; ── Star Wars (Bash) — auto-detect: Jedi (user) ↔ Sith (root) + animation ──
-        swBash := "prompt_starwars() { if [ $EUID -eq 0 ]; then "
+        ; set +H disables history expansion to avoid ! issues in $'...' strings
+        swBash := "set +H; prompt_starwars() { if [ $EUID -eq 0 ]; then "
         ; One-shot animation: Anakin → Darth Vader
         swBash .= "if [ -z " Chr(34) "$_SW_ANIMATED" Chr(34) " ]; then export _SW_ANIMATED=1; "
         swBash .= "clear; echo -e " Chr(34) "\n\n\033[1;33m        .     .\n       /|\   /|\\n      / | \ / | \\n        |     |\n       / \   / \\n      /   \ /   \\n\n  \033[0;36mAnakin Skywalker\033[0m\n  \033[1;33mI feel the dark side growing...\033[0m" Chr(34) "; sleep 0.6; "
@@ -160,7 +161,7 @@ class PromptManager {
         swBash .= "\n\033[0;36m🔗 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;32m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;33m⭐ Jedi\033[0m"
         swBash .= "\n\033[1;34m📁 \w\033[0m"
         swBash .= "\n\033[1;34m✔ ▶\033[0m ';"
-        swBash .= " fi; }; PROMPT_COMMAND=prompt_starwars"
+        swBash .= " fi; }; PROMPT_COMMAND=prompt_starwars; set -H"
         this.prompts.Push({
             id: "starwars-bash",
             name: "⚔ Star Wars",
@@ -257,15 +258,15 @@ class PromptManager {
         })
 
         ; ── Dragon Ball (Bash) — auto-detect root vs user via function + animation ──
-        ; Uses a function + PROMPT_COMMAND to conditionally set PS1
-        dbBash := "prompt_dragonball() { if [ $EUID -eq 0 ]; then "
+        ; set +H disables history expansion to avoid ! issues in $'...' strings
+        dbBash := "set +H; prompt_dragonball() { if [ $EUID -eq 0 ]; then "
         ; One-shot animation: Goku gathering 7 dragon balls + Shenlong
         dbBash .= "if [ -z " Chr(34) "$_DB_ANIMATED" Chr(34) " ]; then export _DB_ANIMATED=1; "
-        dbBash .= "clear; echo -e " Chr(34) "\n\n\033[1;38;5;208m       ★\n\n  Goku esta reunindo as esferas do dragao...\033[0m" Chr(34) "; sleep 0.5; "
-        dbBash .= "clear; echo -e " Chr(34) "\n\n\033[1;38;5;208m    ★  ★  ★\n\n  3 esferas encontradas...\033[0m" Chr(34) "; sleep 0.5; "
-        dbBash .= "clear; echo -e " Chr(34) "\n\n\033[1;33m  ★ ★ ★ ★ ★ ★ ★\n\n  \033[1;33mAs 7 esferas brilham com poder!\033[0m" Chr(34) "; sleep 0.6; "
-        dbBash .= "clear; echo -e " Chr(34) "\n\033[1;32m        /\\\n       /  \\\n      / 🐉 \\\n     /      \\\n    / SHENLONG\\\n   /          \\\n  /____________\\\n       ||||\n\n  \033[1;33mSHENLONG: Fale seu desejo!\033[0m" Chr(34) "; sleep 0.8; "
-        dbBash .= "clear; echo -e " Chr(34) "\033[1;33m\n  ⚡ PODER TOTAL CONCEDIDO! ⚡\n  Voce agora e SUPER SAIYAN!\n\033[0m" Chr(34) "; sleep 0.8; clear; fi; "
+        dbBash .= "clear; echo -e '\n\n\033[1;38;5;208m       ★\n\n  Goku esta reunindo as esferas do dragao...\033[0m'; sleep 0.5; "
+        dbBash .= "clear; echo -e '\n\n\033[1;38;5;208m    ★  ★  ★\n\n  3 esferas encontradas...\033[0m'; sleep 0.5; "
+        dbBash .= "clear; echo -e '\n\n\033[1;33m  ★ ★ ★ ★ ★ ★ ★\n\n  \033[1;33mAs 7 esferas brilham com poder!\033[0m'; sleep 0.6; "
+        dbBash .= "clear; echo -e '\n\033[1;32m        /\\\n       /  \\\n      / 🐉 \\\n     /      \\\n    / SHENLONG\\\n   /          \\\n  /____________\\\n       ||||\n\n  \033[1;33mSHENLONG: Fale seu desejo!\033[0m'; sleep 0.8; "
+        dbBash .= "clear; echo -e '\033[1;33m\n  ⚡ PODER TOTAL CONCEDIDO! ⚡\n  Voce agora e SUPER SAIYAN!\n\033[0m'; sleep 0.8; clear; fi; "
         ; Root = Super Saiyan + Shenlong
         dbBash .= "PS1=$'\n\033[1;33m███████ ███████      ██\033[0m"
         dbBash .= "\n\033[1;33m██      ██           ██\033[0m"
@@ -294,7 +295,7 @@ class PromptManager {
         dbBash .= "\n\033[0;36m🟠 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;32m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;38;5;208m⭐ Goku\033[0m"
         dbBash .= "\n\033[1;38;5;208m📁 \w\033[0m"
         dbBash .= "\n\033[1;38;5;208m✔ ▶\033[0m ';"
-        dbBash .= " fi; }; PROMPT_COMMAND=prompt_dragonball"
+        dbBash .= " fi; }; PROMPT_COMMAND=prompt_dragonball; set -H"
         this.prompts.Push({
             id: "dragonball-bash",
             name: "🐉 Dragon Ball",
@@ -591,6 +592,18 @@ class PromptManager {
 
     ; ── Ações ──
 
+    ; ── Send code to terminal via clipboard paste (avoids SendInput buffer overflow) ──
+    static SendToTerminal(code) {
+        savedClip := A_Clipboard
+        A_Clipboard := " " code  ; leading space = no bash history
+        Sleep(50)
+        SendInput("^+v")  ; Ctrl+Shift+V = paste in Windows Terminal
+        Sleep(100)
+        SendInput("{Enter}")
+        Sleep(50)
+        A_Clipboard := savedClip
+    }
+
     static ApplyToTerminal(prompt) {
         this.UpdateLastUsed(prompt)
         this.Hide()
@@ -612,10 +625,7 @@ class PromptManager {
             return
         }
 
-        ; Send command with leading space (no history)
-        ; Use {Text} mode to avoid AHK interpreting { } as special keys
-        SendInput("{Text} " prompt.code)
-        SendInput("{Enter}")
+        this.SendToTerminal(prompt.code)
         ToolTip("Prompt aplicado: " prompt.name)
         SetTimer(() => ToolTip(), -2000)
     }
@@ -658,8 +668,7 @@ class PromptManager {
         }
 
         ; Also apply to current session
-        SendInput("{Text} " prompt.code)
-        SendInput("{Enter}")
+        this.SendToTerminal(prompt.code)
         ToolTip("Prompt persistido e aplicado: " prompt.name)
         SetTimer(() => ToolTip(), -2500)
     }
@@ -677,8 +686,7 @@ class PromptManager {
         cmd .= "Add-Content $PROFILE '" codeEscaped "'; "
         cmd .= ". $PROFILE"
 
-        SendInput("{Text} " cmd)
-        SendInput("{Enter}")
+        this.SendToTerminal(cmd)
     }
 
     static PersistBash(prompt, asRoot) {
@@ -695,8 +703,7 @@ class PromptManager {
             cmd := "sed -i '" sedPattern "' ~/.bashrc && echo '# LazyWindow Prompt' >> ~/.bashrc && echo '" codeEscaped "' >> ~/.bashrc && source ~/.bashrc"
         }
 
-        SendInput("{Text} " cmd)
-        SendInput("{Enter}")
+        this.SendToTerminal(cmd)
     }
 
     static QuickApply() {
@@ -750,8 +757,7 @@ class PromptManager {
         }
 
         this.UpdateLastUsed(target)
-        SendInput("{Text} " target.code)
-        SendInput("{Enter}")
+        this.SendToTerminal(target.code)
         ToolTip("Prompt aplicado: " target.name)
         SetTimer(() => ToolTip(), -2000)
     }
