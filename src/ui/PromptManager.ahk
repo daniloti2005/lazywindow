@@ -663,11 +663,15 @@ class PromptManager {
             val := Trim(choice.Value)
             if (val = "1" || val = "3")
                 this.PersistBash(prompt, false)
-            if (val = "2" || val = "3")
+            if (val = "2" || val = "3") {
+                if (val = "3")
+                    Sleep(2000)  ; wait for user persist to finish
                 this.PersistBash(prompt, true)
+            }
         }
 
         ; Also apply to current session
+        Sleep(1500)  ; wait for persist command to finish
         this.SendToTerminal(prompt.code)
         ToolTip("Prompt persistido e aplicado: " prompt.name)
         SetTimer(() => ToolTip(), -2500)
@@ -691,16 +695,25 @@ class PromptManager {
 
     static PersistBash(prompt, asRoot) {
         code := prompt.code
-        ; Escape single quotes for bash
-        codeEscaped := StrReplace(code, "'", "'\\''")
 
-        ; Build sed patterns to clean old LazyWindow prompts (both PS1 and function-based)
-        sedPattern := "/^export PS1=/d;/^# LazyWindow/d;/^prompt_dragonball/d;/^PROMPT_COMMAND=prompt_dragonball/d;/^prompt_starwars/d;/^PROMPT_COMMAND=prompt_starwars/d"
+        ; Write code to a temp file (no quoting issues)
+        tempFile := A_Temp "\lw_prompt.tmp"
+        try FileDelete(tempFile)
+        FileAppend(code "`n", tempFile, "UTF-8-RAW")
+
+        ; Convert Windows temp path to WSL /mnt/c/... format
+        drive := SubStr(tempFile, 1, 1)
+        rest := SubStr(tempFile, 3)
+        rest := StrReplace(rest, "\", "/")
+        wslPath := "/mnt/" StrLower(drive) rest
+
+        ; Build sed patterns to clean old LazyWindow prompts
+        sedPattern := "/^export PS1=/d;/^# LazyWindow/d;/^prompt_dragonball/d;/^PROMPT_COMMAND=prompt_dragonball/d;/^prompt_starwars/d;/^PROMPT_COMMAND=prompt_starwars/d;/^set +H/d"
 
         if (asRoot) {
-            cmd := "sudo sed -i '" sedPattern "' /root/.bashrc && sudo bash -c " Chr(34) "echo '# LazyWindow Prompt' >> /root/.bashrc && echo '" codeEscaped "' >> /root/.bashrc" Chr(34)
+            cmd := "sudo sed -i '" sedPattern "' /root/.bashrc && echo '# LazyWindow Prompt' | sudo tee -a /root/.bashrc > /dev/null && cat '" wslPath "' | sudo tee -a /root/.bashrc > /dev/null"
         } else {
-            cmd := "sed -i '" sedPattern "' ~/.bashrc && echo '# LazyWindow Prompt' >> ~/.bashrc && echo '" codeEscaped "' >> ~/.bashrc && source ~/.bashrc"
+            cmd := "sed -i '" sedPattern "' ~/.bashrc && echo '# LazyWindow Prompt' >> ~/.bashrc && cat '" wslPath "' >> ~/.bashrc && source ~/.bashrc"
         }
 
         this.SendToTerminal(cmd)
