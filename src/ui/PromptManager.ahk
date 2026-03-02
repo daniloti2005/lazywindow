@@ -124,9 +124,16 @@ class PromptManager {
             lastUsed: ""
         })
 
-        ; ── Star Wars (Bash) — auto-detect: Jedi (user) ↔ Sith (root) ──
+        ; ── Star Wars (Bash) — auto-detect: Jedi (user) ↔ Sith (root) + animation ──
         swBash := "prompt_starwars() { if [ $EUID -eq 0 ]; then "
-        ; Root = Sith
+        ; One-shot animation: Anakin → Darth Vader
+        swBash .= "if [ -z " Chr(34) "$_SW_ANIMATED" Chr(34) " ]; then export _SW_ANIMATED=1; "
+        swBash .= "clear; echo -e " Chr(34) "\n\n\033[1;33m        .     .\n       /|\   /|\\n      / | \ / | \\n        |     |\n       / \   / \\n      /   \ /   \\n\n  \033[0;36mAnakin Skywalker\033[0m\n  \033[1;33mI feel the dark side growing...\033[0m" Chr(34) "; sleep 0.6; "
+        swBash .= "clear; echo -e " Chr(34) "\n\n\033[1;31m        .     .\n       /|\   /|\\n      / | \ / | \\n        |     |\n       / \   / \\n      /   \ /   \\n\n  \033[0;31mThe dark side is stronger...\033[0m" Chr(34) "; sleep 0.6; "
+        swBash .= "clear; echo -e " Chr(34) "\n\033[1;31m       ___________\n      /           \\\\n     /  __     __  \\\\n    |  |__|   |__|  |\n    |    \\  V  /    |\n     \\   \\\\_|_//   /\n      \\___________/\n\n  \033[0;31mAnakin Skywalker is no more...\033[0m" Chr(34) "; sleep 0.8; "
+        swBash .= "clear; echo -e " Chr(34) "\n\033[1;31m       ___________\n      /           \\\\n     /  __     __  \\\\n    |  |__|   |__|  |\n    |    \\  V  /    |\n     \\   \\\\_|_//   /\n      \\___________/\n         |     |\n    _____|     |_____\n   |                 |\n   |  \033[1;37mDARTH  VADER\033[1;31m   |\n   |_________________|\n\n  KSSHHH... \033[1;37m*lightsaber ignites*\033[0m" Chr(34) "; sleep 1; "
+        swBash .= "clear; echo -e " Chr(34) "\033[1;31m\n  I am... Darth Vader.\n\033[0m" Chr(34) "; sleep 0.8; clear; fi; "
+        ; Root = Sith prompt
         swBash .= "PS1=$'\n\033[1;31m███████ ██ ████████ ██   ██\033[0m"
         swBash .= "\n\033[1;31m██      ██    ██    ██   ██\033[0m"
         swBash .= "\n\033[1;31m███████ ██    ██    ███████\033[0m   \033[0;36mORDER\033[0m"
@@ -164,9 +171,16 @@ class PromptManager {
             lastUsed: ""
         })
 
-        ; ── Star Wars (PowerShell) — auto-detect: Jedi (normal) ↔ Sith (admin) ──
+        ; ── Star Wars (PowerShell) — auto-detect: Jedi (normal) ↔ Sith (admin) + animation ──
         swPs := "function prompt { $e = [char]27; $u = $env:USERNAME; $h = $env:COMPUTERNAME; $t = Get-Date -Format 'HH:mm'; $loc = $executionContext.SessionState.Path.CurrentLocation; "
         swPs .= "$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); "
+        ; One-shot animation: Anakin → Darth Vader
+        swPs .= "if ($isAdmin -and -not $global:_SW_ANIMATED) { $global:_SW_ANIMATED = $true; "
+        swPs .= "Clear-Host; Write-Host " Chr(34) "`n`n$e[1;33m        .     .`n       /|\   /|\`n      / | \ / | \`n        |     |`n       / \   / \`n      /   \ /   \`n`n  $e[0;36mAnakin Skywalker$e[0m`n  $e[1;33mI feel the dark side growing...$e[0m" Chr(34) "; Start-Sleep -Milliseconds 600; "
+        swPs .= "Clear-Host; Write-Host " Chr(34) "`n`n$e[1;31m        .     .`n       /|\   /|\`n      / | \ / | \`n        |     |`n       / \   / \`n      /   \ /   \`n`n  $e[0;31mThe dark side is stronger...$e[0m" Chr(34) "; Start-Sleep -Milliseconds 600; "
+        swPs .= "Clear-Host; Write-Host " Chr(34) "`n$e[1;31m       ___________`n      /           \`n     /  __     __  \`n    |  |__|   |__|  |`n    |    \  V  /    |`n     \   \_|_//   /`n      \___________/`n`n  $e[0;31mAnakin Skywalker is no more...$e[0m" Chr(34) "; Start-Sleep -Milliseconds 800; "
+        swPs .= "Clear-Host; Write-Host " Chr(34) "`n$e[1;31m       ___________`n      /           \`n     /  __     __  \`n    |  |__|   |__|  |`n    |    \  V  /    |`n     \   \_|_//   /`n      \___________/`n         |     |`n    _____|     |_____`n   |                 |`n   |  $e[1;37mDARTH  VADER$e[1;31m   |`n   |_________________|`n`n  KSSHHH... $e[1;37m*lightsaber ignites*$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1000; "
+        swPs .= "Clear-Host; Write-Host " Chr(34) "$e[1;31m`n  I am... Darth Vader.`n$e[0m" Chr(34) "; Start-Sleep -Milliseconds 800; Clear-Host; }; "
         swPs .= "if ($isAdmin) { "
         ; Admin = Sith
         swPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██ ████████ ██   ██$e[0m" Chr(34) "; "
@@ -242,9 +256,16 @@ class PromptManager {
             lastUsed: ""
         })
 
-        ; ── Dragon Ball (Bash) — auto-detect root vs user via function ──
+        ; ── Dragon Ball (Bash) — auto-detect root vs user via function + animation ──
         ; Uses a function + PROMPT_COMMAND to conditionally set PS1
         dbBash := "prompt_dragonball() { if [ $EUID -eq 0 ]; then "
+        ; One-shot animation: Goku gathering 7 dragon balls + Shenlong
+        dbBash .= "if [ -z " Chr(34) "$_DB_ANIMATED" Chr(34) " ]; then export _DB_ANIMATED=1; "
+        dbBash .= "clear; echo -e " Chr(34) "\n\n\033[1;38;5;208m       ★\n\n  Goku esta reunindo as esferas do dragao...\033[0m" Chr(34) "; sleep 0.5; "
+        dbBash .= "clear; echo -e " Chr(34) "\n\n\033[1;38;5;208m    ★  ★  ★\n\n  3 esferas encontradas...\033[0m" Chr(34) "; sleep 0.5; "
+        dbBash .= "clear; echo -e " Chr(34) "\n\n\033[1;33m  ★ ★ ★ ★ ★ ★ ★\n\n  \033[1;33mAs 7 esferas brilham com poder!\033[0m" Chr(34) "; sleep 0.6; "
+        dbBash .= "clear; echo -e " Chr(34) "\n\033[1;32m        /\\\n       /  \\\n      / 🐉 \\\n     /      \\\n    / SHENLONG\\\n   /          \\\n  /____________\\\n       ||||\n\n  \033[1;33mSHENLONG: Fale seu desejo!\033[0m" Chr(34) "; sleep 0.8; "
+        dbBash .= "clear; echo -e " Chr(34) "\033[1;33m\n  ⚡ PODER TOTAL CONCEDIDO! ⚡\n  Voce agora e SUPER SAIYAN!\n\033[0m" Chr(34) "; sleep 0.8; clear; fi; "
         ; Root = Super Saiyan + Shenlong
         dbBash .= "PS1=$'\n\033[1;33m███████ ███████      ██\033[0m"
         dbBash .= "\n\033[1;33m██      ██           ██\033[0m"
@@ -284,9 +305,16 @@ class PromptManager {
             lastUsed: ""
         })
 
-        ; ── Dragon Ball (PowerShell) — auto-detect admin vs normal ──
+        ; ── Dragon Ball (PowerShell) — auto-detect admin vs normal + animation ──
         dbPs := "function prompt { $e = [char]27; $u = $env:USERNAME; $h = $env:COMPUTERNAME; $t = Get-Date -Format 'HH:mm'; $loc = $executionContext.SessionState.Path.CurrentLocation; "
         dbPs .= "$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); "
+        ; One-shot animation: Goku gathering 7 dragon balls + Shenlong
+        dbPs .= "if ($isAdmin -and -not $global:_DB_ANIMATED) { $global:_DB_ANIMATED = $true; "
+        dbPs .= "Clear-Host; Write-Host " Chr(34) "`n`n$e[1;38;5;208m       ★`n`n  Goku esta reunindo as esferas do dragao...$e[0m" Chr(34) "; Start-Sleep -Milliseconds 500; "
+        dbPs .= "Clear-Host; Write-Host " Chr(34) "`n`n$e[1;38;5;208m    ★  ★  ★`n`n  3 esferas encontradas...$e[0m" Chr(34) "; Start-Sleep -Milliseconds 500; "
+        dbPs .= "Clear-Host; Write-Host " Chr(34) "`n`n$e[1;33m  ★ ★ ★ ★ ★ ★ ★`n`n  $e[1;33mAs 7 esferas brilham com poder!$e[0m" Chr(34) "; Start-Sleep -Milliseconds 600; "
+        dbPs .= "Clear-Host; Write-Host " Chr(34) "`n$e[1;32m        /\`n       /  \`n      / 🐉 \`n     /      \`n    / SHENLONG\`n   /          \`n  /____________\`n       ||||`n`n  $e[1;33mSHENLONG: Fale seu desejo!$e[0m" Chr(34) "; Start-Sleep -Milliseconds 800; "
+        dbPs .= "Clear-Host; Write-Host " Chr(34) "$e[1;33m`n  ⚡ PODER TOTAL CONCEDIDO! ⚡`n  Voce agora e SUPER SAIYAN!`n$e[0m" Chr(34) "; Start-Sleep -Milliseconds 800; Clear-Host; }; "
         dbPs .= "if ($isAdmin) { "
         ; Admin = Super Saiyan
         dbPs .= "Write-Host " Chr(34) "$e[1;33m███████ ███████      ██$e[0m" Chr(34) "; "
