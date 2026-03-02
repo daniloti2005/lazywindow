@@ -380,7 +380,9 @@ class PromptManager {
         }
 
         ; Send command with leading space (no history)
-        SendInput(" " prompt.code "{Enter}")
+        ; Use {Text} mode to avoid AHK interpreting { } as special keys
+        SendInput("{Text} " prompt.code)
+        SendInput("{Enter}")
         ToolTip("Prompt aplicado: " prompt.name)
         SetTimer(() => ToolTip(), -2000)
     }
@@ -436,7 +438,8 @@ class PromptManager {
         }
 
         this.UpdateLastUsed(target)
-        SendInput(" " target.code "{Enter}")
+        SendInput("{Text} " target.code)
+        SendInput("{Enter}")
         ToolTip("Prompt aplicado: " target.name)
         SetTimer(() => ToolTip(), -2000)
     }
@@ -454,9 +457,11 @@ class PromptManager {
         A_Clipboard := ""
 
         if (shellType = "powershell") {
-            SendInput(" (Get-Command prompt).Definition | clip{Enter}")
+            SendInput("{Text} (Get-Command prompt).Definition | clip")
+            SendInput("{Enter}")
         } else {
-            SendInput(" echo " Chr(34) "$PS1" Chr(34) " | clip.exe{Enter}")
+            SendInput("{Text} echo " Chr(34) "$PS1" Chr(34) " | clip.exe")
+            SendInput("{Enter}")
         }
 
         success := ClipWait(3, 1)
