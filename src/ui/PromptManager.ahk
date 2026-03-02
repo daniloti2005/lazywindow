@@ -151,7 +151,7 @@ class PromptManager {
         swBash .= "        \033[1;36m⭐  A N A K I N   S K Y W A L K E R  ⭐\033[0m\n"
         swBash .= "        \033[0;36m     The Chosen One has arrived...\033[0m\n"
         swBash .= "        \033[0;34m   A long time ago in a galaxy far, far away...\033[0m\n"
-        swBash .= "\033[0m'; sleep 0.8; "
+        swBash .= "\033[0m'; sleep 2.5; "
         ; Frame 2: Conflict — Between light and dark
         swBash .= "clear; echo -e '\n\033[0m"
         swBash .= "  \033[1;34m ░░░░░░░░░░░░░░\033[0m          ║          \033[1;31m░░░░░░░░░░░░░░\033[0m\n"
@@ -171,7 +171,7 @@ class PromptManager {
         swBash .= "\n"
         swBash .= "     \033[1;33m⚡  I can feel it... the dark side calls to me...  ⚡\033[0m\n"
         swBash .= "     \033[0;33m        The Force is pulling me apart...\033[0m\n"
-        swBash .= "\033[0m'; sleep 0.9; "
+        swBash .= "\033[0m'; sleep 2.5; "
         ; Frame 3: The Fall — Burning temple, yellow eyes
         swBash .= "clear; echo -e '\n\033[1;31m"
         swBash .= "       )\\        /(          )\\       /(        )\\        /(\n"
@@ -192,7 +192,7 @@ class PromptManager {
         swBash .= "  \033[1;37m ║  \033[1;36m You were supposed to destroy the Sith, not join them! \033[1;37m ║\033[0m\n"
         swBash .= "  \033[1;37m ║  \033[1;33m You were my brother, Anakin... I loved you.          \033[1;37m ║\033[0m\n"
         swBash .= "  \033[1;37m ╚═══════════════════════════════════════════════════════╝\033[0m\n"
-        swBash .= "\033[0m'; sleep 1.2; "
+        swBash .= "\033[0m'; sleep 3; "
         ; Frame 4: The Mask — Surgery scene, mask descending
         swBash .= "clear; echo -e '\n\033[0m"
         swBash .= "  \033[0;37m ┌─────────────────────────────────────────────────────────┐\033[0m\n"
@@ -216,7 +216,7 @@ class PromptManager {
         swBash .= "\n"
         swBash .= "         \033[0;31m   Anakin Skywalker is no more...\033[0m\n"
         swBash .= "         \033[0;37m   The mask descends. The transformation begins.\033[0m\n"
-        swBash .= "\033[0m'; sleep 1.2; "
+        swBash .= "\033[0m'; sleep 3; "
         ; Frame 5: Vader Rises — Full body with cape and red saber
         swBash .= "clear; echo -e '\n\033[1;31m"
         swBash .= "                        ┌───────────────┐\n"
@@ -239,7 +239,7 @@ class PromptManager {
         swBash .= "        ╱           └──────╱       ╲──────┘           ╲\033[0m\n"
         swBash .= "\n"
         swBash .= "   \033[1;37m KSSHHH...\033[0m  \033[1;31m━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m  \033[1;37m*lightsaber ignites*\033[0m\n"
-        swBash .= "\033[0m'; sleep 1.2; "
+        swBash .= "\033[0m'; sleep 3; "
         ; Frame 6: Final — Iconic close-up
         swBash .= "clear; echo -e '\n\n\033[1;31m"
         swBash .= "            ╔═══════════════════════════════════════════╗\n"
@@ -259,7 +259,7 @@ class PromptManager {
         swBash .= "\033[1;37m  ║         \033[1;31m  I  am...  D A R T H   V A D E R .  \033[1;37m            ║\033[0m\n"
         swBash .= "\033[1;37m  ║                                                           ║\033[0m\n"
         swBash .= "\033[1;37m  ╚═══════════════════════════════════════════════════════════╝\033[0m\n"
-        swBash .= "\033[0m'; sleep 1.2; clear; fi; "
+        swBash .= "\033[0m'; sleep 3.5; clear; fi; "
         ; Root = Sith prompt
         swBash .= "PS1=$'\n\033[1;31m███████ ██ ████████ ██   ██\033[0m"
         swBash .= "\n\033[1;31m██      ██    ██    ██   ██\033[0m"
@@ -267,7 +267,7 @@ class PromptManager {
         swBash .= "\n\033[1;31m     ██ ██    ██    ██   ██\033[0m"
         swBash .= "\n\033[1;31m███████ ██    ██    ██   ██\033[0m"
         swBash .= "\n\033[1;31mGreetings, Lord root. The dark side awaits.\033[0m"
-        swBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'$(hostname)'\033[0m"
+        swBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'${HOSTNAME}'\033[0m"
         swBash .= '\n\033[0;37m"Anger leads to hate. Hate leads to suffering."\033[0m'
         swBash .= "\n"
         swBash .= "\n\033[0;36m🔗 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;31m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;31m🔥 Sith\033[0m"
@@ -281,7 +281,7 @@ class PromptManager {
         swBash .= "\n\033[1;33m██   ██ ██      ██   ██ ██\033[0m"
         swBash .= "\n\033[1;33m █████  ███████ ██████  ██\033[0m"
         swBash .= "\n\033[0;32mWelcome, Padawan \u. The Force is strong with you.\033[0m"
-        swBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'$(hostname)'\033[0m"
+        swBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'${HOSTNAME}'\033[0m"
         swBash .= '\n\033[0;37m"Anger leads to hate. Hate leads to suffering."\033[0m'
         swBash .= "\n"
         swBash .= "\n\033[0;36m🔗 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;32m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;33m⭐ Jedi\033[0m"
@@ -325,7 +325,7 @@ class PromptManager {
         swPs .= "        $e[1;36m⭐  A N A K I N   S K Y W A L K E R  ⭐$e[0m``n"
         swPs .= "        $e[0;36m     The Chosen One has arrived...$e[0m``n"
         swPs .= "        $e[0;34m   A long time ago in a galaxy far, far away...$e[0m``n"
-        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 800; "
+        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 2500; "
         ; Frame 2: Conflict
         swPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[0m"
         swPs .= "  $e[1;34m ░░░░░░░░░░░░░░$e[0m          ║          $e[1;31m░░░░░░░░░░░░░░$e[0m``n"
@@ -345,7 +345,7 @@ class PromptManager {
         swPs .= "``n"
         swPs .= "     $e[1;33m⚡  I can feel it... the dark side calls to me...  ⚡$e[0m``n"
         swPs .= "     $e[0;33m        The Force is pulling me apart...$e[0m``n"
-        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 900; "
+        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 2500; "
         ; Frame 3: The Fall
         swPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[1;31m"
         swPs .= "       )\        /(          )\       /(        )\        /(``n"
@@ -366,7 +366,7 @@ class PromptManager {
         swPs .= "  $e[1;37m ║  $e[1;36m You were supposed to destroy the Sith, not join them! $e[1;37m ║$e[0m``n"
         swPs .= "  $e[1;37m ║  $e[1;33m You were my brother, Anakin... I loved you.          $e[1;37m ║$e[0m``n"
         swPs .= "  $e[1;37m ╚═══════════════════════════════════════════════════════╝$e[0m``n"
-        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1200; "
+        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3000; "
         ; Frame 4: The Mask — Surgery
         swPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[0m"
         swPs .= "  $e[0;37m ┌─────────────────────────────────────────────────────────┐$e[0m``n"
@@ -390,7 +390,7 @@ class PromptManager {
         swPs .= "``n"
         swPs .= "         $e[0;31m   Anakin Skywalker is no more...$e[0m``n"
         swPs .= "         $e[0;37m   The mask descends. The transformation begins.$e[0m``n"
-        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1200; "
+        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3000; "
         ; Frame 5: Vader Rises
         swPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[1;31m"
         swPs .= "                        ┌───────────────┐``n"
@@ -413,7 +413,7 @@ class PromptManager {
         swPs .= "        ╱           └──────╱       ╲──────┘           ╲$e[0m``n"
         swPs .= "``n"
         swPs .= "   $e[1;37m KSSHHH...$e[0m  $e[1;31m━━━━━━━━━━━━━━━━━━━━━━━━━━$e[0m  $e[1;37m*lightsaber ignites*$e[0m``n"
-        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1200; "
+        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3000; "
         ; Frame 6: Final — Iconic close-up
         swPs .= "Clear-Host; Write-Host " Chr(34) "``n``n$e[1;31m"
         swPs .= "            ╔═══════════════════════════════════════════╗``n"
@@ -433,7 +433,7 @@ class PromptManager {
         swPs .= "$e[1;37m  ║         $e[1;31m  I  am...  D A R T H   V A D E R .  $e[1;37m            ║$e[0m``n"
         swPs .= "$e[1;37m  ║                                                           ║$e[0m``n"
         swPs .= "$e[1;37m  ╚═══════════════════════════════════════════════════════════╝$e[0m``n"
-        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1200; Clear-Host; }; "
+        swPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3500; Clear-Host; }; "
         swPs .= "if ($isAdmin) { "
         ; Admin = Sith
         swPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██ ████████ ██   ██$e[0m" Chr(34) "; "
@@ -535,7 +535,7 @@ class PromptManager {
         dbBash .= "\n"
         dbBash .= "     \033[1;38;5;208m⭐  G O K U   procurando as esferas do dragao...  ⭐\033[0m\n"
         dbBash .= "     \033[0;33m           O radar do dragao esta apitando...\033[0m\n"
-        dbBash .= "\033[0m'; sleep 0.8; "
+        dbBash .= "\033[0m'; sleep 2.5; "
         ; Frame 2: 7 Dragon Balls found — arranged with stars inside
         dbBash .= "clear; echo -e '\n\033[1;33m"
         dbBash .= "                   AS  7  ESFERAS  DO  DRAGAO                       \n"
@@ -554,7 +554,7 @@ class PromptManager {
         dbBash .= "\n"
         dbBash .= "     \033[1;33m⭐  Todas as 7 esferas foram reunidas!  ⭐\033[0m\n"
         dbBash .= "     \033[0;33m       O ceu esta ficando escuro...\033[0m\n"
-        dbBash .= "\033[0m'; sleep 0.9; "
+        dbBash .= "\033[0m'; sleep 2.5; "
         ; Frame 3: Sky darkens — Lightning, balls shooting energy
         dbBash .= "clear; echo -e '\n\033[0m"
         dbBash .= "  \033[1;33m              ⚡                    ⚡              ⚡\033[0m\n"
@@ -574,8 +574,7 @@ class PromptManager {
         dbBash .= "                     \033[1;33m   |         |         |\033[0m\n"
         dbBash .= "\n"
         dbBash .= "  \033[1;33m ⚡⚡  O ceu escurece... Shenlong esta chegando...  ⚡⚡\033[0m\n"
-        dbBash .= "\033[0m'; sleep 1.0; "
-        ; Frame 4: Shenlong emerges — Dragon head from clouds
+        dbBash .= "\033[0m'; sleep 3; "
         dbBash .= "clear; echo -e '\n\033[1;32m"
         dbBash .= "  \033[0;90m ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\033[0m\n"
         dbBash .= "  \033[0;90m ░░░░░░░░░░░\033[1;32m        ___....___        \033[0;90m░░░░░░░░░░░░░░░░░\033[0m\n"
@@ -589,7 +588,7 @@ class PromptManager {
         dbBash .= "               ``----.............----``                         \n"
         dbBash .= "\n"
         dbBash .= "     \033[1;32m🐉  S H E N L O N G   esta surgindo das nuvens...  🐉\033[0m\n"
-        dbBash .= "\033[0m'; sleep 1.0; "
+        dbBash .= "\033[0m'; sleep 3; "
         ; Frame 5: Shenlong full body — serpentine dragon coiling
         dbBash .= "clear; echo -e '\n\033[1;32m"
         dbBash .= "                        .---.\n"
@@ -613,7 +612,7 @@ class PromptManager {
         dbBash .= "  \033[1;33m╔══════════════════════════════════════════════════════════╗\033[0m\n"
         dbBash .= "  \033[1;33m║    \033[1;32m🐉  FALE SEU DESEJO, MORTAL! EU O REALIZAREI!  🐉\033[1;33m    ║\033[0m\n"
         dbBash .= "  \033[1;33m╚══════════════════════════════════════════════════════════╝\033[0m\n"
-        dbBash .= "\033[0m'; sleep 1.2; "
+        dbBash .= "\033[0m'; sleep 3; "
         ; Frame 6: Wish granted — Golden power explosion
         dbBash .= "clear; echo -e '\n\n\033[1;33m"
         dbBash .= "                          ⚡  ⚡  ⚡\n"
@@ -633,7 +632,7 @@ class PromptManager {
         dbBash .= "  \033[1;37m║     \033[1;33m⚡  Voce agora e  S U P E R   S A I Y A N !  ⚡\033[1;37m     ║\033[0m\n"
         dbBash .= "  \033[1;37m║                                                          ║\033[0m\n"
         dbBash .= "  \033[1;37m╚══════════════════════════════════════════════════════════╝\033[0m\n"
-        dbBash .= "\033[0m'; sleep 1.2; clear; fi; "
+        dbBash .= "\033[0m'; sleep 3.5; clear; fi; "
         ; Root = Super Saiyan + Shenlong
         dbBash .= "PS1=$'\n\033[1;33m███████ ███████      ██\033[0m"
         dbBash .= "\n\033[1;33m██      ██           ██\033[0m"
@@ -642,7 +641,7 @@ class PromptManager {
         dbBash .= "\n\033[1;33m███████ ███████  █████ \033[0m"
         dbBash .= "\n\033[1;33m🐉 As 7 esferas foram reunidas! Shenlong, realize meu desejo!\033[0m"
         dbBash .= "\n\033[1;32mSeu desejo foi realizado. Voce agora tem poder TOTAL.\033[0m"
-        dbBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'$(hostname)'\033[0m"
+        dbBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'${HOSTNAME}'\033[0m"
         dbBash .= '\n\033[0;37m"O poder vem do treinamento, nao do desejo."\033[0m'
         dbBash .= "\n"
         dbBash .= "\n\033[0;36m🐉 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;31m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;33m⚡ Super Saiyan\033[0m"
@@ -656,7 +655,7 @@ class PromptManager {
         dbBash .= "\n\033[1;38;5;208m██    ██ ██    ██ ██  ██  ██   ██\033[0m"
         dbBash .= "\n\033[1;38;5;208m ██████   ██████  ██   ██  █████ \033[0m"
         dbBash .= "\n\033[1;38;5;208mEu sou Goku! Vou treinar e ficar mais forte!\033[0m"
-        dbBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'$(hostname)'\033[0m"
+        dbBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'${HOSTNAME}'\033[0m"
         dbBash .= '\n\033[0;37m"O poder vem do treinamento, nao do desejo."\033[0m'
         dbBash .= "\n"
         dbBash .= "\n\033[0;36m🟠 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;32m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;38;5;208m⭐ Goku\033[0m"
@@ -699,7 +698,7 @@ class PromptManager {
         dbPs .= "``n"
         dbPs .= "     $e[1;38;5;208m⭐  G O K U   procurando as esferas do dragao...  ⭐$e[0m``n"
         dbPs .= "     $e[0;33m           O radar do dragao esta apitando...$e[0m``n"
-        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 800; "
+        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 2500; "
         ; Frame 2: 7 Dragon Balls found
         dbPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[1;33m"
         dbPs .= "                   AS  7  ESFERAS  DO  DRAGAO                       ``n"
@@ -718,7 +717,7 @@ class PromptManager {
         dbPs .= "``n"
         dbPs .= "     $e[1;33m⭐  Todas as 7 esferas foram reunidas!  ⭐$e[0m``n"
         dbPs .= "     $e[0;33m       O ceu esta ficando escuro...$e[0m``n"
-        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 900; "
+        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 2500; "
         ; Frame 3: Sky darkens — Lightning
         dbPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[0m"
         dbPs .= "  $e[1;33m              ⚡                    ⚡              ⚡$e[0m``n"
@@ -738,7 +737,7 @@ class PromptManager {
         dbPs .= "                     $e[1;33m   |         |         |$e[0m``n"
         dbPs .= "``n"
         dbPs .= "  $e[1;33m ⚡⚡  O ceu escurece... Shenlong esta chegando...  ⚡⚡$e[0m``n"
-        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1000; "
+        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3000; "
         ; Frame 4: Shenlong emerges
         dbPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[1;32m"
         dbPs .= "  $e[0;90m ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░$e[0m``n"
@@ -753,7 +752,7 @@ class PromptManager {
         dbPs .= "               ``----.............----``                         ``n"
         dbPs .= "``n"
         dbPs .= "     $e[1;32m🐉  S H E N L O N G   esta surgindo das nuvens...  🐉$e[0m``n"
-        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1000; "
+        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3000; "
         ; Frame 5: Shenlong full body
         dbPs .= "Clear-Host; Write-Host " Chr(34) "``n$e[1;32m"
         dbPs .= "                        .---.``n"
@@ -777,7 +776,7 @@ class PromptManager {
         dbPs .= "  $e[1;33m╔══════════════════════════════════════════════════════════╗$e[0m``n"
         dbPs .= "  $e[1;33m║    $e[1;32m🐉  FALE SEU DESEJO, MORTAL! EU O REALIZAREI!  🐉$e[1;33m    ║$e[0m``n"
         dbPs .= "  $e[1;33m╚══════════════════════════════════════════════════════════╝$e[0m``n"
-        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1200; "
+        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3000; "
         ; Frame 6: Wish granted — Golden power explosion
         dbPs .= "Clear-Host; Write-Host " Chr(34) "``n``n$e[1;33m"
         dbPs .= "                          ⚡  ⚡  ⚡``n"
@@ -797,7 +796,7 @@ class PromptManager {
         dbPs .= "  $e[1;37m║     $e[1;33m⚡  Voce agora e  S U P E R   S A I Y A N !  ⚡$e[1;37m     ║$e[0m``n"
         dbPs .= "  $e[1;37m║                                                          ║$e[0m``n"
         dbPs .= "  $e[1;37m╚══════════════════════════════════════════════════════════╝$e[0m``n"
-        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 1200; Clear-Host; }; "
+        dbPs .= "$e[0m" Chr(34) "; Start-Sleep -Milliseconds 3500; Clear-Host; }; "
         dbPs .= "if ($isAdmin) { "
         ; Admin = Super Saiyan
         dbPs .= "Write-Host " Chr(34) "$e[1;33m███████ ███████      ██$e[0m" Chr(34) "; "
