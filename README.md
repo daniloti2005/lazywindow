@@ -237,18 +237,20 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 | `5S` | Define prompt 5 como default para o tipo de shell |
 | `N` | Novo prompt customizado |
 
-**5 Prompts Built-in:**
+**13 Prompts Built-in:**
 
 | Nome | Shell | Descrição |
 |------|-------|-----------|
 | Minimal | PowerShell | Apenas pasta e `>` |
 | Git Branch | PowerShell | Pasta + branch git em verde |
 | Timestamp | PowerShell | Hora + pasta |
+| 💻 Modern | PowerShell | Powerline: duração do comando, git, user/host/hora — segmentos azul + marrom |
 | ⚔ Star Wars | PowerShell | Auto-detect: Jedi (normal) ↔ Sith (admin) + animação ASCII full-screen (6 frames: Anakin → Vader) |
 | ⚡ Powerline | PowerShell | Estilo oh-my-posh: path, git, user/host/hora |
 | 🐉 Dragon Ball | PowerShell | Auto-detect: Goku (normal) ↔ Super Saiyan (admin) + animação ASCII full-screen (6 frames: Goku → Shenlong) |
 | Minimal Color | Bash | Pasta em azul + `$` |
 | Git Color | Bash | Pasta em azul + branch em verde |
+| 🐧 Modern | Bash | Powerline: duração do comando (trap DEBUG), git, user/host/hora — segmentos verde + marrom |
 | ⚔ Star Wars | Bash | Auto-detect: Jedi (user) ↔ Sith (root) + animação ASCII full-screen (6 frames: Anakin → Vader) |
 | ⚡ Powerline | Bash | Segmentos: distro, path, git, user/host/hora |
 | 🐉 Dragon Ball | Bash | Auto-detect: Goku (user) ↔ Super Saiyan + Shenlong (root) + animação ASCII full-screen (6 frames: Goku → Shenlong) |

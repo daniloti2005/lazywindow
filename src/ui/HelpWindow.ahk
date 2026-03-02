@@ -247,9 +247,12 @@ PROMPT MANAGER [requer Alt+Home]:
                     4F = toggle favorito do prompt 4
                     5S = definir prompt 5 como default
                     N = novo prompt customizado
-                  11 prompts built-in:
-                    PS: Minimal, Git Branch, Timestamp, Star Wars, Powerline, Dragon Ball
-                    Bash: Minimal, Git Color, Star Wars, Powerline, Dragon Ball
+                  13 prompts built-in:
+                    PS: Minimal, Git Branch, Timestamp, Modern, Star Wars, Powerline, Dragon Ball
+                    Bash: Minimal, Git Color, Modern, Star Wars, Powerline, Dragon Ball
+                  Modern: powerline com duracao do comando, git branch, user/host/hora
+                    PS: segmentos azul (esq) + marrom (dir) com setas powerline
+                    Bash: segmentos verde (esq) + marrom (dir) com timer via trap DEBUG
                   Star Wars: auto-detect Jedi (user) ↔ Sith (root/admin)
                     Animacao ASCII full-screen ao virar Sith (6 frames):
                     Anakin > Conflito Luz/Trevas > Queda > Cirurgia > Vader > Close-up

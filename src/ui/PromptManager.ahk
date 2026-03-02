@@ -25,7 +25,7 @@ class PromptManager {
 
     ; Ensure all built-in prompts are present in memory (never lost after file reload)
     static MergeBuiltIns() {
-        builtinIds := ["minimal-ps", "git-branch-ps", "timestamp-ps", "minimal-bash", "git-color-bash", "starwars-bash", "starwars-ps", "powerline-ps", "powerline-bash", "dragonball-bash", "dragonball-ps"]
+        builtinIds := ["minimal-ps", "git-branch-ps", "timestamp-ps", "modern-ps", "minimal-bash", "git-color-bash", "modern-bash", "starwars-bash", "starwars-ps", "powerline-ps", "powerline-bash", "dragonball-bash", "dragonball-ps"]
         existingIds := []
         for p in this.prompts
             existingIds.Push(p.id)
@@ -101,6 +101,31 @@ class PromptManager {
             lastUsed: ""
         })
 
+        ; ── Modern (PowerShell 7) — oh-my-posh style: duration, git, right-aligned user/host/time ──
+        modernPs := "function prompt { $e = [char]27; $arrow = [char]0xE0B0; "
+        modernPs .= "$last = Get-History -Count 1; $dur = '0s'; "
+        modernPs .= "if ($last) { $ts = $last.Duration; if ($ts.TotalMinutes -ge 1) { $dur = '{0}m{1}s' -f [math]::Floor($ts.TotalMinutes), $ts.Seconds } elseif ($ts.TotalSeconds -ge 1) { $dur = '{0}s' -f [math]::Floor($ts.TotalSeconds) } }; "
+        modernPs .= "$loc = $executionContext.SessionState.Path.CurrentLocation; "
+        modernPs .= "$folder = if ($loc.Path -eq $HOME) { '🏠' } else { " Chr(34) "📁 $($loc.Path | Split-Path -Leaf)" Chr(34) " }; "
+        modernPs .= "$b = ''; try { $b = (git branch --show-current 2>$null) } catch {}; "
+        modernPs .= "$u = $env:USERNAME; $h = $env:COMPUTERNAME; $t = Get-Date -Format 'h:mm:ss tt'; "
+        modernPs .= "$w = $Host.UI.RawUI.WindowSize.Width; "
+        modernPs .= "$leftTxt = " Chr(34) " $folder  $dur " Chr(34) "; "
+        modernPs .= "$gitTxt = if ($b) { " Chr(34) "  $b " Chr(34) " } else { '' }; "
+        modernPs .= "$rightTxt = " Chr(34) "| $u / $h / $t " Chr(34) "; "
+        modernPs .= "$pad = $w - $leftTxt.Length - $gitTxt.Length - $rightTxt.Length - 2; if ($pad -lt 0) { $pad = 0 }; "
+        modernPs .= "Write-Host " Chr(34) "$e[36;44m$leftTxt$e[32;44m$gitTxt$e[34;49m$arrow$e[0m$(' ' * $pad)$e[36;48;5;94m$rightTxt$e[0m" Chr(34) "; "
+        modernPs .= Chr(34) "$e[0m❯ " Chr(34) " }"
+        this.prompts.Push({
+            id: "modern-ps",
+            name: "💻 Modern",
+            shellType: "powershell",
+            code: modernPs,
+            builtin: true,
+            favorite: false,
+            lastUsed: ""
+        })
+
         ; Bash prompts
         minimalBash := "export PS1='\[\033[01;34m\]\w\[\033[00m\]\$ '"
         this.prompts.Push({
@@ -119,6 +144,28 @@ class PromptManager {
             name: "Git Color",
             shellType: "bash",
             code: gitColorBash,
+            builtin: true,
+            favorite: false,
+            lastUsed: ""
+        })
+
+        ; ── Modern (Bash/Linux) — powerline style: duration, git, user/host/time with green theme ──
+        modernBash := "trap '[ " Chr(34) "$BASH_COMMAND" Chr(34) " != " Chr(34) "prompt_modern" Chr(34) " ] && _lw_timer=${_lw_timer:-$SECONDS}' DEBUG; "
+        modernBash .= "prompt_modern() { "
+        modernBash .= "local e=$(($SECONDS - ${_lw_timer:-$SECONDS})); unset _lw_timer; "
+        modernBash .= "local dur='0s'; "
+        modernBash .= "[ $e -ge 60 ] && dur=" Chr(34) "$((e/60))m$((e%60))s" Chr(34) " || { [ $e -ge 1 ] && dur=" Chr(34) "${e}s" Chr(34) "; }; "
+        modernBash .= "local b=$(git branch --show-current 2>/dev/null); "
+        modernBash .= "local f; [ " Chr(34) "$PWD" Chr(34) " = " Chr(34) "$HOME" Chr(34) " ] && f='🏠' || f=" Chr(34) "📁 \W" Chr(34) "; "
+        modernBash .= "local g=''; [ -n " Chr(34) "$b" Chr(34) " ] && g=" Chr(34) "  $b " Chr(34) "; "
+        modernBash .= "local t=$(date +'%-I:%M:%S %p'); "
+        modernBash .= "PS1=" Chr(34) "\[\033[30;42m\] 🐧 $f  ${dur} \[\033[33;42m\]${g}\[\033[32;49m\]" Chr(0xE0B0) "\[\033[0m\]  \[\033[36;48;5;94m\]| \u / ${HOSTNAME} / $t \[\033[0m\]\n\[\033[32m\]❯\[\033[0m\] " Chr(34) "; "
+        modernBash .= "}; PROMPT_COMMAND=prompt_modern"
+        this.prompts.Push({
+            id: "modern-bash",
+            name: "🐧 Modern",
+            shellType: "bash",
+            code: modernBash,
             builtin: true,
             favorite: false,
             lastUsed: ""

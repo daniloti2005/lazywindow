@@ -235,7 +235,10 @@ ActivateGrid(monitorNumber) {
 - **Módulo:** `ui/PromptManager.ahk`
 - **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo ProjectBookmarks)
 - **Funcionalidades:**
-  - 11 prompts built-in: Minimal, Git Branch, Timestamp, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (PowerShell) + Minimal Color, Git Color, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (Bash)
+  - 13 prompts built-in: Minimal, Git Branch, Timestamp, 💻 Modern, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (PowerShell) + Minimal Color, Git Color, 🐧 Modern, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (Bash)
+  - Modern: powerline com duração do último comando, git branch, user/host/hora
+    - PS: segmentos azul (esq) + marrom (dir), right-aligned, seta powerline (E0B0)
+    - Bash: segmentos verde (esq) + marrom (dir), timer via trap DEBUG + PROMPT_COMMAND
   - Star Wars e Dragon Ball: auto-detect user/root (Bash) ou normal/admin (PowerShell)
   - Animações ASCII full-screen (6 frames, ~17s) ao virar root/admin — uma vez por sessão:
     - Star Wars: Anakin → Conflito Luz/Trevas → Queda → Cirurgia → Vader Rises → Close-up Vader
