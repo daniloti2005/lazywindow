@@ -20,8 +20,38 @@ class PromptManager {
         if (!DirExist(this.configDir))
             DirCreate(this.configDir)
         this.Load()
-        if (this.prompts.Length = 0)
-            this.LoadBuiltIns()
+        this.MergeBuiltIns()
+    }
+
+    ; Ensure all built-in prompts are present in memory (never lost after file reload)
+    static MergeBuiltIns() {
+        builtinIds := ["minimal-ps", "git-branch-ps", "timestamp-ps", "minimal-color-bash", "git-color-bash"]
+        existingIds := []
+        for p in this.prompts
+            existingIds.Push(p.id)
+
+        ; Save custom prompts before rebuilding
+        customs := []
+        for p in this.prompts
+            if (!p.builtin)
+                customs.Push(p)
+
+        ; Check if any builtin is missing
+        needMerge := false
+        for bid in builtinIds {
+            found := false
+            for eid in existingIds
+                if (eid = bid) { found := true; break }
+            if (!found) { needMerge := true; break }
+        }
+        if (!needMerge)
+            return
+
+        ; Rebuild: load fresh built-ins then re-add customs
+        this.prompts := []
+        this.LoadBuiltIns()
+        for p in customs
+            this.prompts.Push(p)
     }
 
     ; ── Built-in Prompts ──
@@ -114,7 +144,6 @@ class PromptManager {
             this.wasArrowMouseOn := false
         }
 
-        this.Load()
         this.CreateGui()
         this.isVisible := true
     }
@@ -630,18 +659,24 @@ class PromptManager {
         if (!DirExist(this.configDir))
             DirCreate(this.configDir)
 
+        ; Only save custom prompts and favorites/defaults — built-ins are always reloaded from code
         json := '{"prompts": [`n'
-        for idx, p in this.prompts {
+        customPrompts := []
+        for p in this.prompts
+            if (!p.builtin)
+                customPrompts.Push(p)
+
+        for idx, p in customPrompts {
             json .= '    {'
             json .= '"id": "' this.EscapeJson(p.id) '", '
             json .= '"name": "' this.EscapeJson(p.name) '", '
             json .= '"shellType": "' this.EscapeJson(p.shellType) '", '
             json .= '"code": "' this.EscapeJson(p.code) '", '
-            json .= '"builtin": ' (p.builtin ? "true" : "false") ', '
+            json .= '"builtin": false, '
             json .= '"favorite": ' (p.favorite ? "true" : "false") ', '
             json .= '"lastUsed": "' this.EscapeJson(p.lastUsed) '"'
             json .= '}'
-            if (idx < this.prompts.Length)
+            if (idx < customPrompts.Length)
                 json .= ','
             json .= '`n'
         }
