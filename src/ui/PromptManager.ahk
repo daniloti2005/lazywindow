@@ -195,13 +195,14 @@ class PromptManager {
 
         ; ListView
         this.gui.SetFont("s11 cWhite", "Consolas")
-        this.listView := this.gui.AddListView("x15 y105 w960 h440 Background0d1117 c00ff88 -Hdr +Grid +ReadOnly", ["#", "★", "Nome", "Shell", "Preview", "Usado"])
+        this.listView := this.gui.AddListView("x15 y105 w960 h440 Background0d1117 c00ff88 -Hdr +Grid +ReadOnly", ["#", "★", "Nome", "Tipo", "Shell", "Preview", "Usado"])
         this.listView.ModifyCol(1, 40)
         this.listView.ModifyCol(2, 30)
-        this.listView.ModifyCol(3, 160)
-        this.listView.ModifyCol(4, 100)
-        this.listView.ModifyCol(5, 480)
-        this.listView.ModifyCol(6, 80)
+        this.listView.ModifyCol(3, 150)
+        this.listView.ModifyCol(4, 70)
+        this.listView.ModifyCol(5, 100)
+        this.listView.ModifyCol(6, 420)
+        this.listView.ModifyCol(7, 80)
 
         ; Footer
         this.gui.SetFont("s10 cGray", "Segoe UI")
@@ -256,6 +257,7 @@ class PromptManager {
         defBash := this.defaults.Has("bash") ? this.defaults["bash"] : ""
         for idx, p in this.filtered {
             fav := p.favorite ? "★" : ""
+            tipo := p.builtin ? "Built-in" : "Custom"
             shellLabel := (p.shellType = "powershell") ? "PowerShell" : "Bash"
             isDefault := (p.id = defPs || p.id = defBash)
             if (isDefault)
@@ -263,7 +265,7 @@ class PromptManager {
             preview := StrLen(p.code) > 60 ? SubStr(p.code, 1, 60) "..." : p.code
             preview := StrReplace(preview, "`n", " ")
             timeAgo := this.FormatTimeAgo(p.lastUsed)
-            this.listView.Add(, idx, fav, p.name, shellLabel, preview, timeAgo)
+            this.listView.Add(, idx, fav, p.name, tipo, shellLabel, preview, timeAgo)
         }
         total := this.prompts.Length
         shown := this.filtered.Length
