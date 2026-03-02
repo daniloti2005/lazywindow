@@ -704,10 +704,9 @@ class PromptManager {
 
         listContent := SubStr(content, bracketStart, bracketEnd - bracketStart + 1)
 
-        ; Parse each prompt object
-        objPos := 1
-        while (objPos := RegExMatch(listContent, '\{[^{}]+\}', &m, objPos)) {
-            obj := m[0]
+        ; Parse each prompt object (respecting string boundaries for code with {})
+        objects := this.ParseJsonObjects(listContent)
+        for obj in objects {
             id := this.ExtractJsonField(obj, "id")
             name := this.ExtractJsonField(obj, "name")
             shellType := this.ExtractJsonField(obj, "shellType")
@@ -733,7 +732,6 @@ class PromptManager {
                     lastUsed: lastUsed
                 })
             }
-            objPos += StrLen(m[0])
         }
 
         ; Parse defaults
@@ -752,6 +750,56 @@ class PromptManager {
                 }
             }
         }
+    }
+
+    ; Parse JSON array content into individual object strings, respecting string boundaries
+    ; (needed because prompt code fields contain { } chars that break naive regex)
+    static ParseJsonObjects(content) {
+        objects := []
+        pos := 1
+        len := StrLen(content)
+        while (pos <= len) {
+            objStart := InStr(content, "{", , pos)
+            if (!objStart)
+                break
+            objEnd := this.FindMatchingBrace(content, objStart)
+            if (!objEnd)
+                break
+            objects.Push(SubStr(content, objStart, objEnd - objStart + 1))
+            pos := objEnd + 1
+        }
+        return objects
+    }
+
+    ; Find the closing } that matches the { at position start, skipping chars inside strings
+    static FindMatchingBrace(content, start) {
+        depth := 0
+        inString := false
+        pos := start
+        len := StrLen(content)
+        while (pos <= len) {
+            ch := SubStr(content, pos, 1)
+            if (inString) {
+                if (ch = "\") {
+                    pos += 2
+                    continue
+                }
+                if (ch = '"')
+                    inString := false
+            } else {
+                if (ch = '"')
+                    inString := true
+                else if (ch = "{")
+                    depth++
+                else if (ch = "}") {
+                    depth--
+                    if (depth = 0)
+                        return pos
+                }
+            }
+            pos++
+        }
+        return 0
     }
 
     static ExtractJsonField(obj, field) {
