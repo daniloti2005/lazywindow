@@ -244,8 +244,16 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 | Minimal | PowerShell | Apenas pasta e `>` |
 | Git Branch | PowerShell | Pasta + branch git em verde |
 | Timestamp | PowerShell | Hora + pasta |
+| ⭐ Jedi Order | PowerShell | Star Wars Jedi: ASCII art amarelo, info sistema, quote Yoda |
+| 🔥 Sith Order | PowerShell | Star Wars Sith: ASCII art vermelho, dark side |
+| ⚡ Powerline | PowerShell | Estilo oh-my-posh: path, git, user/host/hora |
+| 🐉 Dragon Ball | PowerShell | Auto-detect: Goku (normal) ↔ Super Saiyan (admin) |
 | Minimal Color | Bash | Pasta em azul + `$` |
 | Git Color | Bash | Pasta em azul + branch em verde |
+| ⭐ Jedi Order | Bash | Star Wars Jedi: ASCII art amarelo, welcome Padawan |
+| 🔥 Sith Order | Bash | Star Wars Sith: ASCII art vermelho, Lord root |
+| ⚡ Powerline | Bash | Segmentos: distro, path, git, user/host/hora |
+| 🐉 Dragon Ball | Bash | Auto-detect: Goku (user) ↔ Super Saiyan + Shenlong (root) |
 
 **Como funciona:**
 - Aplica o prompt **na sessão atual** do terminal (temporário) com `A`

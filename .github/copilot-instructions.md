@@ -235,7 +235,7 @@ ActivateGrid(monitorNumber) {
 - **Módulo:** `ui/PromptManager.ahk`
 - **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo ProjectBookmarks)
 - **Funcionalidades:**
-  - 5 prompts built-in: Minimal, Git Branch, Timestamp (PowerShell) + Minimal Color, Git Color (Bash)
+  - 13 prompts built-in: Minimal, Git Branch, Timestamp, ⭐ Jedi Order, 🔥 Sith Order, ⚡ Powerline, 🐉 Dragon Ball (PowerShell) + Minimal Color, Git Color, ⭐ Jedi Order, 🔥 Sith Order, ⚡ Powerline, 🐉 Dragon Ball (Bash)
   - Ações por input: `1A`=sessão, `1W`=persistir, `2E`=editar, `3D`=deletar, `4F`=favorito, `5S`=default, `N`=novo
   - `W` (Write): persiste prompt permanentemente no arquivo de config:
     - PowerShell: escreve no `$PROFILE` (remove anterior + appenda + dot-source)
