@@ -178,8 +178,8 @@ class PromptManager {
 
         ; Header instructions
         this.gui.SetFont("s11 cWhite", "Consolas")
-        this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1A=aplicar  2E=editar  3F=favorito  5S=default")
-        this.gui.AddText("x15 y35 w900 h25", "Ações: A=aplicar  E=editar  D=deletar  F=favorito  S=default | N=novo prompt")
+        this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1A=sessão  1W=persistir  2E=editar  3F=favorito")
+        this.gui.AddText("x15 y35 w900 h25", "Ações: A=sessão  W=persistir  E=editar  D=deletar  F=favorito  S=default | N=novo")
 
         ; Input box
         this.gui.SetFont("s14 cWhite", "Consolas")
@@ -289,7 +289,7 @@ class PromptManager {
         queryLower := StrLower(query)
 
         ; If query matches action pattern, don't filter
-        if (RegExMatch(query, "i)^(\d+)([AEDFNS]?)$") || query = "N" || query = "n")
+        if (RegExMatch(query, "i)^(\d+)([AEDFNSW]?)$") || query = "N" || query = "n")
             query := ""
 
         for p in this.prompts {
@@ -331,7 +331,7 @@ class PromptManager {
         }
 
         ; Number + optional action letter
-        if (!RegExMatch(text, "i)^(\d+)([AEDFNS]?)$", &match))
+        if (!RegExMatch(text, "i)^(\d+)([AEDFNSW]?)$", &match))
             return
 
         num := Integer(match[1])
@@ -345,6 +345,8 @@ class PromptManager {
         switch action {
             case "", "A":
                 this.ApplyToTerminal(prompt)
+            case "W":
+                this.PersistToProfile(prompt)
             case "E":
                 this.EditPrompt(prompt)
             case "D":
@@ -385,6 +387,85 @@ class PromptManager {
         SendInput("{Enter}")
         ToolTip("Prompt aplicado: " prompt.name)
         SetTimer(() => ToolTip(), -2000)
+    }
+
+    static PersistToProfile(prompt) {
+        this.UpdateLastUsed(prompt)
+        this.Hide()
+        Sleep(100)
+
+        shellType := this.DetectActiveShell()
+        if (shellType = "") {
+            MsgBox("Janela ativa não é Windows Terminal", "LazyWindow", "Icon!")
+            return
+        }
+
+        ; Check compatibility
+        if (prompt.shellType = "powershell" && shellType != "powershell") {
+            MsgBox("Este prompt é para PowerShell, mas o terminal ativo é Bash.", "LazyWindow", "Icon!")
+            return
+        }
+        if (prompt.shellType = "bash" && shellType != "bash") {
+            MsgBox("Este prompt é para Bash, mas o terminal ativo é PowerShell.", "LazyWindow", "Icon!")
+            return
+        }
+
+        if (shellType = "powershell") {
+            this.PersistPowerShell(prompt)
+        } else {
+            ; Ask target for bash
+            KeyWait("Enter")
+            Sleep(100)
+            choice := InputBox("Persistir prompt em:`n`n1. ~/.bashrc (usuário atual)`n2. /root/.bashrc (root)`n3. Ambos`n`nDigite 1, 2 ou 3:", "Persistir Prompt", "w350 h200")
+            if (choice.Result != "OK")
+                return
+            val := Trim(choice.Value)
+            if (val = "1" || val = "3")
+                this.PersistBash(prompt, false)
+            if (val = "2" || val = "3")
+                this.PersistBash(prompt, true)
+        }
+
+        ; Also apply to current session
+        SendInput("{Text} " prompt.code)
+        SendInput("{Enter}")
+        ToolTip("Prompt persistido e aplicado: " prompt.name)
+        SetTimer(() => ToolTip(), -2500)
+    }
+
+    static PersistPowerShell(prompt) {
+        ; Build a PowerShell command that writes the prompt function to $PROFILE
+        ; Strategy: Remove existing prompt function, append new one, then dot-source
+        code := prompt.code
+        ; Escape single quotes for PowerShell here-string
+        codeEscaped := StrReplace(code, "'", "''")
+
+        ; Command: remove old LazyWindow prompt, append new, source
+        cmd := "(Get-Content $PROFILE -ErrorAction SilentlyContinue | Where-Object { $_ -notmatch '^function prompt' -and $_ -notmatch '^# LazyWindow' }) | Set-Content $PROFILE -ErrorAction SilentlyContinue; "
+        cmd .= "Add-Content $PROFILE '# LazyWindow Prompt'; "
+        cmd .= "Add-Content $PROFILE '" codeEscaped "'; "
+        cmd .= ". $PROFILE"
+
+        SendInput("{Text} " cmd)
+        SendInput("{Enter}")
+    }
+
+    static PersistBash(prompt, asRoot) {
+        code := prompt.code
+        ; For bash, the code should be export PS1='...' or just the PS1 value
+        ; Escape single quotes for bash
+        codeEscaped := StrReplace(code, "'", "'\\''")
+
+        if (asRoot) {
+            ; Write to /root/.bashrc via sudo
+            cmd := "sudo sed -i '/^export PS1=/d;/^# LazyWindow/d' /root/.bashrc && sudo bash -c " Chr(34) "echo '# LazyWindow Prompt' >> /root/.bashrc && echo '" codeEscaped "' >> /root/.bashrc" Chr(34)
+        } else {
+            ; Write to ~/.bashrc
+            cmd := "sed -i '/^export PS1=/d;/^# LazyWindow/d' ~/.bashrc && echo '# LazyWindow Prompt' >> ~/.bashrc && echo '" codeEscaped "' >> ~/.bashrc && source ~/.bashrc"
+        }
+
+        SendInput("{Text} " cmd)
+        SendInput("{Enter}")
     }
 
     static QuickApply() {

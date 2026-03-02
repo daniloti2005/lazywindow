@@ -236,11 +236,16 @@ ActivateGrid(monitorNumber) {
 - **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo ProjectBookmarks)
 - **Funcionalidades:**
   - 5 prompts built-in: Minimal, Git Branch, Timestamp (PowerShell) + Minimal Color, Git Color (Bash)
-  - Ações por input: `1A`=aplicar, `2E`=editar, `3D`=deletar, `4F`=favorito, `5S`=default, `N`=novo
+  - Ações por input: `1A`=sessão, `1W`=persistir, `2E`=editar, `3D`=deletar, `4F`=favorito, `5S`=default, `N`=novo
+  - `W` (Write): persiste prompt permanentemente no arquivo de config:
+    - PowerShell: escreve no `$PROFILE` (remove anterior + appenda + dot-source)
+    - Bash user: escreve no `~/.bashrc` (remove anterior + appenda + source)
+    - Bash root: escreve no `/root/.bashrc` via sudo
+    - Para Bash, pergunta destino: User / Root / Ambos
   - Quick-Apply (`Ctrl+F8`): aplica prompt favorito/default no terminal ativo sem abrir GUI
   - Quick-Save (`Ctrl+Alt+F8`): captura prompt atual do terminal e salva
   - Detecta tipo de shell (PowerShell/Bash) pelo título do Windows Terminal
-  - Apply envia comando direto ao terminal via SendInput (temporário, não edita $PROFILE)
+  - Apply envia comando direto ao terminal via SendInput({Text}) para enviar literalmente
   - PowerShell: `function prompt { ... }`, Bash: `export PS1='...'`
 - **Persistência:** `~/.lazywindow/prompts.json`
 - **Inicialização:** Chamada em `main.ahk` via `PromptManager.Init()`

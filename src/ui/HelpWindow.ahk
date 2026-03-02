@@ -238,7 +238,10 @@ PROJECT BOOKMARKS [requer Alt+Home]:
 PROMPT MANAGER [requer Alt+Home]:
   Ctrl+Shift+F8 = Abre gestor de prompts (fullscreen)
                   Digite [numero][acao] + Enter:
-                    1 ou 1A = aplicar prompt 1 no terminal ativo
+                    1 ou 1A = aplicar prompt 1 na sessao (temporario)
+                    1W = persistir prompt 1 no arquivo de config
+                         PowerShell: escreve no $PROFILE
+                         Bash: escreve no ~/.bashrc (user/root/ambos)
                     2E = editar codigo do prompt 2
                     3D = deletar prompt 3 (so custom)
                     4F = toggle favorito do prompt 4

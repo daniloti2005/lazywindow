@@ -229,7 +229,8 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 
 | Input | Ação |
 |-------|------|
-| `1` ou `1A` | Aplica prompt 1 no terminal ativo |
+| `1` ou `1A` | Aplica prompt 1 na sessão (temporário) |
+| `1W` | Persiste prompt 1 no arquivo de config (permanente) |
 | `2E` | Edita código do prompt 2 |
 | `3D` | Deleta prompt 3 (só custom, built-in não pode) |
 | `4F` | Toggle favorito do prompt 4 |
@@ -247,7 +248,10 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 | Git Color | Bash | Pasta em azul + branch em verde |
 
 **Como funciona:**
-- Aplica o prompt **na sessão atual** do terminal (temporário)
+- Aplica o prompt **na sessão atual** do terminal (temporário) com `A`
+- Persiste **permanentemente** no arquivo de config com `W`:
+  - PowerShell: escreve no `$PROFILE`
+  - Bash: escreve no `~/.bashrc` (user) ou `/root/.bashrc` (root)
 - Para PowerShell: envia `function prompt { ... }`
 - Para Bash/WSL: envia `export PS1='...'`
 - Detecta automaticamente o tipo de shell pelo título do Windows Terminal
