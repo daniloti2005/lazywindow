@@ -359,6 +359,8 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 
 > **Nota:** Ao iniciar, apenas Grid, Ajuda e `Alt+Home` estão ativos. Pressione `Alt+Home` para ligar todos os outros comandos.
 
+> **Compatibilidade:** O Enter e outras teclas do sistema funcionam normalmente em qualquer aplicação mesmo com o cursor ligado. O LazyWindow usa pass-through para não bloquear teclas de sistema.
+
 | Atalho | Função |
 |--------|--------|
 | `Ctrl+End` | Grid no Monitor 1 |

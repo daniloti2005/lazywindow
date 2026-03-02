@@ -138,6 +138,7 @@ ActivateGrid(monitorNumber) {
 - **Estado inicial:** Desligado — ao iniciar, apenas Grid, Ajuda e `Alt+Home` estão ativos
 - **Implementação:** Variável `g_hotkeysEnabled` + `#HotIf` no `main.ahk`
 - **Sempre ativos:** Grid (Ctrl+End/Del/PgDn/PgUp), Alt+PgUp, F3/F10/F11, Alt+Home
+- **Pass-through Enter:** `~*Enter::return` dentro do bloco `#HotIf` garante que Enter chega às aplicações mesmo com cursor ligado (o keyboard hook do AHK pode suprimir teclas quando muitos hotkeys `*` estão ativos)
 
 ### Arrow Mouse (Modo Setas)
 
@@ -337,19 +338,20 @@ Para testar manualmente:
 1. Execute `src/main.ahk` ou use `ToggleLazyWindow.ps1`
 2. Verifique a StatusBar acima da taskbar (exibe "OFF | Alt+Home=LIGAR | F3=AJUDA")
 3. Pressione `Alt+Home` para ligar todos os comandos (StatusBar muda para "ON | Vel: 25 dpi | ...")
-4. Pressione `Ctrl+End` para testar grid no monitor 1
-5. Navegue com `A/S/D/Z/X/C`
-6. Pressione `Backspace` para clique esquerdo
-7. Pressione `Ctrl+Home` para testar seletor de janelas
-8. Pressione `Ctrl+PgUp` para testar grid na janela ativa
-9. Pressione `Alt+PgUp` para testar grid ao redor do cursor
-10. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
-11. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
-12. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
-13. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
-14. Pressione `Ctrl+Shift+P` para testar Command Palette (buscar "grid", "base64", etc.)
-15. Pressione `Ctrl+Shift+O` para testar Project Bookmarks (adicionar projeto, abrir com nvim)
-16. Pressione `Ctrl+Shift+F8` para testar Prompt Manager (aplicar prompt, criar custom)
-17. Pressione `Ctrl+F8` no terminal para testar Quick-Apply de prompt
-18. Pressione `F3` para ver a ajuda completa
-19. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"
+4. **Teste Enter pass-through:** com cursor ligado, pressione Enter em qualquer app (ex: chat/browser) — deve funcionar normalmente
+5. Pressione `Ctrl+End` para testar grid no monitor 1
+6. Navegue com `A/S/D/Z/X/C`
+7. Pressione `Backspace` para clique esquerdo
+8. Pressione `Ctrl+Home` para testar seletor de janelas
+9. Pressione `Ctrl+PgUp` para testar grid na janela ativa
+10. Pressione `Alt+PgUp` para testar grid ao redor do cursor
+11. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
+12. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
+13. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
+14. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
+15. Pressione `Ctrl+Shift+P` para testar Command Palette (buscar "grid", "base64", etc.)
+16. Pressione `Ctrl+Shift+O` para testar Project Bookmarks (adicionar projeto, abrir com nvim)
+17. Pressione `Ctrl+Shift+F8` para testar Prompt Manager (aplicar prompt, criar custom)
+18. Pressione `Ctrl+F8` no terminal para testar Quick-Apply de prompt
+19. Pressione `F3` para ver a ajuda completa
+20. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"

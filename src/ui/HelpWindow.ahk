@@ -248,6 +248,10 @@ PROMPT MANAGER [requer Alt+Home]:
                                       Minimal Color, Git Color (Bash)
   Ctrl+F8     = Quick-Apply: aplica prompt favorito/default no terminal
   Ctrl+Alt+F8 = Quick-Save: captura prompt atual do terminal e salva
+  (persistido em ~/.lazywindow/prompts.json)
+
+SNIPPET MANAGER [requer Alt+Home]:
+  Ctrl+Alt+F10 = Abre/Fecha o Snippet Manager
   
   Linguagens suportadas: TypeScript, Python, SQL, PowerShell, Bash, Go, Windows
   
@@ -274,6 +278,9 @@ PROMPT MANAGER [requer Alt+Home]:
     - ${ClassName}, ${FunctionName} = palavra selecionada
     - ${date} = data atual
     - ${user} = nome do usuario
+
+NOTA: Enter funciona normalmente em qualquer aplicacao com cursor ligado.
+      O LazyWindow usa pass-through para nao bloquear o Enter do sistema.
 )"
         return Trim(help)
     }
