@@ -122,6 +122,9 @@ class ArrowMouse {
         ; Drag: hold Ctrl while moving with arrows
         Hotkey("~*LControl Up", (*) => this.OnCtrlUp(), "On")
         Hotkey("~*RControl Up", (*) => this.OnCtrlUp(), "On")
+
+        ; Pass-through: ensure Enter reaches apps (keyboard hook can suppress it)
+        Hotkey("~*Enter", (*) => "", "On")
     }
 
     static DisableHotkeys() {
@@ -143,6 +146,8 @@ class ArrowMouse {
 
         try Hotkey("~*LControl Up", "Off")
         try Hotkey("~*RControl Up", "Off")
+
+        try Hotkey("~*Enter", "Off")
     }
 
     static OnArrowDown() {

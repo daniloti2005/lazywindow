@@ -101,10 +101,6 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^F8::PromptManager.QuickApply()             ; Ctrl+F8 = Quick-Apply prompt
 ^!F8::PromptManager.QuickSave()             ; Ctrl+Alt+F8 = Quick-Save prompt
 
-; Pass-through explícito: garante que Enter chega às aplicações
-; (o keyboard hook do AHK pode suprimi-lo quando muitos hotkeys * estão ativos)
-~*Enter::return
-
 [::Send "{WheelUp}"           ; Scroll up
 ]::Send "{WheelDown}"         ; Scroll down
 
