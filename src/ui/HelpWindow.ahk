@@ -251,7 +251,11 @@ PROMPT MANAGER [requer Alt+Home]:
                     PS: Minimal, Git Branch, Timestamp, Star Wars, Powerline, Dragon Ball
                     Bash: Minimal, Git Color, Star Wars, Powerline, Dragon Ball
                   Star Wars: auto-detect Jedi (user) ↔ Sith (root/admin)
+                    Animacao ASCII full-screen ao virar Sith (6 frames):
+                    Anakin > Conflito Luz/Trevas > Queda > Cirurgia > Vader > Close-up
                   Dragon Ball: auto-detect Goku (user) ↔ Super Saiyan (root/admin)
+                    Animacao ASCII full-screen ao virar Super Saiyan (6 frames):
+                    Goku/Nimbus > 7 Esferas > Ceu Escurece > Shenlong Emerge > Shenlong Full > Poder Total
   Ctrl+F8     = Quick-Apply: aplica prompt favorito/default no terminal
   Ctrl+Alt+F8 = Quick-Save: captura prompt atual do terminal e salva
   (persistido em ~/.lazywindow/prompts.json)

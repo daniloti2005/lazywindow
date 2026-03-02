@@ -237,11 +237,14 @@ ActivateGrid(monitorNumber) {
 - **Funcionalidades:**
   - 11 prompts built-in: Minimal, Git Branch, Timestamp, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (PowerShell) + Minimal Color, Git Color, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (Bash)
   - Star Wars e Dragon Ball: auto-detect user/root (Bash) ou normal/admin (PowerShell)
+  - Animações ASCII full-screen (6 frames, ~17s) ao virar root/admin — uma vez por sessão:
+    - Star Wars: Anakin → Conflito Luz/Trevas → Queda → Cirurgia → Vader Rises → Close-up Vader
+    - Dragon Ball: Goku/Nimbus → 7 Esferas → Céu Escurece → Shenlong Emerge → Shenlong Full → Poder Total
   - Ações por input: `1A`=sessão, `1W`=persistir, `2E`=editar, `3D`=deletar, `4F`=favorito, `5S`=default, `N`=novo
   - `W` (Write): persiste prompt permanentemente no arquivo de config:
     - PowerShell: escreve no `$PROFILE` (remove anterior + appenda + dot-source)
-    - Bash user: escreve no `~/.bashrc` (remove anterior + appenda + source)
-    - Bash root: escreve no `/root/.bashrc` via sudo
+    - Bash user: escreve no `~/.bashrc` (remove anterior + appenda via temp file + cat)
+    - Bash root: escreve no `/root/.bashrc` via sudo tee
     - Para Bash, pergunta destino: User / Root / Ambos
   - Quick-Apply (`Ctrl+F8`): aplica prompt favorito/default no terminal ativo sem abrir GUI
   - Quick-Save (`Ctrl+Alt+F8`): captura prompt atual do terminal e salva

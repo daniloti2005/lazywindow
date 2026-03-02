@@ -244,23 +244,25 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 | Minimal | PowerShell | Apenas pasta e `>` |
 | Git Branch | PowerShell | Pasta + branch git em verde |
 | Timestamp | PowerShell | Hora + pasta |
-| ⚔ Star Wars | PowerShell | Auto-detect: Jedi (normal) ↔ Sith (admin) |
+| ⚔ Star Wars | PowerShell | Auto-detect: Jedi (normal) ↔ Sith (admin) + animação ASCII full-screen (6 frames: Anakin → Vader) |
 | ⚡ Powerline | PowerShell | Estilo oh-my-posh: path, git, user/host/hora |
-| 🐉 Dragon Ball | PowerShell | Auto-detect: Goku (normal) ↔ Super Saiyan (admin) |
+| 🐉 Dragon Ball | PowerShell | Auto-detect: Goku (normal) ↔ Super Saiyan (admin) + animação ASCII full-screen (6 frames: Goku → Shenlong) |
 | Minimal Color | Bash | Pasta em azul + `$` |
 | Git Color | Bash | Pasta em azul + branch em verde |
-| ⚔ Star Wars | Bash | Auto-detect: Jedi (user) ↔ Sith (root) |
+| ⚔ Star Wars | Bash | Auto-detect: Jedi (user) ↔ Sith (root) + animação ASCII full-screen (6 frames: Anakin → Vader) |
 | ⚡ Powerline | Bash | Segmentos: distro, path, git, user/host/hora |
-| 🐉 Dragon Ball | Bash | Auto-detect: Goku (user) ↔ Super Saiyan + Shenlong (root) |
+| 🐉 Dragon Ball | Bash | Auto-detect: Goku (user) ↔ Super Saiyan + Shenlong (root) + animação ASCII full-screen (6 frames: Goku → Shenlong) |
 
 **Como funciona:**
 - Aplica o prompt **na sessão atual** do terminal (temporário) com `A`
 - Persiste **permanentemente** no arquivo de config com `W`:
   - PowerShell: escreve no `$PROFILE`
   - Bash: escreve no `~/.bashrc` (user) ou `/root/.bashrc` (root)
+  - Para Bash, pergunta destino: User / Root / Ambos (usa temp file + cat para evitar problemas de escaping)
 - Para PowerShell: envia `function prompt { ... }`
 - Para Bash/WSL: envia `export PS1='...'`
 - Detecta automaticamente o tipo de shell pelo título do Windows Terminal
+- **Animações temáticas:** Star Wars e Dragon Ball exibem animação ASCII art full-screen (6 frames, ~17s total) na primeira vez que se eleva a root/admin — uma vez por sessão
 - Prompts custom podem ser criados, editados e deletados
 - Built-ins podem ser editados mas não deletados
 
