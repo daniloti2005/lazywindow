@@ -247,10 +247,11 @@ PROMPT MANAGER [requer Alt+Home]:
                     4F = toggle favorito do prompt 4
                     5S = definir prompt 5 como default
                     N = novo prompt customizado
-                  13 prompts built-in:
-                    PS: Minimal, Git Branch, Timestamp, Jedi, Sith, Powerline, Dragon Ball
-                    Bash: Minimal, Git Color, Jedi, Sith, Powerline, Dragon Ball
-                  Dragon Ball: auto-detect user/root (Goku ↔ Super Saiyan)
+                  11 prompts built-in:
+                    PS: Minimal, Git Branch, Timestamp, Star Wars, Powerline, Dragon Ball
+                    Bash: Minimal, Git Color, Star Wars, Powerline, Dragon Ball
+                  Star Wars: auto-detect Jedi (user) ↔ Sith (root/admin)
+                  Dragon Ball: auto-detect Goku (user) ↔ Super Saiyan (root/admin)
   Ctrl+F8     = Quick-Apply: aplica prompt favorito/default no terminal
   Ctrl+Alt+F8 = Quick-Save: captura prompt atual do terminal e salva
   (persistido em ~/.lazywindow/prompts.json)

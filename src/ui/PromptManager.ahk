@@ -25,7 +25,7 @@ class PromptManager {
 
     ; Ensure all built-in prompts are present in memory (never lost after file reload)
     static MergeBuiltIns() {
-        builtinIds := ["minimal-ps", "git-branch-ps", "timestamp-ps", "minimal-bash", "git-color-bash", "jedi-bash", "sith-bash", "jedi-ps", "sith-ps", "powerline-ps", "powerline-bash", "dragonball-bash", "dragonball-ps"]
+        builtinIds := ["minimal-ps", "git-branch-ps", "timestamp-ps", "minimal-bash", "git-color-bash", "starwars-bash", "starwars-ps", "powerline-ps", "powerline-bash", "dragonball-bash", "dragonball-ps"]
         existingIds := []
         for p in this.prompts
             existingIds.Push(p.id)
@@ -124,97 +124,83 @@ class PromptManager {
             lastUsed: ""
         })
 
-        ; ── Star Wars: Jedi Order (Bash) ──
-        jediBash := "export PS1='"
-        jediBash .= "\n\[\033[1;33m\]     ██ ███████ ██████  ██\[\033[0m\]"
-        jediBash .= "\n\[\033[1;33m\]     ██ ██      ██   ██ ██\[\033[0m\]"
-        jediBash .= "\n\[\033[1;33m\]     ██ █████   ██   ██ ██      \[\033[0;36m\]ORDER\[\033[0m\]"
-        jediBash .= "\n\[\033[1;33m\]██   ██ ██      ██   ██ ██\[\033[0m\]"
-        jediBash .= "\n\[\033[1;33m\] █████  ███████ ██████  ██\[\033[0m\]"
-        jediBash .= "\n\[\033[0;32m\]Welcome, Padawan \u. The Force is strong with you.\[\033[0m\]"
-        jediBash .= "\n\[\033[0;36m\]🔗 \[\033[1;36m\]$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)\[\033[0m\]  \[\033[1;33m\]⚠ \[\033[0;33m\]$(uname -r | cut -d- -f1)\[\033[0m\]  \[\033[1;35m\]◆ \[\033[0;35m\]\H\[\033[0m\]"
-        jediBash .= '\n\[\033[0;37m\]' Chr(34) 'Anger leads to hate. Hate leads to suffering.' Chr(34) '\[\033[0m\]'
-        jediBash .= "\n"
-        jediBash .= "\n\[\033[0;36m\]🔗 $(. /etc/os-release 2>/dev/null && echo $ID || echo linux)\[\033[0m\] | \[\033[1;33m\]⚠ Linux\[\033[0m\] | \[\033[1;32m\]👤 \u@\H\[\033[0m\] | \[\033[0;36m\]⏰ \A\[\033[0m\] | \[\033[1;33m\]⭐ Jedi\[\033[0m\]"
-        jediBash .= "\n\[\033[1;34m\]📁 \w\[\033[0m\]"
-        jediBash .= "\n\[\033[1;34m\]✔ ▶\[\033[0m\] '"
+        ; ── Star Wars (Bash) — auto-detect: Jedi (user) ↔ Sith (root) ──
+        swBash := "prompt_starwars() { if [ $EUID -eq 0 ]; then "
+        ; Root = Sith
+        swBash .= "PS1=$'\n\033[1;31m███████ ██ ████████ ██   ██\033[0m"
+        swBash .= "\n\033[1;31m██      ██    ██    ██   ██\033[0m"
+        swBash .= "\n\033[1;31m███████ ██    ██    ███████\033[0m   \033[0;36mORDER\033[0m"
+        swBash .= "\n\033[1;31m     ██ ██    ██    ██   ██\033[0m"
+        swBash .= "\n\033[1;31m███████ ██    ██    ██   ██\033[0m"
+        swBash .= "\n\033[1;31mGreetings, Lord root. The dark side awaits.\033[0m"
+        swBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'$(hostname)'\033[0m"
+        swBash .= '\n\033[0;37m"Anger leads to hate. Hate leads to suffering."\033[0m'
+        swBash .= "\n"
+        swBash .= "\n\033[0;36m🔗 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;31m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;31m🔥 Sith\033[0m"
+        swBash .= "\n\033[1;31m📁 \w\033[0m"
+        swBash .= "\n\033[1;31m✔ ▶\033[0m ';"
+        swBash .= " else "
+        ; Normal = Jedi
+        swBash .= "PS1=$'\n\033[1;33m     ██ ███████ ██████  ██\033[0m"
+        swBash .= "\n\033[1;33m     ██ ██      ██   ██ ██\033[0m"
+        swBash .= "\n\033[1;33m     ██ █████   ██   ██ ██\033[0m      \033[0;36mORDER\033[0m"
+        swBash .= "\n\033[1;33m██   ██ ██      ██   ██ ██\033[0m"
+        swBash .= "\n\033[1;33m █████  ███████ ██████  ██\033[0m"
+        swBash .= "\n\033[0;32mWelcome, Padawan \u. The Force is strong with you.\033[0m"
+        swBash .= "\n\033[0;36m🔗 \033[1;36m'$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)'\033[0m  \033[1;33m⚠ \033[0;33m'$(uname -r | cut -d- -f1)'\033[0m  \033[1;35m◆ \033[0;35m'$(hostname)'\033[0m"
+        swBash .= '\n\033[0;37m"Anger leads to hate. Hate leads to suffering."\033[0m'
+        swBash .= "\n"
+        swBash .= "\n\033[0;36m🔗 '$(. /etc/os-release 2>/dev/null && echo $ID || echo linux)'\033[0m | \033[1;33m⚠ Linux\033[0m | \033[1;32m👤 \u@\H\033[0m | \033[0;36m⏰ \A\033[0m | \033[1;33m⭐ Jedi\033[0m"
+        swBash .= "\n\033[1;34m📁 \w\033[0m"
+        swBash .= "\n\033[1;34m✔ ▶\033[0m ';"
+        swBash .= " fi; }; PROMPT_COMMAND=prompt_starwars"
         this.prompts.Push({
-            id: "jedi-bash",
-            name: "⭐ Jedi Order",
+            id: "starwars-bash",
+            name: "⚔ Star Wars",
             shellType: "bash",
-            code: jediBash,
+            code: swBash,
             builtin: true,
             favorite: false,
             lastUsed: ""
         })
 
-        ; ── Star Wars: Sith Order (Bash) ──
-        sithBash := "export PS1='"
-        sithBash .= "\n\[\033[1;31m\]███████ ██ ████████ ██   ██\[\033[0m\]"
-        sithBash .= "\n\[\033[1;31m\]██      ██    ██    ██   ██\[\033[0m\]"
-        sithBash .= "\n\[\033[1;31m\]███████ ██    ██    ███████\[\033[0m\]   \[\033[0;36m\]ORDER\[\033[0m\]"
-        sithBash .= "\n\[\033[1;31m\]     ██ ██    ██    ██   ██\[\033[0m\]"
-        sithBash .= "\n\[\033[1;31m\]███████ ██    ██    ██   ██\[\033[0m\]"
-        sithBash .= "\n\[\033[1;31m\]Greetings, Lord root. The dark side awaits.\[\033[0m\]"
-        sithBash .= "\n\[\033[0;36m\]🔗 \[\033[1;36m\]$(. /etc/os-release 2>/dev/null && echo $NAME || echo Linux)\[\033[0m\]  \[\033[1;33m\]⚠ \[\033[0;33m\]$(uname -r | cut -d- -f1)\[\033[0m\]  \[\033[1;35m\]◆ \[\033[0;35m\]\H\[\033[0m\]"
-        sithBash .= '\n\[\033[0;37m\]' Chr(34) 'Anger leads to hate. Hate leads to suffering.' Chr(34) '\[\033[0m\]'
-        sithBash .= "\n"
-        sithBash .= "\n\[\033[0;36m\]🔗 $(. /etc/os-release 2>/dev/null && echo $ID || echo linux)\[\033[0m\] | \[\033[1;33m\]⚠ Linux\[\033[0m\] | \[\033[1;31m\]👤 \u@\H\[\033[0m\] | \[\033[0;36m\]⏰ \A\[\033[0m\] | \[\033[1;31m\]🔥 Sith\[\033[0m\]"
-        sithBash .= "\n\[\033[1;31m\]📁 \w\[\033[0m\]"
-        sithBash .= "\n\[\033[1;31m\]✔ ▶\[\033[0m\] '"
+        ; ── Star Wars (PowerShell) — auto-detect: Jedi (normal) ↔ Sith (admin) ──
+        swPs := "function prompt { $e = [char]27; $u = $env:USERNAME; $h = $env:COMPUTERNAME; $t = Get-Date -Format 'HH:mm'; $loc = $executionContext.SessionState.Path.CurrentLocation; "
+        swPs .= "$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); "
+        swPs .= "if ($isAdmin) { "
+        ; Admin = Sith
+        swPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██ ████████ ██   ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;31m██      ██    ██    ██   ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██    ██    ███████$e[0m   $e[0;36mORDER$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;31m     ██ ██    ██    ██   ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██    ██    ██   ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;31mGreetings, Lord $u. The dark side awaits.$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[0;36m🔗 $e[1;36mWindows$e[0m  $e[1;33m⚠ $e[0;33mPS $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)$e[0m  $e[1;35m◆ $e[0;35m$h$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[0;37m`" Chr(34) "Anger leads to hate. Hate leads to suffering.`" Chr(34) "$e[0m" Chr(34) "; "
+        swPs .= "Write-Host; "
+        swPs .= "Write-Host " Chr(34) "$e[0;36m🔗 Windows$e[0m | $e[1;33m⚠ PS$e[0m | $e[1;31m👤 $u@$h$e[0m | $e[0;36m⏰ $t$e[0m | $e[1;31m🔥 Sith$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;31m📁 $loc$e[0m" Chr(34) "; "
+        swPs .= Chr(34) "$e[1;31m✔ ▶$e[0m " Chr(34)
+        swPs .= " } else { "
+        ; Normal = Jedi
+        swPs .= "Write-Host " Chr(34) "$e[1;33m     ██ ███████ ██████  ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;33m     ██ ██      ██   ██ ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;33m     ██ █████   ██   ██ ██      $e[0;36mORDER$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;33m██   ██ ██      ██   ██ ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;33m █████  ███████ ██████  ██$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[0;32mWelcome, Padawan $u. The Force is strong with you.$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[0;36m🔗 $e[1;36mWindows$e[0m  $e[1;33m⚠ $e[0;33mPS $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)$e[0m  $e[1;35m◆ $e[0;35m$h$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[0;37m`" Chr(34) "Anger leads to hate. Hate leads to suffering.`" Chr(34) "$e[0m" Chr(34) "; "
+        swPs .= "Write-Host; "
+        swPs .= "Write-Host " Chr(34) "$e[0;36m🔗 Windows$e[0m | $e[1;33m⚠ PS$e[0m | $e[1;32m👤 $u@$h$e[0m | $e[0;36m⏰ $t$e[0m | $e[1;33m⭐ Jedi$e[0m" Chr(34) "; "
+        swPs .= "Write-Host " Chr(34) "$e[1;34m📁 $loc$e[0m" Chr(34) "; "
+        swPs .= Chr(34) "$e[1;34m✔ ▶$e[0m " Chr(34)
+        swPs .= " } }"
         this.prompts.Push({
-            id: "sith-bash",
-            name: "🔥 Sith Order",
-            shellType: "bash",
-            code: sithBash,
-            builtin: true,
-            favorite: false,
-            lastUsed: ""
-        })
-
-        ; ── Star Wars: Jedi Order (PowerShell) ──
-        jediPs := "function prompt { $e = [char]27; $u = $env:USERNAME; $h = $env:COMPUTERNAME; $t = Get-Date -Format 'HH:mm'; $loc = $executionContext.SessionState.Path.CurrentLocation; "
-        jediPs .= "Write-Host " Chr(34) "$e[1;33m     ██ ███████ ██████  ██$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[1;33m     ██ ██      ██   ██ ██$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[1;33m     ██ █████   ██   ██ ██      $e[0;36mORDER$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[1;33m██   ██ ██      ██   ██ ██$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[1;33m █████  ███████ ██████  ██$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[0;32mWelcome, Padawan $u. The Force is strong with you.$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[0;36m🔗 $e[1;36mWindows$e[0m  $e[1;33m⚠ $e[0;33mPowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)$e[0m  $e[1;35m◆ $e[0;35m$h$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[0;37m`" Chr(34) "Anger leads to hate. Hate leads to suffering.`" Chr(34) "$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host; "
-        jediPs .= "Write-Host " Chr(34) "$e[0;36m🔗 Windows$e[0m | $e[1;33m⚠ PS$e[0m | $e[1;32m👤 $u@$h$e[0m | $e[0;36m⏰ $t$e[0m | $e[1;33m⭐ Jedi$e[0m" Chr(34) "; "
-        jediPs .= "Write-Host " Chr(34) "$e[1;34m📁 $loc$e[0m" Chr(34) "; "
-        jediPs .= Chr(34) "$e[1;34m✔ ▶$e[0m " Chr(34) " }"
-        this.prompts.Push({
-            id: "jedi-ps",
-            name: "⭐ Jedi Order",
+            id: "starwars-ps",
+            name: "⚔ Star Wars",
             shellType: "powershell",
-            code: jediPs,
-            builtin: true,
-            favorite: false,
-            lastUsed: ""
-        })
-
-        ; ── Star Wars: Sith Order (PowerShell) ──
-        sithPs := "function prompt { $e = [char]27; $u = $env:USERNAME; $h = $env:COMPUTERNAME; $t = Get-Date -Format 'HH:mm'; $loc = $executionContext.SessionState.Path.CurrentLocation; "
-        sithPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██ ████████ ██   ██$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[1;31m██      ██    ██    ██   ██$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██    ██    ███████$e[0m   $e[0;36mORDER$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[1;31m     ██ ██    ██    ██   ██$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[1;31m███████ ██    ██    ██   ██$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[1;31mGreetings, Lord $u. The dark side awaits.$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[0;36m🔗 $e[1;36mWindows$e[0m  $e[1;33m⚠ $e[0;33mPowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)$e[0m  $e[1;35m◆ $e[0;35m$h$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[0;37m`" Chr(34) "Anger leads to hate. Hate leads to suffering.`" Chr(34) "$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host; "
-        sithPs .= "Write-Host " Chr(34) "$e[0;36m🔗 Windows$e[0m | $e[1;33m⚠ PS$e[0m | $e[1;31m👤 $u@$h$e[0m | $e[0;36m⏰ $t$e[0m | $e[1;31m🔥 Sith$e[0m" Chr(34) "; "
-        sithPs .= "Write-Host " Chr(34) "$e[1;31m📁 $loc$e[0m" Chr(34) "; "
-        sithPs .= Chr(34) "$e[1;31m✔ ▶$e[0m " Chr(34) " }"
-        this.prompts.Push({
-            id: "sith-ps",
-            name: "🔥 Sith Order",
-            shellType: "powershell",
-            code: sithPs,
+            code: swPs,
             builtin: true,
             favorite: false,
             lastUsed: ""
@@ -673,7 +659,7 @@ class PromptManager {
         codeEscaped := StrReplace(code, "'", "'\\''")
 
         ; Build sed patterns to clean old LazyWindow prompts (both PS1 and function-based)
-        sedPattern := "/^export PS1=/d;/^# LazyWindow/d;/^prompt_dragonball/d;/^PROMPT_COMMAND=prompt_dragonball/d"
+        sedPattern := "/^export PS1=/d;/^# LazyWindow/d;/^prompt_dragonball/d;/^PROMPT_COMMAND=prompt_dragonball/d;/^prompt_starwars/d;/^PROMPT_COMMAND=prompt_starwars/d"
 
         if (asRoot) {
             cmd := "sudo sed -i '" sedPattern "' /root/.bashrc && sudo bash -c " Chr(34) "echo '# LazyWindow Prompt' >> /root/.bashrc && echo '" codeEscaped "' >> /root/.bashrc" Chr(34)
