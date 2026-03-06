@@ -31,7 +31,13 @@ lazywindow/
 │   │   ├── SpeedDialog.ahk   # Modal para ajustar velocidade do Modo Setas
 │   │   ├── HelpWindow.ahk    # Janela de ajuda principal (F3)
 │   │   ├── TeamsHelpWindow.ahk # Atalhos do Microsoft Teams (F10)
-│   │   └── LazyVimHelpWindow.ahk # Atalhos do LazyVim (F11)
+│   │   ├── LazyVimHelpWindow.ahk # Atalhos do LazyVim (F11)
+│   │   ├── CommandPalette.ahk # Busca unificada de comandos (Ctrl+Shift+P)
+│   │   ├── ProjectBookmarks.ahk # Marcadores de projetos (Ctrl+Shift+O)
+│   │   ├── PromptManager.ahk  # Gestor de prompts de terminal (Ctrl+Shift+F8)
+│   │   ├── StoryTelling.ahk   # Histórias com evidências para IA (Ctrl+F4)
+│   │   ├── EvidencePicker.ahk # Seletor visual de evidências com preview (usado pelo StoryTelling)
+│   │   └── DownloadVersionManager.ahk # Gestor de versões de downloads (Ctrl+Shift+D)
 │   ├── snippets/
 │   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Alt+F10)
 │   │   ├── SnippetStore.ahk   # Armazena e carrega snippets
@@ -39,6 +45,7 @@ lazywindow/
 │   └── utils/
 │       ├── Monitor.ahk       # Detecção e informações de monitores
 │       ├── ScreenshotRegion.ahk # Seleção interativa de região para screenshot
+│       └── GifRecorder.ahk      # Gravação de tela como GIF animado (segue monitor do mouse)
 │       ├── CodeBeautify.ahk  # Formatador JSON/XML/YAML
 │       ├── Base64.ahk        # Encode/Decode Base64
 │       └── Timestamp.ahk     # Conversor Epoch <-> Data
@@ -135,6 +142,7 @@ ActivateGrid(monitorNumber) {
 - **Estado inicial:** Desligado — ao iniciar, apenas Grid, Ajuda e `Alt+Home` estão ativos
 - **Implementação:** Variável `g_hotkeysEnabled` + `#HotIf` no `main.ahk`
 - **Sempre ativos:** Grid (Ctrl+End/Del/PgDn/PgUp), Alt+PgUp, F3/F10/F11, Alt+Home
+- **Pass-through Enter:** `~*Enter::return` dentro do bloco `#HotIf` garante que Enter chega às aplicações mesmo com cursor ligado (o keyboard hook do AHK pode suprimir teclas quando muitos hotkeys `*` estão ativos)
 
 ### Arrow Mouse (Modo Setas)
 
@@ -158,6 +166,8 @@ ActivateGrid(monitorNumber) {
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
 - **Screenshot:** `Ctrl+F6` (janela ativa → clipboard + PNG), `Ctrl+Shift+F6` (janela ativa → PNG + caminho no clipboard), `Ctrl+F7` (seleção de região → clipboard + PNG), `Ctrl+Shift+F7` (seleção de região → PNG + caminho no clipboard)
+- **GIF Recorder:** `Ctrl+Shift+F5` (iniciar gravação, resolução 50%, 60 FPS, máx 60s), `Ctrl+F5` (parar, gerar GIF + pasta `_steps` com 1 PNG/frame, copiar caminho da pasta para clipboard). Segue o mouse entre monitores. Cursor do mouse e cliques (círculo amarelo) aparecem. Cole o caminho da pasta _steps no chat da IA para análise passo a passo.
+- **Story Telling:** `Ctrl+F4` (GUI), `Ctrl+Shift+F4` (quick-add passo do clipboard), `Ctrl+Alt+F4` (flush prompt para clipboard). Documenta fluxos passo a passo com evidências (texto, imagem, pasta) e contexto narrativo. Comando `A` abre **Evidence Picker** — tela fullscreen listando clipboard, screenshots e pastas `_steps` do GIF com preview visual (imagem estática ou animação 60fps). Flush gera prompt Markdown com todos os passos para análise por IA. Persistência em `~/.lazywindow/stories.json`.
 
 ### StatusBar (Barra de Status)
 
@@ -186,6 +196,91 @@ ActivateGrid(monitorNumber) {
   - Windows: ms-settings URIs, comandos de sistema, rede, dispositivos, apps, shell
 - **Detecção automática:** Linguagem baseada no título da janela
 - **Placeholders:** `${ClassName}`, `${FunctionName}`, `${date}`, `${user}` → substituídos pela palavra selecionada / data / usuário
+
+### Command Palette (Busca Unificada)
+
+- **Hotkey:** `Ctrl+Shift+P` (requer `g_hotkeysEnabled`)
+- **Propósito:** Campo de busca fuzzy que lista todos os comandos do LazyWindow pelo nome, hotkey e descrição
+- **Módulo:** `ui/CommandPalette.ahk`
+- **Funcionalidades:**
+  - Filtro multi-palavras em tempo real (ex: "base64 encode", "grid mon")
+  - Navegação com ↑↓ mantendo foco no campo de busca
+  - Enter executa o comando selecionado, ESC fecha
+  - DoubleClick na lista também executa
+  - Footer mostra "X de Y comandos" ao filtrar
+  - Pausa ArrowMouse automaticamente ao abrir
+- **Registro de comandos:** Todos os comandos são registrados em `Init()` via `this.Add(nome, hotkey, descrição, ação)`
+- **Inicialização:** Chamada em `main.ahk` via `CommandPalette.Init()`
+
+### Project Bookmarks (Marcadores de Projetos)
+
+- **Hotkey:** `Ctrl+Shift+O` (requer `g_hotkeysEnabled`)
+- **Quick-Add:** `Ctrl+Alt+O` — adiciona pasta atual do terminal ativo como projeto (detecta shell pelo título do WT, obtém path via clipboard)
+- **Propósito:** Lista persistente de projetos de software para abertura rápida no Neovim ou terminal via Windows Terminal
+- **Módulo:** `ui/ProjectBookmarks.ahk`
+- **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo WindowSwitcher)
+- **Funcionalidades:**
+  - Adicionar projetos via input manual (`A`) ou browse de pasta (`B`)
+  - Cada projeto tem: nome, caminho, tag e **perfil do Windows Terminal**
+  - Perfis do WT detectados automaticamente do `settings.json` (PowerShell, Ubuntu, Fedora, etc.)
+  - Tipo Windows/WSL inferido pelo perfil — determina como o wt.exe abre:
+    - **Windows:** `wt.exe -p "PowerShell" -d "C:\path" pwsh -NoExit -Command "nvim ."`
+    - **WSL:** `wt.exe -p "Ubuntu 22.04.3 LTS" wsl -e bash -c "cd ~/path && nvim ."`
+  - Ações por input: `1N`=nvim, `2S`=shell, `3R`=remover, `4G`=tag, `5P`=perfil
+  - Busca por nome/caminho (texto livre), filtro por tag (dropdown)
+  - Ordenação automática por último aberto (mais recente primeiro)
+  - Exibe tempo desde última abertura (agora, 2h, 3d, 1sem, 2mes)
+  - Migração automática de projetos com shell antigo (powershell/wsl → perfil real)
+- **Persistência:** `~/.lazywindow/projects.json`
+- **Inicialização:** Chamada em `main.ahk` via `ProjectBookmarks.Init()`
+
+### Prompt Manager (Gestor de Prompts)
+
+- **Hotkeys:** `Ctrl+Shift+F8` (GUI), `Ctrl+F8` (quick-apply), `Ctrl+Alt+F8` (quick-save) — requerem `g_hotkeysEnabled`
+- **Propósito:** Salvar, visualizar e aplicar prompts customizados no terminal ativo
+- **Módulo:** `ui/PromptManager.ahk`
+- **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo ProjectBookmarks)
+- **Funcionalidades:**
+  - 13 prompts built-in: Minimal, Git Branch, Timestamp, 💻 Modern, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (PowerShell) + Minimal Color, Git Color, 🐧 Modern, ⚔ Star Wars, ⚡ Powerline, 🐉 Dragon Ball (Bash)
+  - Modern: powerline com duração do último comando, git branch, user/host/hora
+    - PS: segmentos azul (esq) + marrom (dir), right-aligned, seta powerline (E0B0)
+    - Bash: segmentos verde (esq) + marrom (dir), timer via trap DEBUG + PROMPT_COMMAND
+  - Star Wars e Dragon Ball: auto-detect user/root (Bash) ou normal/admin (PowerShell)
+  - Animações ASCII full-screen (6 frames, ~17s) ao virar root/admin — uma vez por sessão:
+    - Star Wars: Anakin → Conflito Luz/Trevas → Queda → Cirurgia → Vader Rises → Close-up Vader
+    - Dragon Ball: Goku/Nimbus → 7 Esferas → Céu Escurece → Shenlong Emerge → Shenlong Full → Poder Total
+  - Ações por input: `1A`=sessão, `1W`=persistir, `2E`=editar, `3D`=deletar, `4F`=favorito, `5S`=default, `N`=novo
+  - `W` (Write): persiste prompt permanentemente no arquivo de config:
+    - PowerShell: escreve no `$PROFILE` (remove anterior + appenda + dot-source)
+    - Bash user: escreve no `~/.bashrc` (remove anterior + appenda via temp file + cat)
+    - Bash root: escreve no `/root/.bashrc` via sudo tee
+    - Para Bash, pergunta destino: User / Root / Ambos
+  - Quick-Apply (`Ctrl+F8`): aplica prompt favorito/default no terminal ativo sem abrir GUI
+  - Quick-Save (`Ctrl+Alt+F8`): captura prompt atual do terminal e salva
+  - Detecta tipo de shell (PowerShell/Bash) pelo título do Windows Terminal
+  - Apply envia comando direto ao terminal via SendInput({Text}) para enviar literalmente
+  - PowerShell: `function prompt { ... }`, Bash: `export PS1='...'`
+- **Persistência:** `~/.lazywindow/prompts.json`
+- **Inicialização:** Chamada em `main.ahk` via `PromptManager.Init()`
+
+### Download Version Manager (Gestor de Versões de Downloads)
+
+- **Hotkey:** `Ctrl+Shift+D` (requer `g_hotkeysEnabled`)
+- **Propósito:** Detectar duplicatas em `~/Downloads` e versionar em `~/.downloads-version/`
+- **Módulo:** `ui/DownloadVersionManager.ahk`
+- **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo ProjectBookmarks)
+- **Funcionalidades:**
+  - Detecta duplicatas agrupando por nome base (remove sufixos `(N)`, `Copia (N)`, `Copy (N)`)
+  - Versiona copiando para `~/.downloads-version/<basename>/YYYYMMDD-HHmmss_<basename>`
+  - Preserva arquivo original em Downloads, apaga apenas cópias `(N)`
+  - Controle anti-retrabalho: compara originalName + fileSize + fileModified no versions.json
+  - Metadata em `versions.json` com nome original, path, tamanho, data de modificação
+  - Três modos GUI: Duplicatas (padrão), Versões Salvas, Detalhe de Versões
+  - Comandos modo Duplicatas: `[nº]V`=versionar, `[nº]O`=abrir, `T`=todas, `L`=versões, `R`=refresh
+  - Comandos modo Versões: `[nº]L`=listar, `[nº]O`=abrir, `[nº]R`=restaurar, `D`=duplicatas
+  - Restaurar copia versão de volta para Downloads com nome original
+- **Persistência:** `~/.downloads-version/<basename>/versions.json`
+- **Inicialização:** Chamada em `main.ahk` via `DownloadVersionManager.Init()`
 
 ## Guia de Implementação
 
@@ -280,15 +375,21 @@ Para testar manualmente:
 1. Execute `src/main.ahk` ou use `ToggleLazyWindow.ps1`
 2. Verifique a StatusBar acima da taskbar (exibe "OFF | Alt+Home=LIGAR | F3=AJUDA")
 3. Pressione `Alt+Home` para ligar todos os comandos (StatusBar muda para "ON | Vel: 25 dpi | ...")
-4. Pressione `Ctrl+End` para testar grid no monitor 1
-5. Navegue com `A/S/D/Z/X/C`
-6. Pressione `Backspace` para clique esquerdo
-7. Pressione `Ctrl+Home` para testar seletor de janelas
-8. Pressione `Ctrl+PgUp` para testar grid na janela ativa
-9. Pressione `Alt+PgUp` para testar grid ao redor do cursor
-10. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
-11. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
-12. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
-13. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
-14. Pressione `F3` para ver a ajuda completa
-15. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"
+4. **Teste Enter pass-through:** com cursor ligado, pressione Enter em qualquer app (ex: chat/browser) — deve funcionar normalmente
+5. Pressione `Ctrl+End` para testar grid no monitor 1
+6. Navegue com `A/S/D/Z/X/C`
+7. Pressione `Backspace` para clique esquerdo
+8. Pressione `Ctrl+Home` para testar seletor de janelas
+9. Pressione `Ctrl+PgUp` para testar grid na janela ativa
+10. Pressione `Alt+PgUp` para testar grid ao redor do cursor
+11. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
+12. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
+13. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
+14. Pressione `Ctrl+Shift+F5` para testar gravação GIF (mova o mouse e depois pare com `Ctrl+F5`)
+15. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
+15. Pressione `Ctrl+Shift+P` para testar Command Palette (buscar "grid", "base64", etc.)
+16. Pressione `Ctrl+Shift+O` para testar Project Bookmarks (adicionar projeto, abrir com nvim)
+17. Pressione `Ctrl+Shift+F8` para testar Prompt Manager (aplicar prompt, criar custom)
+18. Pressione `Ctrl+F8` no terminal para testar Quick-Apply de prompt
+19. Pressione `F3` para ver a ajuda completa
+20. Pressione `Alt+Home` para desligar todos os comandos e verificar StatusBar volta a "OFF"

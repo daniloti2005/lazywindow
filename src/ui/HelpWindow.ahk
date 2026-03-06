@@ -49,13 +49,13 @@ class HelpWindow {
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize", "LazyWindow - Ajuda")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "1a1a2e"
-        this.gui.SetFont("s10 cFFFFFF", "Consolas")
+        this.gui.BackColor := "1B2838"
+        this.gui.SetFont("s10 cD0D8E0", "Cascadia Code")
 
         this.edit := this.gui.AddEdit("x10 y10 w740 h460 +ReadOnly +VScroll +Multi -Wrap")
-        this.edit.Opt("Background16213e")
+        this.edit.Opt("Background0D1926")
 
-        this.gui.SetFont("s10 cFFFFFF", "Segoe UI")
+        this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
         this.footer := this.gui.AddText("x10 y478 w740", "Use [ / ] (scroll), PgUp/PgDn ou a barra de rolagem | ESC fecha")
 
         this.gui.OnEvent("Size", (guiObj, minMax, width, height) => this.OnResize(width, height))
@@ -74,6 +74,7 @@ class HelpWindow {
         this.gui.Show("x" work.x " y" work.y " w" work.width " h" work.height)
         this.OnResize(work.width, work.height)
         WinMaximize("ahk_id " this.gui.Hwnd)
+        WinSetTransparent(215, this.gui)
     }
 
     static OnResize(width, height) {
@@ -189,6 +190,31 @@ JANELA ATIVA [requer Alt+Home]:
   Ctrl+F7     = Selecionar região com mouse (imagem no clipboard + arquivo)
   Ctrl+Shift+F7 = Selecionar região com mouse (caminho do arquivo no clipboard)
 
+GRAVACAO GIF [requer Alt+Home]:
+  Ctrl+Shift+F5 = Iniciar gravacao GIF do monitor onde o mouse esta
+                  (se o mouse mudar de monitor, a gravacao segue automaticamente)
+                  Resolucao 50%, 60 FPS, maximo 60 segundos
+                  Cursor do mouse e cliques (circulo amarelo) aparecem no GIF
+  Ctrl+F5       = Parar gravacao, salvar GIF + pasta _steps (1 PNG por frame)
+                  Caminho da pasta _steps copiado para clipboard
+                  Cole o caminho no chat da IA para analise passo a passo
+  Salvo em: ~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif
+            ~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss_steps\
+
+STORY TELLING [requer Alt+Home]:
+  Ctrl+F4       = Abrir/fechar menu de historias
+  Ctrl+Shift+F4 = Quick-Add: cola clipboard como evidencia do proximo passo
+  Ctrl+Alt+F4   = Flush: gera prompt com a historia completa para clipboard
+  Comandos na GUI:
+    N=Nova historia | A=Seletor de evidencias | L=Listar historias | F=Flush
+    [no]E=Editar contexto | [no]V=Ver evidencia | [no]U/D=Mover | [no]R=Remover
+  Seletor de Evidencias (comando A):
+    Lista clipboard, screenshots e pastas _steps do GIF em tela fullscreen
+    Preview a direita: imagem ou animacao 60fps para pastas de steps
+    Setas para navegar, Enter=selecionar, ESC=cancelar
+  Tipos de evidencia: Texto (clipboard), Imagem (arquivo), Pasta (ex: _steps)
+  Persistencia: ~/.lazywindow/stories.json
+
 MARCADORES DE POSICAO [requer Alt+Home]:
   Ctrl+1..9   = Salvar posicao atual no marcador
   Alt+1..9    = Mover cursor para o marcador
@@ -211,6 +237,57 @@ AJUDA [SEMPRE ATIVO]:
   F3          = Abre/Fecha esta janela
   F10         = Ajuda de atalhos do Microsoft Teams
   F11         = Ajuda de atalhos do LazyVim
+
+SNIPPET MANAGER [requer Alt+Home]:
+  Ctrl+Alt+F10 = Abre/Fecha o Snippet Manager
+
+COMMAND PALETTE [requer Alt+Home]:
+  Ctrl+Shift+P = Abre busca unificada de todos os comandos
+                 Digite para filtrar, setas para navegar, Enter para executar
+
+PROJECT BOOKMARKS [requer Alt+Home]:
+  Ctrl+Shift+O = Abre lista de projetos (fullscreen)
+                 Digite [numero][acao] + Enter:
+                   1 ou 1N = nvim no projeto 1
+                   2S = shell (terminal) no projeto 2
+                   3R = remover projeto 3
+                   4G = editar tag do projeto 4
+                   5P = mudar perfil do terminal do projeto 5
+                   A = adicionar projeto (digitar caminho)
+                   B = browse pasta (selecionar pasta)
+                   Texto livre = filtrar por nome/caminho
+                 Terminal por projeto = perfil do Windows Terminal
+                 Ordenado por ultimo aberto (mais recente primeiro)
+                 Persistido em ~/.lazywindow/projects.json
+  Ctrl+Alt+O  = Quick-add: marca pasta atual do terminal como projeto
+
+PROMPT MANAGER [requer Alt+Home]:
+  Ctrl+Shift+F8 = Abre gestor de prompts (fullscreen)
+                  Digite [numero][acao] + Enter:
+                    1 ou 1A = aplicar prompt 1 na sessao (temporario)
+                    1W = persistir prompt 1 no arquivo de config
+                         PowerShell: escreve no $PROFILE
+                         Bash: escreve no ~/.bashrc (user/root/ambos)
+                    2E = editar codigo do prompt 2
+                    3D = deletar prompt 3 (so custom)
+                    4F = toggle favorito do prompt 4
+                    5S = definir prompt 5 como default
+                    N = novo prompt customizado
+                  13 prompts built-in:
+                    PS: Minimal, Git Branch, Timestamp, Modern, Star Wars, Powerline, Dragon Ball
+                    Bash: Minimal, Git Color, Modern, Star Wars, Powerline, Dragon Ball
+                  Modern: powerline com duracao do comando, git branch, user/host/hora
+                    PS: segmentos azul (esq) + marrom (dir) com setas powerline
+                    Bash: segmentos verde (esq) + marrom (dir) com timer via trap DEBUG
+                  Star Wars: auto-detect Jedi (user) ↔ Sith (root/admin)
+                    Animacao ASCII full-screen ao virar Sith (6 frames):
+                    Anakin > Conflito Luz/Trevas > Queda > Cirurgia > Vader > Close-up
+                  Dragon Ball: auto-detect Goku (user) ↔ Super Saiyan (root/admin)
+                    Animacao ASCII full-screen ao virar Super Saiyan (6 frames):
+                    Goku/Nimbus > 7 Esferas > Ceu Escurece > Shenlong Emerge > Shenlong Full > Poder Total
+  Ctrl+F8     = Quick-Apply: aplica prompt favorito/default no terminal
+  Ctrl+Alt+F8 = Quick-Save: captura prompt atual do terminal e salva
+  (persistido em ~/.lazywindow/prompts.json)
 
 SNIPPET MANAGER [requer Alt+Home]:
   Ctrl+Alt+F10 = Abre/Fecha o Snippet Manager
@@ -240,6 +317,28 @@ SNIPPET MANAGER [requer Alt+Home]:
     - ${ClassName}, ${FunctionName} = palavra selecionada
     - ${date} = data atual
     - ${user} = nome do usuario
+ 
+  DOWNLOAD VERSION MANAGER [requer Alt+Home]:
+  Ctrl+Shift+D = Abre/Fecha o Download Version Manager
+ 
+  Funcionalidades:
+    - Detecta duplicatas em ~/Downloads (Arquivo.txt, Arquivo (1).txt, etc.)
+    - Versiona copiando para ~/.downloads-version/<nome>/YYYYMMDD-HHmmss_<nome>
+    - Preserva o original em Downloads, apaga apenas copias (N)
+    - Controle anti-retrabalho: nao duplica versoes ja transferidas
+    - Modo Versoes: visualizar e restaurar versoes salvas
+ 
+  Comandos (modo Duplicatas):
+    [no]V = Versionar grupo     [no]O = Abrir no Explorer
+    T = Versionar todas          L = Ver versoes salvas
+    R = Refresh                  ESC = Fechar
+ 
+  Comandos (modo Versoes):
+    [no]L = Listar versoes      [no]O = Abrir pasta
+    [no]R = Restaurar ultima    D = Voltar duplicatas
+
+NOTA: Enter funciona normalmente em qualquer aplicacao com cursor ligado.
+      O LazyWindow usa pass-through para nao bloquear o Enter do sistema.
 )"
         return Trim(help)
     }

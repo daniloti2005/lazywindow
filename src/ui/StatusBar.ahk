@@ -2,11 +2,13 @@
 
 class StatusBar {
     static gui := ""
-    static text := ""
+    static line1 := ""
+    static line2 := ""
     static height := 28
     static refreshFn := ""
     static monitorNum := 1
     static shown := false
+    static TRANSKEY := "1B2838"
 
     static Init() {
         if (this.gui) {
@@ -19,29 +21,31 @@ class StatusBar {
             return
         }
 
+        ; Detect taskbar height
+        tbH := this.height
+        try {
+            WinGetPos(, , , &tbHeight, "ahk_class Shell_TrayWnd")
+            if (tbHeight > 0)
+                tbH := tbHeight
+        }
+
         this.shown := false
         this.gui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "05060a"  ; dark space
+        this.gui.BackColor := this.TRANSKEY
         this.gui.MarginX := 0
         this.gui.MarginY := 0
 
-        ; "lightsaber" accent line
-        this.gui.AddProgress("x0 y0 w" work.width " h2 c00FF7F Background05060a", 100)
-
-        ; Tiny ASCII icons (3 droids + 1 alien baby), sized to fit reliably
-        this.gui.SetFont("s5 c00FF7F", "Consolas")
-        this.gui.AddText("x6  y4 w26 h18", "[o]`n|_|")
-        this.gui.AddText("x30 y4 w26 h18", "{o}`n|#|")
-        this.gui.AddText("x54 y4 w30 h18", "/o\\`n|_|")
-        this.gui.AddText("x86 y4 w44 h18", "(^_^)`n /|\\")
-
-        ; Main status text
-        this.gui.SetFont("s7 cCFEFEA", "Segoe UI")
-        this.text := this.gui.AddText("x132 y5 w" (work.width - 142) " h" (this.height - 6), "")
+        ; Two lines after weather widget area
+        xStart := 200
+        lineW := 130
+        this.gui.SetFont("s7 cD0D8E0", "Cascadia Code")
+        this.line1 := this.gui.AddText("x" xStart " y3 w" lineW " h14", "")
+        this.gui.SetFont("s7 c7EB8DA", "Cascadia Code")
+        this.line2 := this.gui.AddText("x" xStart " y" (tbH // 2 + 1) " w" lineW " h14", "")
 
         this.Dock()
-        WinSetTransparent(230, this.gui)
+        WinSetTransColor(this.TRANSKEY, this.gui)
 
         this.refreshFn := this.Refresh.Bind(this)
         this.Refresh()
@@ -60,35 +64,37 @@ class StatusBar {
         w := work.width
         h := this.height
 
-        ; Prefer using the real taskbar rectangle when it's on this monitor
+        ; Overlay directly on the taskbar
         try {
             WinGetPos(&tx, &ty, &tw, &th, "ahk_class Shell_TrayWnd")
             if (tx >= bounds.x && tx < bounds.right && ty >= bounds.y && ty < bounds.bottom) {
                 if (tw > th) {
-                    ; horizontal taskbar
-                    if (ty > bounds.y + (bounds.height // 2)) {
-                        y := ty - this.height - 1
-                    } else {
-                        y := ty + th + 1
-                    }
+                    x := tx
+                    y := ty
+                    w := tw
+                    h := th
                 }
             }
         }
 
         if (this.shown) {
-            WinMove(x, y, w, h, "ahk_id " this.gui.Hwnd)
+            try WinMove(x, y, w, h, "ahk_id " this.gui.Hwnd)
         } else {
             this.gui.Show("x" x " y" y " w" w " h" h " NoActivate")
             this.shown := true
         }
+        ; Force topmost z-order above taskbar every refresh
+        try DllCall("SetWindowPos", "Ptr", this.gui.Hwnd, "Ptr", -1, "Int", 0, "Int", 0, "Int", 0, "Int", 0, "UInt", 0x0003)
     }
 
     static Refresh() {
-        if (!this.gui || !this.text) {
+        if (!this.gui || !this.line1 || !this.line2) {
             return
         }
 
         this.Dock()
+        ; Re-apply transparency (gets lost when other AlwaysOnTop windows close)
+        try WinSetTransColor(this.TRANSKEY, this.gui)
 
         cursorOn := false
         vel := 0
@@ -97,9 +103,16 @@ class StatusBar {
         try vel := ArrowMouse.GetSpeedPercent()
 
         if (cursorOn) {
-            this.text.Value := "ON | Vel: " vel " dpi | F3=AJUDA | F10=TEAMS | F11=VIM | Alt+Home=OFF"
+            rec := ""
+            try {
+                if (GifRecorder.IsRecording())
+                    rec := "⏺REC "
+            }
+            this.line1.Value := rec "ON | Vel: " vel " dpi"
+            this.line2.Value := "F3 F10 F11 | Alt+Home=OFF"
         } else {
-            this.text.Value := "OFF | Alt+Home=LIGAR | F3=AJUDA"
+            this.line1.Value := "OFF | Alt+Home=LIGAR"
+            this.line2.Value := "F3=AJUDA"
         }
     }
 }

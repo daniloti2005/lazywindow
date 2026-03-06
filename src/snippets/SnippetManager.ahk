@@ -55,13 +55,13 @@ class SnippetManager {
     
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop -MinimizeBox", "Snippet Manager")
-        this.gui.SetFont("s10", "Segoe UI")
-        this.gui.BackColor := "1e1e1e"
+        this.gui.SetFont("s10", "Cascadia Code")
+        this.gui.BackColor := "1B2838"
         
         ; Search box with mode toggle
-        this.gui.SetFont("s10 cWhite", "Segoe UI")
+        this.gui.SetFont("s10 cD0D8E0", "Cascadia Code")
         this.gui.AddText("x10 y10 w80 h25", "Search:")
-        this.searchEdit := this.gui.AddEdit("x90 y7 w250 h25 Background2d2d2d cWhite")
+        this.searchEdit := this.gui.AddEdit("x90 y7 w250 h25 Background152230 cA8D8B9")
         this.searchEdit.OnEvent("Change", (*) => this.OnSearchChange())
         
         ; Search mode toggle button
@@ -71,34 +71,34 @@ class SnippetManager {
         ; Language dropdown
         this.gui.AddText("x410 y10 w60 h25", "Lang:")
         languages := ["TypeScript", "Python", "SQL", "PowerShell", "Bash", "Go", "Windows"]
-        this.languageDropdown := this.gui.AddDropDownList("x470 y7 w110 Choose1 Background2d2d2d", languages)
+        this.languageDropdown := this.gui.AddDropDownList("x470 y7 w110 Choose1 Background152230", languages)
         this.languageDropdown.OnEvent("Change", (*) => this.OnLanguageChange())
         
         ; Search mode indicator
         this.gui.AddText("x10 y40 w80 h20", "Modo:")
-        this.searchModeText := this.gui.AddText("x90 y40 w150 h20 c00ff00", "Busca por NOME")
+        this.searchModeText := this.gui.AddText("x90 y40 w150 h20 c7EB8DA", "Busca por NOME")
         
         ; Context word display
         this.gui.AddText("x250 y40 w60 h20", "Context:")
-        this.contextText := this.gui.AddText("x310 y40 w270 h20 c808080", "")
+        this.contextText := this.gui.AddText("x310 y40 w270 h20 c5A7A94", "")
         
         ; Category list
         this.gui.AddText("x10 y65 w150 h20", "Categories:")
-        this.categoryList := this.gui.AddListBox("x10 y85 w150 h200 Background2d2d2d cWhite")
+        this.categoryList := this.gui.AddListBox("x10 y85 w150 h200 Background0D1926 c7EB8DA")
         this.categoryList.OnEvent("Change", (*) => this.OnCategoryChange())
         
         ; Snippet list
         this.gui.AddText("x170 y65 w150 h20", "Snippets:")
-        this.snippetList := this.gui.AddListBox("x170 y85 w200 h200 Background2d2d2d cWhite")
+        this.snippetList := this.gui.AddListBox("x170 y85 w200 h200 Background0D1926 c7EB8DA")
         this.snippetList.OnEvent("Change", (*) => this.OnSnippetChange())
         this.snippetList.OnEvent("DoubleClick", (*) => this.InsertSnippet())
         
         ; Preview
         this.gui.AddText("x380 y65 w200 h20", "Preview:")
-        this.previewEdit := this.gui.AddEdit("x380 y85 w200 h200 ReadOnly Multi Background2d2d2d cWhite -WantReturn")
+        this.previewEdit := this.gui.AddEdit("x380 y85 w200 h200 ReadOnly Multi Background0D1926 cD0D8E0 -WantReturn")
         
         ; Buttons
-        this.gui.SetFont("s9", "Segoe UI")
+        this.gui.SetFont("s9", "Cascadia Code")
         insertBtn := this.gui.AddButton("x10 y295 w120 h30", "Insert (Enter)")
         insertBtn.OnEvent("Click", (*) => this.InsertSnippet())
         

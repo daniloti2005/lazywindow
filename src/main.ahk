@@ -14,10 +14,17 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "ui\HelpWindow.ahk"
 #Include "ui\TeamsHelpWindow.ahk"
 #Include "ui\LazyVimHelpWindow.ahk"
+#Include "ui\CommandPalette.ahk"
+#Include "ui\ProjectBookmarks.ahk"
+#Include "ui\PromptManager.ahk"
+#Include "ui\StoryTelling.ahk"
+#Include "ui\EvidencePicker.ahk"
+#Include "ui\DownloadVersionManager.ahk"
 #Include "utils\CodeBeautify.ahk"
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
 #Include "utils\ScreenshotRegion.ahk"
+#Include "utils\GifRecorder.ahk"
 #Include "grid\GridOverlay.ahk"
 #Include "grid\GridNavigation.ahk"
 #Include "window\WindowList.ahk"
@@ -49,6 +56,8 @@ tray.Add("Modo Setas (Alt+Home)", (*) => ArrowMouse.Toggle())
 tray.Add("Velocidade do Mouse (Ctrl+F12)", (*) => SpeedDialog.Show())
 tray.Add()
 tray.Add("Snippet Manager (Ctrl+Alt+F10)", (*) => SnippetManager.Toggle())
+tray.Add("Command Palette (Ctrl+Shift+P)", (*) => CommandPalette.Toggle())
+tray.Add("Project Bookmarks (Ctrl+Shift+O)", (*) => ProjectBookmarks.Toggle())
 tray.Add("Ajuda (F3)", (*) => HelpWindow.Toggle())
 tray.Add("Atalhos Teams (F10)", (*) => TeamsHelpWindow.Toggle())
 tray.Add("Ajuda LazyVim (F11)", (*) => LazyVimHelpWindow.Toggle())
@@ -83,12 +92,24 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^+F6::TakeWindowShotPathOnly() ; Ctrl+Shift+F6 = Print da janela ativa (caminho no clipboard)
 ^F7::TakeRegionShot()          ; Ctrl+F7 = Selecionar região (imagem no clipboard + arquivo)
 ^+F7::TakeRegionShotPathOnly() ; Ctrl+Shift+F7 = Selecionar região (caminho no clipboard)
+^+F5::GifRecorder.Start()      ; Ctrl+Shift+F5 = Iniciar gravação GIF (monitor do mouse)
+^F5::GifRecorder.Stop()        ; Ctrl+F5 = Parar gravação GIF e copiar caminho
 ^+b::CodeBeautify.Beautify()   ; Ctrl+Shift+B = Beautify clipboard (JSON/XML)
 ^+a::Base64.Encode()           ; Ctrl+Shift+A = Encode clipboard para Base64
 ^!a::Base64.Decode()           ; Ctrl+Alt+A = Decode Base64 do clipboard
 ^+t::Timestamp.ToEpoch()       ; Ctrl+Shift+T = Data para Epoch
 ^!t::Timestamp.FromEpoch()     ; Ctrl+Alt+T = Epoch para Data
 ^!F10::SnippetManager.Toggle()  ; Ctrl+Alt+F10 = Snippet Manager
+^+p::CommandPalette.Toggle()    ; Ctrl+Shift+P = Command Palette
+^+o::ProjectBookmarks.Toggle()  ; Ctrl+Shift+O = Project Bookmarks
+^!o::ProjectBookmarks.QuickAddFromTerminal()  ; Ctrl+Alt+O = Quick-add pasta atual
+^+F8::PromptManager.Toggle()                ; Ctrl+Shift+F8 = Prompt Manager
+^F8::PromptManager.QuickApply()             ; Ctrl+F8 = Quick-Apply prompt
+^!F8::PromptManager.QuickSave()             ; Ctrl+Alt+F8 = Quick-Save prompt
+^F4::StoryTelling.Toggle()                  ; Ctrl+F4 = Story Telling
+^+F4::StoryTelling.QuickAdd()               ; Ctrl+Shift+F4 = Quick-Add passo
+^!F4::StoryTelling.Flush()                  ; Ctrl+Alt+F4 = Flush prompt
+^+d::DownloadVersionManager.Toggle()       ; Ctrl+Shift+D = Download Version Manager
 
 [::Send "{WheelUp}"           ; Scroll up
 ]::Send "{WheelDown}"         ; Scroll down
@@ -352,6 +373,24 @@ StatusBar.Init()
 
 ; Initialize mouse markers
 MouseMarkers.Init()
+
+; Initialize command palette
+CommandPalette.Init()
+
+; Initialize project bookmarks
+ProjectBookmarks.Init()
+
+; Initialize prompt manager
+PromptManager.Init()
+
+; Initialize story telling
+StoryTelling.Init()
+
+; Initialize evidence picker
+EvidencePicker.Init()
+
+; Initialize download version manager
+DownloadVersionManager.Init()
 
 ; Hotkeys for mouse markers (Ctrl+N = save, Alt+N = go, Ctrl+Alt+N = go and click)
 #HotIf g_hotkeysEnabled

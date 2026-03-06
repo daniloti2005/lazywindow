@@ -127,6 +127,53 @@ Capture screenshots da janela ativa ou de uma região selecionada. As imagens s�
 
 ---
 
+### 🎬 Gravação de GIF
+
+Grava a tela como GIF animado. A gravação segue automaticamente o monitor onde o mouse está — se o mouse mudar de monitor durante a gravação, a captura acompanha.
+
+**Atalhos:**
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (60 FPS, resolução 50%, máx 60s) |
+| `Ctrl+F5` | Parar gravação, salvar GIF + pasta `_steps` com 1 PNG/frame |
+
+**Detalhes:**
+- Resolução nativa (1920×1080 para monitores 1080p)
+- **60 FPS** — fluido como vídeo, captura toda a ação na tela
+- **Resolução 50%** — metade da resolução nativa para melhor performance
+- Limite de **60 segundos** por gravação (60 FPS × 60s = 3600 frames)
+- **Cursor do mouse** é desenhado em cada frame (visível no GIF)
+- **Cliques do mouse aparecem com círculo amarelo** no GIF (persiste 20 frames)
+- Se o mouse muda de monitor, os próximos frames são capturados no novo monitor
+- Criação do GIF: usa FFmpeg se disponível, ou fallback automático via `System.Drawing`
+- **Pasta `_steps/`**: contém 1 PNG por frame (step_00001.png, step_00002.png, ...) — cole o caminho da pasta no chat da IA para análise passo a passo
+- Salvo em `~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif` + `_steps/`
+- **Clipboard** recebe o caminho da pasta `_steps` (não o GIF)
+- StatusBar mostra `⏺ REC (N frames)` durante a gravação
+
+---
+
+### 📖 Story Telling
+
+Documenta fluxos passo a passo com evidências (textos, screenshots, pastas de frames) e contexto narrativo. Gera um prompt formatado para colar no chat da IA para análise completa.
+
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+F4` | Abrir/fechar GUI do Story Telling |
+| `Ctrl+Shift+F4` | Quick-Add: cola clipboard como evidência de novo passo |
+| `Ctrl+Alt+F4` | Flush: gera prompt formatado e copia para clipboard |
+
+**Detalhes:**
+- **Evidence Picker**: Ao adicionar passo (`A`), abre tela de seleção com clipboard + screenshots + pastas `_steps` do GIF
+- **Preview visual**: Screenshots exibidos à direita; pastas `_steps` animadas a 60fps
+- **Tipos de evidência**: Texto (clipboard), Imagem (PNG/JPG), Pasta (ex: `_steps` do GIF recorder), Steps (pastas com frames animados)
+- **Reordenação** de passos (mover para cima/baixo)
+- **Flush** gera prompt Markdown com todos os passos, evidências e contextos — pronto para colar na IA
+- Comandos na GUI: `N`=Nova, `A`=Seletor de evidências, `L`=Listar, `F`=Flush, `[nº]E/V/U/D/R`
+- Persistência em `~/.lazywindow/stories.json`
+
+---
+
 ### 📝 Snippet Manager
 
 Gestor de snippets de código que funciona em qualquer editor ou terminal. Detecta automaticamente a linguagem baseado na janela ativa e substitui placeholders com contexto.
@@ -181,6 +228,129 @@ Salve até **9 posições do mouse** e volte para elas rapidamente. Os marcadore
 | `Ctrl+Alt+1..9` | Mover e clicar no marcador |
 
 **Arquivo de persistência:** `~/.lazywindow/markers.json`
+
+---
+
+### 📂 Project Bookmarks (Marcadores de Projetos)
+
+Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou terminal via Windows Terminal. Janela fullscreen com input por número+letra.
+
+**Atalho:** `Ctrl+Shift+O` | **Quick-Add:** `Ctrl+Alt+O` (adiciona pasta atual do terminal)
+
+**Funcionalidades:**
+- Janela fullscreen com lista de projetos
+- Cada projeto tem: nome, caminho, tag e **perfil do Windows Terminal** (PowerShell, Ubuntu, Fedora, etc.)
+- Perfis detectados automaticamente do `settings.json` do Windows Terminal
+- Ordenação automática por último aberto (mais recente primeiro)
+- Exibe tempo desde a última abertura (ex: "2h", "3d", "1sem")
+- Busca por nome/caminho e filtro por tag
+
+**Ações (digite `[nº][letra]` + Enter):**
+| Input | Ação |
+|-------|------|
+| `1` ou `1N` | Abre projeto 1 com `nvim .` |
+| `2S` | Abre o shell/terminal na pasta do projeto 2 |
+| `3R` | Remove projeto 3 da lista |
+| `4G` | Edita tag do projeto 4 |
+| `5P` | Altera perfil do terminal do projeto 5 |
+| `A` | Adiciona projeto (digitar caminho) |
+| `B` | Adiciona projeto (browse de pasta) |
+| texto | Filtra por nome/caminho |
+
+**Terminais suportados (perfis do Windows Terminal):**
+- Todos os perfis instalados no Windows Terminal (PowerShell, Ubuntu, Fedora, etc.)
+- Tipo (Windows/WSL) detectado automaticamente
+
+**Arquivo de persistência:** `~/.lazywindow/projects.json`
+
+### 🎨 Prompt Manager (Gestor de Prompts)
+
+**Hotkeys:**
+| Hotkey | Ação |
+|--------|------|
+| `Ctrl+Shift+F8` | Abre gestor de prompts (fullscreen) |
+| `Ctrl+F8` | Quick-Apply: aplica prompt favorito no terminal ativo |
+| `Ctrl+Alt+F8` | Quick-Save: captura prompt atual e salva |
+
+**Ações na GUI (requer `Alt+Home`):**
+
+| Input | Ação |
+|-------|------|
+| `1` ou `1A` | Aplica prompt 1 na sessão (temporário) |
+| `1W` | Persiste prompt 1 no arquivo de config (permanente) |
+| `2E` | Edita código do prompt 2 |
+| `3D` | Deleta prompt 3 (só custom, built-in não pode) |
+| `4F` | Toggle favorito do prompt 4 |
+| `5S` | Define prompt 5 como default para o tipo de shell |
+| `N` | Novo prompt customizado |
+
+**13 Prompts Built-in:**
+
+| Nome | Shell | Descrição |
+|------|-------|-----------|
+| Minimal | PowerShell | Apenas pasta e `>` |
+| Git Branch | PowerShell | Pasta + branch git em verde |
+| Timestamp | PowerShell | Hora + pasta |
+| 💻 Modern | PowerShell | Powerline: duração do comando, git, user/host/hora — segmentos azul + marrom |
+| ⚔ Star Wars | PowerShell | Auto-detect: Jedi (normal) ↔ Sith (admin) + animação ASCII full-screen (6 frames: Anakin → Vader) |
+| ⚡ Powerline | PowerShell | Estilo oh-my-posh: path, git, user/host/hora |
+| 🐉 Dragon Ball | PowerShell | Auto-detect: Goku (normal) ↔ Super Saiyan (admin) + animação ASCII full-screen (6 frames: Goku → Shenlong) |
+| Minimal Color | Bash | Pasta em azul + `$` |
+| Git Color | Bash | Pasta em azul + branch em verde |
+| 🐧 Modern | Bash | Powerline: duração do comando (trap DEBUG), git, user/host/hora — segmentos verde + marrom |
+| ⚔ Star Wars | Bash | Auto-detect: Jedi (user) ↔ Sith (root) + animação ASCII full-screen (6 frames: Anakin → Vader) |
+| ⚡ Powerline | Bash | Segmentos: distro, path, git, user/host/hora |
+| 🐉 Dragon Ball | Bash | Auto-detect: Goku (user) ↔ Super Saiyan + Shenlong (root) + animação ASCII full-screen (6 frames: Goku → Shenlong) |
+
+**Como funciona:**
+- Aplica o prompt **na sessão atual** do terminal (temporário) com `A`
+- Persiste **permanentemente** no arquivo de config com `W`:
+  - PowerShell: escreve no `$PROFILE`
+  - Bash: escreve no `~/.bashrc` (user) ou `/root/.bashrc` (root)
+  - Para Bash, pergunta destino: User / Root / Ambos (usa temp file + cat para evitar problemas de escaping)
+- Para PowerShell: envia `function prompt { ... }`
+- Para Bash/WSL: envia `export PS1='...'`
+- Detecta automaticamente o tipo de shell pelo título do Windows Terminal
+- **Animações temáticas:** Star Wars e Dragon Ball exibem animação ASCII art full-screen (6 frames, ~17s total) na primeira vez que se eleva a root/admin — uma vez por sessão
+- Prompts custom podem ser criados, editados e deletados
+- Built-ins podem ser editados mas não deletados
+
+**Arquivo de persistência:** `~/.lazywindow/prompts.json`
+
+---
+
+### 📥 Download Version Manager
+
+**Hotkey:** `Ctrl+Shift+D` (requer `Alt+Home` = ON)
+
+Gerenciador de versões de arquivos baixados. Detecta duplicatas em `~/Downloads` (ex: `Arquivo.txt`, `Arquivo (1).txt`, `Arquivo (2).txt`) e versiona organizando em `~/.downloads-version/`.
+
+**Funcionalidades:**
+- Detecta automaticamente grupos de duplicatas (mesmo nome base)
+- Versiona copiando para `~/.downloads-version/<nome>/YYYYMMDD-HHmmss_<nome>`
+- **Preserva o original** em Downloads — apaga apenas as cópias `(N)`
+- **Controle anti-retrabalho:** não duplica versões já transferidas (compara nome + tamanho + data)
+- Metadata em `versions.json` rastreia nome original, path, tamanho e data de cada versão
+- Modo Versões: visualizar versões salvas, listar detalhes, restaurar para Downloads
+
+**Comandos (modo Duplicatas):**
+- `[nº]V` = Versionar grupo | `[nº]O` = Abrir no Explorer
+- `T` = Versionar todas | `L` = Ver versões salvas | `R` = Refresh
+
+**Comandos (modo Versões):**
+- `[nº]L` = Listar versões | `[nº]O` = Abrir pasta | `[nº]R` = Restaurar última
+- `D` = Voltar para duplicatas
+
+**Estrutura de versionamento:**
+```
+~/.downloads-version/
+├── Relatorio.xlsx/
+│   ├── versions.json
+│   ├── 20260301-093000_Relatorio.xlsx
+│   └── 20260306-145501_Relatorio.xlsx
+```
+
+**Arquivo de persistência:** `~/.downloads-version/<nome>/versions.json`
 
 ---
 
@@ -285,6 +455,8 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 
 > **Nota:** Ao iniciar, apenas Grid, Ajuda e `Alt+Home` estão ativos. Pressione `Alt+Home` para ligar todos os outros comandos.
 
+> **Compatibilidade:** O Enter e outras teclas do sistema funcionam normalmente em qualquer aplicação mesmo com o cursor ligado. O LazyWindow usa pass-through para não bloquear teclas de sistema.
+
 | Atalho | Função |
 |--------|--------|
 | `Ctrl+End` | Grid no Monitor 1 |
@@ -318,12 +490,24 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+F6` | Print da janela ativa (caminho do arquivo PNG → clipboard) |
 | `Ctrl+F7` | Selecionar região com mouse (imagem no clipboard + salva PNG) |
 | `Ctrl+Shift+F7` | Selecionar região com mouse (caminho do arquivo PNG → clipboard) |
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (60 FPS, resolução 50%, máx 60s) |
+| `Ctrl+F5` | Parar gravação GIF, gerar pasta _steps (1 PNG/frame) → clipboard |
+| `Ctrl+F4` | Story Telling — documentar história com evidências e contexto |
+| `Ctrl+Shift+F4` | Quick-Add passo (clipboard como evidência) |
+| `Ctrl+Alt+F4` | Flush — gerar prompt da história para clipboard |
 | `Ctrl+Shift+B` | Beautify clipboard (formata JSON/XML/YAML automaticamente) |
 | `Ctrl+Shift+A` | Encode clipboard para Base64 |
 | `Ctrl+Alt+A` | Decode Base64 do clipboard |
 | `Ctrl+Shift+T` | Data para Epoch (clipboard vazio = agora) |
 | `Ctrl+Alt+T` | Epoch para Data ISO 8601 |
 | `Ctrl+Alt+F10` | Snippet Manager (gestor de snippets de código) |
+| `Ctrl+Shift+P` | Command Palette (busca unificada de comandos) |
+| `Ctrl+Shift+O` | Project Bookmarks (lista de projetos → nvim/terminal) |
+| `Ctrl+Alt+O` | Quick-add pasta atual do terminal como projeto |
+| `Ctrl+Shift+F8` | Prompt Manager (gestor de prompts de terminal) |
+| `Ctrl+F8` | Quick-Apply prompt favorito no terminal ativo |
+| `Ctrl+Alt+F8` | Quick-Save prompt do terminal ativo |
+| `Ctrl+Shift+D` | Download Version Manager (versionar duplicatas) |
 | `Ctrl+1..9` | Salvar posição do mouse no marcador |
 | `Alt+1..9` | Mover cursor para o marcador |
 | `Ctrl+Alt+1..9` | Mover e clicar no marcador |
