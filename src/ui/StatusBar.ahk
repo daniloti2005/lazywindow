@@ -78,13 +78,13 @@ class StatusBar {
         }
 
         if (this.shown) {
-            WinMove(x, y, w, h, "ahk_id " this.gui.Hwnd)
+            try WinMove(x, y, w, h, "ahk_id " this.gui.Hwnd)
         } else {
             this.gui.Show("x" x " y" y " w" w " h" h " NoActivate")
             this.shown := true
         }
         ; Force topmost z-order above taskbar every refresh
-        DllCall("SetWindowPos", "Ptr", this.gui.Hwnd, "Ptr", -1, "Int", 0, "Int", 0, "Int", 0, "Int", 0, "UInt", 0x0003)
+        try DllCall("SetWindowPos", "Ptr", this.gui.Hwnd, "Ptr", -1, "Int", 0, "Int", 0, "Int", 0, "Int", 0, "UInt", 0x0003)
     }
 
     static Refresh() {
