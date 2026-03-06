@@ -36,9 +36,9 @@ class StatusBar {
         this.gui.MarginX := 0
         this.gui.MarginY := 0
 
-        ; Two lines after weather widget area (~115px from left)
-        xStart := 115
-        lineW := 210
+        ; Two lines after weather widget area
+        xStart := 200
+        lineW := 130
         this.gui.SetFont("s7 cD0D8E0", "Cascadia Code")
         this.line1 := this.gui.AddText("x" xStart " y3 w" lineW " h14", "")
         this.gui.SetFont("s7 c7EB8DA", "Cascadia Code")
