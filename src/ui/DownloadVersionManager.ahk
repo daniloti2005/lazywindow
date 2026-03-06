@@ -177,11 +177,6 @@ class DownloadVersionManager {
                     fileModified: f.modified
                 })
 
-                ; Delete only copies (not the original base name)
-                if (StrLower(f.name) != StrLower(baseName)) {
-                    try FileDelete(f.path)
-                }
-
                 newCount++
             }
         }
@@ -238,8 +233,6 @@ class DownloadVersionManager {
                         fileSize: f.size,
                         fileModified: f.modified
                     })
-                    if (StrLower(f.name) != StrLower(baseName))
-                        try FileDelete(f.path)
                     totalNew++
                 }
             }
