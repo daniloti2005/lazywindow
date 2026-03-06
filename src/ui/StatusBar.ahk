@@ -83,6 +83,8 @@ class StatusBar {
             this.gui.Show("x" x " y" y " w" w " h" h " NoActivate")
             this.shown := true
         }
+        ; Force topmost z-order above taskbar every refresh
+        DllCall("SetWindowPos", "Ptr", this.gui.Hwnd, "Ptr", -1, "Int", 0, "Int", 0, "Int", 0, "Int", 0, "UInt", 0x0003)
     }
 
     static Refresh() {
@@ -91,6 +93,8 @@ class StatusBar {
         }
 
         this.Dock()
+        ; Re-apply transparency (gets lost when other AlwaysOnTop windows close)
+        try WinSetTransColor(this.TRANSKEY, this.gui)
 
         cursorOn := false
         vel := 0
