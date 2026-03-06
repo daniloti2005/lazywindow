@@ -6,13 +6,15 @@ class GifRecorder {
     static frameCount  := 0
     static tempDir     := ""
     static outputPath  := ""
-    static fps         := 10       ; frames per second
-    static canvasW     := 0        ; first-frame monitor width (canvas size)
+    static fps         := 5        ; frames per second (lower = smaller GIF)
+    static scale       := 0.5      ; resolution scale (0.5 = half res, legible for analysis)
+    static canvasW     := 0        ; scaled canvas width
     static canvasH     := 0
     static gdipToken   := 0
     static pngClsid    := ""
     static tickFn      := ""
     static pollFn      := ""
+    static clickFrames := 0        ; frames remaining to show yellow click ring
 
     ; ── Public API ─────────────────────────────────────────────────────────────
 
@@ -40,9 +42,10 @@ class GifRecorder {
         this.outputPath := screenshotDir "\LazyWindow_GIF_" Format("{:03}", seq) "_" ts ".gif"
 
         ; Reset counters and canvas
-        this.frameCount := 0
-        this.canvasW    := 0
-        this.canvasH    := 0
+        this.frameCount  := 0
+        this.canvasW     := 0
+        this.canvasH     := 0
+        this.clickFrames := 0
 
         ; Prepare GDI+ (lazy init)
         this._GdipInit()
@@ -61,9 +64,9 @@ class GifRecorder {
         if (!this.recording)
             return
 
-        ; Safety cap: 60 seconds at current FPS
-        if (this.frameCount >= this.fps * 60) {
-            ToolTip("⚠ Limite de 60s atingido. Parando gravação.")
+        ; Safety cap: 5 minutes at current FPS
+        if (this.frameCount >= this.fps * 300) {
+            ToolTip("⚠ Limite de 5 min atingido. Parando gravação.")
             SetTimer(() => ToolTip(), -3000)
             this.Stop()
             return
@@ -72,15 +75,29 @@ class GifRecorder {
         MouseGetPos(&mx, &my)
         mon := this._MonitorForPoint(mx, my)
 
-        ; Canvas size is fixed to the first frame's monitor
+        ; Canvas size is fixed to the first frame's monitor (scaled)
         if (this.canvasW = 0) {
-            this.canvasW := mon.w
-            this.canvasH := mon.h
+            this.canvasW := Round(mon.w * this.scale)
+            this.canvasH := Round(mon.h * this.scale)
         }
 
+        ; Detect mouse click (left=0x01 or right=0x02 button down)
+        lBtn := DllCall("GetAsyncKeyState", "Int", 0x01, "Short")
+        rBtn := DllCall("GetAsyncKeyState", "Int", 0x02, "Short")
+        if (lBtn & 0x8000) || (rBtn & 0x8000)
+            this.clickFrames := 3   ; show ring for 3 frames
+
+        ; Mouse position relative to monitor, scaled
+        relX := Round((mx - mon.l) * this.scale)
+        relY := Round((my - mon.t) * this.scale)
+        showClick := this.clickFrames > 0
+
         framePath := this.tempDir "\frame_" Format("{:04d}", this.frameCount) ".png"
-        this._CaptureFrame(mon.l, mon.t, mon.w, mon.h, framePath)
+        this._CaptureFrame(mon.l, mon.t, mon.w, mon.h, framePath, relX, relY, showClick)
         this.frameCount++
+
+        if (this.clickFrames > 0)
+            this.clickFrames--
     }
 
     static Stop() {
@@ -155,7 +172,7 @@ class GifRecorder {
             try DirDelete(tempDir, true)
             return
         }
-        if (A_TickCount - startTick > 120000) {
+        if (A_TickCount - startTick > 600000) {  ; 10 min timeout for large GIFs
             SetTimer(this.pollFn, 0)
             ToolTip("⚠ Timeout ao criar GIF")
             SetTimer(() => ToolTip(), -3000)
@@ -190,53 +207,50 @@ class GifRecorder {
                 "Ptr", this.pngClsid)
     }
 
-    static _CaptureFrame(x, y, srcW, srcH, framePath) {
+    static _CaptureFrame(x, y, srcW, srcH, framePath, mouseX, mouseY, showClick) {
         dstW := this.canvasW
         dstH := this.canvasH
 
-        ; ── 1. BitBlt screen region into memory bitmap ──────────────────────
+        ; ── 1. StretchBlt screen → scaled memory bitmap ──────────────────────
         hScreen := DllCall("GetDC", "Ptr", 0, "Ptr")
         hMemDC  := DllCall("CreateCompatibleDC", "Ptr", hScreen, "Ptr")
-        hBmp    := DllCall("CreateCompatibleBitmap", "Ptr", hScreen, "Int", srcW, "Int", srcH, "Ptr")
+        hBmp    := DllCall("CreateCompatibleBitmap", "Ptr", hScreen, "Int", dstW, "Int", dstH, "Ptr")
         hOld    := DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hBmp, "Ptr")
-        DllCall("BitBlt",
-                "Ptr", hMemDC, "Int", 0, "Int", 0, "Int", srcW, "Int", srcH,
-                "Ptr", hScreen, "Int", x, "Int", y, "UInt", 0x00CC0020)
+        DllCall("SetStretchBltMode", "Ptr", hMemDC, "Int", 4)  ; HALFTONE
+        DllCall("StretchBlt",
+                "Ptr", hMemDC, "Int", 0, "Int", 0, "Int", dstW, "Int", dstH,
+                "Ptr", hScreen, "Int", x, "Int", y, "Int", srcW, "Int", srcH,
+                "UInt", 0x00CC0020)  ; SRCCOPY
+
+        ; ── 2. Draw yellow click ring if mouse button is pressed ─────────────
+        if (showClick) {
+            radius := 18
+            ; Yellow in BGR = 0x0000FFFF
+            hPen := DllCall("CreatePen", "Int", 0, "Int", 3, "UInt", 0x0000FFFF, "Ptr")
+            hOldPen := DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hPen, "Ptr")
+            hNullBrush := DllCall("GetStockObject", "Int", 5, "Ptr")  ; NULL_BRUSH
+            hOldBrush := DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hNullBrush, "Ptr")
+            DllCall("Ellipse", "Ptr", hMemDC,
+                    "Int", mouseX - radius, "Int", mouseY - radius,
+                    "Int", mouseX + radius, "Int", mouseY + radius)
+            DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hOldBrush)
+            DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hOldPen)
+            DllCall("DeleteObject", "Ptr", hPen)
+        }
+
         DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hOld)
         DllCall("DeleteDC", "Ptr", hMemDC)
         DllCall("ReleaseDC", "Ptr", 0, "Ptr", hScreen)
 
-        ; ── 2. Convert HBITMAP → GDI+ bitmap ────────────────────────────────
-        DllCall("gdiplus\GdipCreateBitmapFromHBITMAP", "Ptr", hBmp, "Ptr", 0, "Ptr*", &pSrc := 0)
+        ; ── 3. Convert HBITMAP → GDI+ bitmap → PNG ──────────────────────────
+        DllCall("gdiplus\GdipCreateBitmapFromHBITMAP", "Ptr", hBmp, "Ptr", 0, "Ptr*", &pBmp := 0)
         DllCall("DeleteObject", "Ptr", hBmp)
 
-        ; ── 3. Resize to canvas dimensions if the monitor changed ────────────
-        if (srcW != dstW || srcH != dstH) {
-            ; Create empty canvas bitmap (PixelFormat32bppARGB = 0x26200A)
-            DllCall("gdiplus\GdipCreateBitmapFromScan0",
-                    "Int", dstW, "Int", dstH, "Int", 0, "Int", 0x26200A,
-                    "Ptr", 0, "Ptr*", &pDst := 0)
-            DllCall("gdiplus\GdipGetImageGraphicsContext", "Ptr", pDst, "Ptr*", &gfx := 0)
-            DllCall("gdiplus\GdipSetInterpolationMode", "Ptr", gfx, "Int", 7)  ; HighQualityBicubic
-            DllCall("gdiplus\GdipDrawImageRectRectI",
-                    "Ptr", gfx, "Ptr", pSrc,
-                    "Int", 0, "Int", 0, "Int", dstW, "Int", dstH,
-                    "Int", 0, "Int", 0, "Int", srcW, "Int", srcH,
-                    "Int", 2,   ; UnitPixel
-                    "Ptr", 0, "Ptr", 0, "Ptr", 0)
-            DllCall("gdiplus\GdipDeleteGraphics", "Ptr", gfx)
-            DllCall("gdiplus\GdipDisposeImage", "Ptr", pSrc)
-            pSave := pDst
-        } else {
-            pSave := pSrc
-        }
-
-        ; ── 4. Save as PNG ───────────────────────────────────────────────────
         wPath := Buffer((StrLen(framePath) + 1) * 2)
         StrPut(framePath, wPath, "UTF-16")
         DllCall("gdiplus\GdipSaveImageToFile",
-                "Ptr", pSave, "Ptr", wPath, "Ptr", this.pngClsid, "Ptr", 0)
-        DllCall("gdiplus\GdipDisposeImage", "Ptr", pSave)
+                "Ptr", pBmp, "Ptr", wPath, "Ptr", this.pngClsid, "Ptr", 0)
+        DllCall("gdiplus\GdipDisposeImage", "Ptr", pBmp)
     }
 
     static _BuildGifScript() {
