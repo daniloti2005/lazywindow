@@ -6,7 +6,7 @@ class GifRecorder {
     static frameCount  := 0
     static tempDir     := ""
     static outputPath  := ""
-    static fps         := 15       ; frames per second (15 = smooth screen recording)
+    static fps         := 60       ; frames per second (60 = video-like recording)
     static scale       := 1.0      ; resolution scale (1.0 = native monitor resolution)
     static canvasW     := 0        ; scaled canvas width
     static canvasH     := 0
@@ -85,7 +85,7 @@ class GifRecorder {
         lBtn := DllCall("GetAsyncKeyState", "Int", 0x01, "Short")
         rBtn := DllCall("GetAsyncKeyState", "Int", 0x02, "Short")
         if (lBtn & 0x8000) || (rBtn & 0x8000)
-            this.clickFrames := 5   ; show ring for 5 frames (~333ms at 15fps)
+            this.clickFrames := 20  ; show ring for 20 frames (~333ms at 60fps)
 
         ; Mouse position relative to monitor, scaled
         relX := Round((mx - mon.l) * this.scale)
