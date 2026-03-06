@@ -153,6 +153,26 @@ Grava a tela como GIF animado. A gravação segue automaticamente o monitor onde
 
 ---
 
+### 📖 Story Telling
+
+Documenta fluxos passo a passo com evidências (textos, screenshots, pastas de frames) e contexto narrativo. Gera um prompt formatado para colar no chat da IA para análise completa.
+
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+F4` | Abrir/fechar GUI do Story Telling |
+| `Ctrl+Shift+F4` | Quick-Add: cola clipboard como evidência de novo passo |
+| `Ctrl+Alt+F4` | Flush: gera prompt formatado e copia para clipboard |
+
+**Detalhes:**
+- **Tipos de evidência**: Texto (clipboard), Imagem (PNG/JPG), Pasta (ex: `_steps` do GIF recorder)
+- **Detecção automática** de tipo ao adicionar passo
+- **Reordenação** de passos (mover para cima/baixo)
+- **Flush** gera prompt Markdown com todos os passos, evidências e contextos — pronto para colar na IA
+- Comandos na GUI: `N`=Nova, `A`=Add passo, `L`=Listar, `F`=Flush, `[nº]E/V/U/D/R`
+- Persistência em `~/.lazywindow/stories.json`
+
+---
+
 ### 📝 Snippet Manager
 
 Gestor de snippets de código que funciona em qualquer editor ou terminal. Detecta automaticamente a linguagem baseado na janela ativa e substitui placeholders com contexto.
@@ -436,6 +456,9 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+F7` | Selecionar região com mouse (caminho do arquivo PNG → clipboard) |
 | `Ctrl+Shift+F5` | Iniciar gravação GIF (60 FPS, resolução 50%, máx 60s) |
 | `Ctrl+F5` | Parar gravação GIF, gerar pasta _steps (1 PNG/frame) → clipboard |
+| `Ctrl+F4` | Story Telling — documentar história com evidências e contexto |
+| `Ctrl+Shift+F4` | Quick-Add passo (clipboard como evidência) |
+| `Ctrl+Alt+F4` | Flush — gerar prompt da história para clipboard |
 | `Ctrl+Shift+B` | Beautify clipboard (formata JSON/XML/YAML automaticamente) |
 | `Ctrl+Shift+A` | Encode clipboard para Base64 |
 | `Ctrl+Alt+A` | Decode Base64 do clipboard |

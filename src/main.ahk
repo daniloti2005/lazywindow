@@ -17,6 +17,7 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "ui\CommandPalette.ahk"
 #Include "ui\ProjectBookmarks.ahk"
 #Include "ui\PromptManager.ahk"
+#Include "ui\StoryTelling.ahk"
 #Include "utils\CodeBeautify.ahk"
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
@@ -103,6 +104,9 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^+F8::PromptManager.Toggle()                ; Ctrl+Shift+F8 = Prompt Manager
 ^F8::PromptManager.QuickApply()             ; Ctrl+F8 = Quick-Apply prompt
 ^!F8::PromptManager.QuickSave()             ; Ctrl+Alt+F8 = Quick-Save prompt
+^F4::StoryTelling.Toggle()                  ; Ctrl+F4 = Story Telling
+^+F4::StoryTelling.QuickAdd()               ; Ctrl+Shift+F4 = Quick-Add passo
+^!F4::StoryTelling.Flush()                  ; Ctrl+Alt+F4 = Flush prompt
 
 [::Send "{WheelUp}"           ; Scroll up
 ]::Send "{WheelDown}"         ; Scroll down
@@ -375,6 +379,9 @@ ProjectBookmarks.Init()
 
 ; Initialize prompt manager
 PromptManager.Init()
+
+; Initialize story telling
+StoryTelling.Init()
 
 ; Hotkeys for mouse markers (Ctrl+N = save, Alt+N = go, Ctrl+Alt+N = go and click)
 #HotIf g_hotkeysEnabled

@@ -70,6 +70,11 @@ class CommandPalette {
         this.Add("Quick-Apply Prompt", "Ctrl+F8", "Aplica prompt favorito no terminal ativo", (*) => PromptManager.QuickApply())
         this.Add("Quick-Save Prompt", "Ctrl+Alt+F8", "Salva prompt atual do terminal ativo", (*) => PromptManager.QuickSave())
 
+        ; -- Story Telling --
+        this.Add("Story Telling", "Ctrl+F4", "Documentar história com evidências e contexto", (*) => StoryTelling.Toggle())
+        this.Add("Quick-Add Passo", "Ctrl+Shift+F4", "Adiciona clipboard como evidência do próximo passo", (*) => StoryTelling.QuickAdd())
+        this.Add("Flush Prompt", "Ctrl+Alt+F4", "Gera prompt com a história completa para clipboard", (*) => StoryTelling.Flush())
+
         ; -- Sistema --
         this.Add("Recarregar LazyWindow", "", "Recarrega o script completamente", (*) => Reload())
         this.Add("Sair do LazyWindow", "", "Encerra o aplicativo", (*) => ExitApp())

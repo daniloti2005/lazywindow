@@ -200,6 +200,16 @@ GRAVACAO GIF [requer Alt+Home]:
   Salvo em: ~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif
             ~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss_steps\
 
+STORY TELLING [requer Alt+Home]:
+  Ctrl+F4       = Abrir/fechar menu de historias
+  Ctrl+Shift+F4 = Quick-Add: cola clipboard como evidencia do proximo passo
+  Ctrl+Alt+F4   = Flush: gera prompt com a historia completa para clipboard
+  Comandos na GUI:
+    N=Nova historia | A=Adicionar passo | L=Listar historias | F=Flush
+    [no]E=Editar contexto | [no]V=Ver evidencia | [no]U/D=Mover | [no]R=Remover
+  Tipos de evidencia: Texto (clipboard), Imagem (arquivo), Pasta (ex: _steps)
+  Persistencia: ~/.lazywindow/stories.json
+
 MARCADORES DE POSICAO [requer Alt+Home]:
   Ctrl+1..9   = Salvar posicao atual no marcador
   Alt+1..9    = Mover cursor para o marcador
