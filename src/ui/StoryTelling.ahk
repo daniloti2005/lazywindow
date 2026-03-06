@@ -101,34 +101,46 @@ class StoryTelling {
     ; ══════════════════════════════════════════════════════════════
 
     static CreateGui() {
-        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "StoryTelling — LazyWindow")
+        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "📖 StoryTelling — LazyWindow")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "1a1a2e"
+        this.gui.BackColor := "11111b"  ; Catppuccin Mocha crust
 
-        this.gui.SetFont("s11 cAAAAAA", "Consolas")
-        this.headerCtrl := this.gui.AddText("x15 y10 w1800", "")
+        ; ── Title bar ──
+        this.gui.SetFont("s14 cCDD6F4 Bold", "Cascadia Code")  ; Catppuccin text
+        this.headerCtrl := this.gui.AddText("x20 y12 w1800", "")
         this._RefreshHeader()
 
-        this.gui.SetFont("s12 c00ff88", "Consolas")
-        this.promptLabel := this.gui.AddText("x15 y65 w120 h32", "Comando:")
-        this.inputBox := this.gui.AddEdit("x140 y62 w600 h32 Background0f3460 c00ff88")
+        ; ── Separator line ──
+        this.gui.SetFont("s6 c45475A", "Consolas")  ; Catppuccin surface1
+        this.gui.AddText("x20 y42 w1800", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-        ; Help panel — all commands visible
-        this.gui.SetFont("s10 c66ccff", "Consolas")
-        helpText := "N=Nova história  A=Add passo (clipboard)  L=Listar histórias  F=Flush prompt → clipboard"
-        helpText .= "    [nº]E=Editar contexto  [nº]V=Ver  [nº]U=↑  [nº]D=↓  [nº]R=Remover  ESC=Voltar/Fechar"
-        this.gui.AddText("x15 y100 w1800", helpText)
+        ; ── Input area ──
+        this.gui.SetFont("s12 cF38BA8", "Cascadia Code")  ; Catppuccin pink
+        this.promptLabel := this.gui.AddText("x20 y55 w110 h30 +0x200", "❯ Comando")
+        this.gui.SetFont("s12 cA6E3A1", "Cascadia Code")  ; Catppuccin green
+        this.inputBox := this.gui.AddEdit("x140 y53 w500 h30 Background1E1E2E cA6E3A1 -E0x200")
 
-        this.gui.SetFont("s11 cDDDDDD", "Consolas")
-        this.listView := this.gui.AddListView("x15 y130 w1800 h570 +Report -Multi +Grid Background0f3460 cDDDDDD"
+        ; ── Command help panel ──
+        this.gui.SetFont("s9 c585B70", "Cascadia Code")  ; Catppuccin overlay0
+        helpLine1 := "  N Nova    A Add passo    L Listar    F Flush    [nº]E Editar    [nº]V Ver    [nº]U ↑    [nº]D ↓    [nº]R Remover    ESC Voltar"
+        this.gui.AddText("x20 y88 w1800", helpLine1)
+
+        ; ── Separator ──
+        this.gui.SetFont("s6 c313244", "Consolas")  ; Catppuccin surface0
+        this.gui.AddText("x20 y106 w1800", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        ; ── ListView ──
+        this.gui.SetFont("s11 cCDD6F4", "Cascadia Code")  ; Catppuccin text
+        this.listView := this.gui.AddListView("x20 y118 w1800 h570 +Report -Multi +Grid Background181825 cCDD6F4"
             , ["#", "Tipo", "Evidência", "Contexto"])
-        this.listView.ModifyCol(1, 50)
+        this.listView.ModifyCol(1, 45)
         this.listView.ModifyCol(2, 80)
         this.listView.ModifyCol(3, 700)
         this.listView.ModifyCol(4, 900)
 
-        this.gui.SetFont("s10 c888888", "Consolas")
-        this.footerText := this.gui.AddText("x15 y715 w1800 h25", "")
+        ; ── Footer / Status bar ──
+        this.gui.SetFont("s10 c6C7086", "Cascadia Code")  ; Catppuccin overlay1
+        this.footerText := this.gui.AddText("x20 y700 w1800 h25", "")
 
         this.inputBox.OnEvent("Change", (*) => this._OnInputChange())
         this.gui.OnEvent("Size", (g, m, w, h) => this._OnResize(w, h))
@@ -145,9 +157,7 @@ class StoryTelling {
         if (!this.headerCtrl)
             return
         storyName := this.activeIndex > 0 ? this.stories[this.activeIndex].name : "(nenhuma)"
-        headerText := "STORY TELLING — História: " storyName "`n"
-        headerText .= "N=Nova | A=Add passo | L=Listar | F=Flush | [nº]E=Editar | [nº]U/D=Mover | [nº]R=Remover | [nº]V=Ver | ESC=Voltar/Fechar"
-        this.headerCtrl.Value := headerText
+        this.headerCtrl.Value := "📖 STORY TELLING  ·  " storyName
     }
 
     static _ShowFullScreen() {
@@ -175,9 +185,9 @@ class StoryTelling {
         if (!this.listView)
             return
         try {
-            this.listView.Move(15, 130, w - 30, h - 180)
-            this.footerText.Move(15, h - 35, w - 30, 25)
-            colW := w - 30 - 50 - 80 - 20
+            this.listView.Move(20, 118, w - 40, h - 170)
+            this.footerText.Move(20, h - 38, w - 40, 25)
+            colW := w - 40 - 45 - 80 - 20
             this.listView.ModifyCol(3, Round(colW * 0.45))
             this.listView.ModifyCol(4, Round(colW * 0.55))
         }
@@ -187,7 +197,7 @@ class StoryTelling {
         if (this.mode != "normal") {
             this.mode := "normal"
             this.inputBox.Value := ""
-            this.promptLabel.Value := "Comando:"
+            this.promptLabel.Value := "❯ Comando"
             this.PopulateList()
         } else {
             this.Hide()
@@ -199,18 +209,18 @@ class StoryTelling {
             return
         this.listView.Delete()
         if (this.activeIndex < 1 || this.activeIndex > this.stories.Length) {
-            this.footerText.Value := "Nenhuma história ativa — pressione N + Enter para criar"
+            this.footerText.Value := "  Nenhuma história ativa  ·  N + Enter para criar"
             return
         }
         story := this.stories[this.activeIndex]
         for step in story.steps {
-            evidPreview := StrLen(step.evidence) > 80 ? SubStr(step.evidence, 1, 80) "..." : step.evidence
+            evidPreview := StrLen(step.evidence) > 80 ? SubStr(step.evidence, 1, 80) "…" : step.evidence
             evidPreview := StrReplace(evidPreview, "`n", " ")
-            ctxPreview := StrLen(step.context) > 100 ? SubStr(step.context, 1, 100) "..." : step.context
+            ctxPreview := StrLen(step.context) > 100 ? SubStr(step.context, 1, 100) "…" : step.context
             ctxPreview := StrReplace(ctxPreview, "`n", " ")
             this.listView.Add("", A_Index, step.type, evidPreview, ctxPreview)
         }
-        this.footerText.Value := story.steps.Length " passos | História: " story.name " | F=Flush prompt para clipboard"
+        this.footerText.Value := "  " story.steps.Length " passos  ·  📖 " story.name "  ·  F Flush prompt → clipboard"
     }
 
     ; ══════════════════════════════════════════════════════════════
@@ -303,13 +313,13 @@ class StoryTelling {
     static _StartNaming() {
         this.mode := "naming"
         this.inputBox.Value := ""
-        this.promptLabel.Value := "Nome:"
-        this.footerText.Value := "Digite o nome da nova história e pressione Enter (ESC=cancelar)"
+        this.promptLabel.Value := "✦ Nome"
+        this.footerText.Value := "✎ Digite o nome da nova história e pressione Enter  ·  ESC cancelar"
     }
 
     static _FinishNaming(text) {
         this.mode := "normal"
-        this.promptLabel.Value := "Comando:"
+        this.promptLabel.Value := "❯ Comando"
         this.inputBox.Value := ""
         if (Trim(text) = "")
             text := "História " FormatTime(, "yyyyMMdd_HHmmss")
@@ -325,7 +335,7 @@ class StoryTelling {
 
     static _StartAddStep() {
         if (this.stories.Length = 0) {
-            this.footerText.Value := "⚠ Crie uma história primeiro (N)"
+            this.footerText.Value := "⚠ Crie uma história primeiro  ·  N + Enter"
             return
         }
         clip := A_Clipboard
@@ -337,15 +347,15 @@ class StoryTelling {
         this.pendingEvidence := clip
         this.mode := "context"
         this.inputBox.Value := ""
-        this.promptLabel.Value := "Contexto:"
+        this.promptLabel.Value := "✦ Contexto"
         evidPreview := StrLen(clip) > 60 ? SubStr(clip, 1, 60) "..." : clip
         evidPreview := StrReplace(evidPreview, "`n", " ")
-        this.footerText.Value := "Evidência (" this.pendingType "): " evidPreview " | Digite o contexto e Enter (ESC=cancelar)"
+        this.footerText.Value := "📎 " this.pendingType ": " evidPreview "  ·  Digite o contexto e Enter  ·  ESC cancelar"
     }
 
     static _FinishContext(text) {
         this.mode := "normal"
-        this.promptLabel.Value := "Comando:"
+        this.promptLabel.Value := "❯ Comando"
         this.inputBox.Value := ""
         if (Trim(text) = "")
             text := "(sem contexto)"
@@ -365,8 +375,8 @@ class StoryTelling {
         story := this.stories[this.activeIndex]
         step := story.steps[num]
         this.inputBox.Value := step.context
-        this.promptLabel.Value := "Editar " num ":"
-        this.footerText.Value := "Editando contexto do passo " num " — modifique e pressione Enter (ESC=cancelar)"
+        this.promptLabel.Value := "✎ Passo " num
+        this.footerText.Value := "✎ Editando contexto do passo " num "  ·  Enter salvar  ·  ESC cancelar"
         ; Select all text in the input box
         SendMessage(0x00B1, 0, -1, this.inputBox)
     }
@@ -374,7 +384,7 @@ class StoryTelling {
     static _FinishEditing(text) {
         num := this.editingStep
         this.mode := "normal"
-        this.promptLabel.Value := "Comando:"
+        this.promptLabel.Value := "❯ Comando"
         this.inputBox.Value := ""
         this.editingStep := 0
         if (this.activeIndex < 1)
@@ -391,24 +401,23 @@ class StoryTelling {
 
     static _StartListing() {
         if (this.stories.Length = 0) {
-            this.footerText.Value := "⚠ Nenhuma história salva — pressione N para criar"
+            this.footerText.Value := "⚠ Nenhuma história salva  ·  N + Enter para criar"
             return
         }
         this.mode := "listing"
         this.inputBox.Value := ""
-        this.promptLabel.Value := "Nº:"
-        ; Show stories in the ListView
+        this.promptLabel.Value := "✦ Nº"
         this.listView.Delete()
         for i, s in this.stories {
-            marker := (i = this.activeIndex) ? "→ ATIVA" : ""
-            this.listView.Add("", i, marker, s.name, s.steps.Length " passos | " s.createdAt)
+            marker := (i = this.activeIndex) ? "● ATIVA" : ""
+            this.listView.Add("", i, marker, s.name, s.steps.Length " passos  ·  " s.createdAt)
         }
         this.footerText.Value := this.stories.Length " histórias | Digite o número para ativar e Enter (ESC=voltar)"
     }
 
     static _FinishListing(text) {
         this.mode := "normal"
-        this.promptLabel.Value := "Comando:"
+        this.promptLabel.Value := "❯ Comando"
         this.inputBox.Value := ""
         num := 0
         try num := Integer(Trim(text))
