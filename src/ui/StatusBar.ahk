@@ -7,6 +7,7 @@ class StatusBar {
     static refreshFn := ""
     static monitorNum := 1
     static shown := false
+    static TRANSKEY := "1B2838"
 
     static Init() {
         if (this.gui) {
@@ -19,29 +20,29 @@ class StatusBar {
             return
         }
 
+        ; Detect taskbar height for vertical centering
+        tbH := this.height
+        try {
+            WinGetPos(, , , &tbHeight, "ahk_class Shell_TrayWnd")
+            if (tbHeight > 0)
+                tbH := tbHeight
+        }
+        vOff := Max(2, (tbH - 16) // 2)
+
         this.shown := false
         this.gui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "1B2838"  ; metallic dark blue
+        this.gui.BackColor := this.TRANSKEY
         this.gui.MarginX := 0
         this.gui.MarginY := 0
 
-        ; "lightsaber" accent line
-        this.gui.AddProgress("x0 y0 w" work.width " h2 c7EB8DA Background1B2838", 100)
-
-        ; Tiny ASCII icons (3 droids + 1 alien baby), sized to fit reliably
-        this.gui.SetFont("s5 c7EB8DA", "Cascadia Code")
-        this.gui.AddText("x6  y4 w26 h18", "[o]`n|_|")
-        this.gui.AddText("x30 y4 w26 h18", "{o}`n|#|")
-        this.gui.AddText("x54 y4 w30 h18", "/o\\`n|_|")
-        this.gui.AddText("x86 y4 w44 h18", "(^_^)`n /|\\")
-
-        ; Main status text
-        this.gui.SetFont("s7 cD0D8E0", "Cascadia Code")
-        this.text := this.gui.AddText("x132 y5 w" (work.width - 142) " h" (this.height - 6), "")
+        ; Status text only — no decorations
+        this.gui.SetFont("s8 cD0D8E0", "Cascadia Code")
+        this.text := this.gui.AddText("x6 y" vOff " w" (work.width - 12) " h20", "")
 
         this.Dock()
-        WinSetTransparent(230, this.gui)
+        ; Transparent background — text floats over taskbar
+        WinSetTransColor(this.TRANSKEY, this.gui)
 
         this.refreshFn := this.Refresh.Bind(this)
         this.Refresh()
@@ -60,17 +61,15 @@ class StatusBar {
         w := work.width
         h := this.height
 
-        ; Prefer using the real taskbar rectangle when it's on this monitor
+        ; Overlay directly on the taskbar
         try {
             WinGetPos(&tx, &ty, &tw, &th, "ahk_class Shell_TrayWnd")
             if (tx >= bounds.x && tx < bounds.right && ty >= bounds.y && ty < bounds.bottom) {
                 if (tw > th) {
-                    ; horizontal taskbar
-                    if (ty > bounds.y + (bounds.height // 2)) {
-                        y := ty - this.height - 1
-                    } else {
-                        y := ty + th + 1
-                    }
+                    x := tx
+                    y := ty
+                    w := tw
+                    h := th
                 }
             }
         }
