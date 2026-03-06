@@ -22,22 +22,22 @@ class StatusBar {
         this.shown := false
         this.gui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "05060a"  ; dark space
+        this.gui.BackColor := "1B2838"  ; metallic dark blue
         this.gui.MarginX := 0
         this.gui.MarginY := 0
 
         ; "lightsaber" accent line
-        this.gui.AddProgress("x0 y0 w" work.width " h2 c00FF7F Background05060a", 100)
+        this.gui.AddProgress("x0 y0 w" work.width " h2 c7EB8DA Background1B2838", 100)
 
         ; Tiny ASCII icons (3 droids + 1 alien baby), sized to fit reliably
-        this.gui.SetFont("s5 c00FF7F", "Consolas")
+        this.gui.SetFont("s5 c7EB8DA", "Cascadia Code")
         this.gui.AddText("x6  y4 w26 h18", "[o]`n|_|")
         this.gui.AddText("x30 y4 w26 h18", "{o}`n|#|")
         this.gui.AddText("x54 y4 w30 h18", "/o\\`n|_|")
         this.gui.AddText("x86 y4 w44 h18", "(^_^)`n /|\\")
 
         ; Main status text
-        this.gui.SetFont("s7 cCFEFEA", "Segoe UI")
+        this.gui.SetFont("s7 cD0D8E0", "Cascadia Code")
         this.text := this.gui.AddText("x132 y5 w" (work.width - 142) " h" (this.height - 6), "")
 
         this.Dock()

@@ -934,28 +934,28 @@ class PromptManager {
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "LazyWindow - Prompt Manager")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "1a1a2e"
+        this.gui.BackColor := "1B2838"
 
         ; Header instructions
-        this.gui.SetFont("s11 cWhite", "Consolas")
+        this.gui.SetFont("s11 c7EB8DA", "Cascadia Code")
         this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1A=sessão  1W=persistir  2E=editar  3F=favorito")
         this.gui.AddText("x15 y35 w900 h25", "Ações: A=sessão  W=persistir  E=editar  D=deletar  F=favorito  S=default | N=novo")
 
         ; Input box
-        this.gui.SetFont("s14 cWhite", "Consolas")
+        this.gui.SetFont("s14 cA8D8B9", "Cascadia Code")
         this.gui.AddText("x15 y70 w20 h30", ">")
-        this.inputBox := this.gui.AddEdit("x35 y65 w400 h30 Background0d1117 cWhite -Border")
+        this.inputBox := this.gui.AddEdit("x35 y65 w400 h30 Background152230 cWhite -Border")
         this.inputBox.OnEvent("Change", (*) => this.ApplyFilter())
 
         ; Shell filter
-        this.gui.SetFont("s10 cWhite", "Consolas")
+        this.gui.SetFont("s10 cD0D8E0", "Cascadia Code")
         this.gui.AddText("x470 y70 w50 h25", "Shell:")
-        this.shellFilter := this.gui.AddDropDownList("x520 y65 w150 h200 Background0d1117", ["Todos", "PowerShell", "Bash"])
+        this.shellFilter := this.gui.AddDropDownList("x520 y65 w150 h200 Background152230", ["Todos", "PowerShell", "Bash"])
         this.shellFilter.OnEvent("Change", (*) => this.ApplyFilter())
 
         ; ListView
-        this.gui.SetFont("s11 cWhite", "Consolas")
-        this.listView := this.gui.AddListView("x15 y105 w960 h440 Background0d1117 c00ff88 -Hdr +Grid +ReadOnly", ["#", "★", "Nome", "Tipo", "Shell", "Preview", "Usado"])
+        this.gui.SetFont("s11 cD0D8E0", "Cascadia Code")
+        this.listView := this.gui.AddListView("x15 y105 w960 h440 -Hdr +ReadOnly -E0x200 +LV0x10020 Background0D1926 c7EB8DA", ["#", "★", "Nome", "Tipo", "Shell", "Preview", "Usado"])
         this.listView.ModifyCol(1, 40)
         this.listView.ModifyCol(2, 30)
         this.listView.ModifyCol(3, 150)
@@ -963,9 +963,13 @@ class PromptManager {
         this.listView.ModifyCol(5, 100)
         this.listView.ModifyCol(6, 420)
         this.listView.ModifyCol(7, 80)
+        DllCall("uxtheme\SetWindowTheme", "Ptr", this.listView.Hwnd, "Str", "DarkMode_Explorer", "Ptr", 0)
+        SendMessage(0x1001, 0, 0x26190D, this.listView)
+        SendMessage(0x1026, 0, 0x26190D, this.listView)
+        SendMessage(0x1024, 0, 0xDAB87E, this.listView)
 
         ; Footer
-        this.gui.SetFont("s10 cGray", "Segoe UI")
+        this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
         this.footerText := this.gui.AddText("x15 y565 w900 h22", "")
 
         this.gui.OnEvent("Size", (guiObj, minMax, w, h) => this.OnResize(w, h))
@@ -991,6 +995,7 @@ class PromptManager {
         this.gui.Show("x" work.x " y" work.y " w" work.width " h" work.height)
         this.OnResize(work.width, work.height)
         WinMaximize("ahk_id " this.gui.Hwnd)
+        WinSetTransparent(215, this.gui)
     }
 
     static OnResize(w, h) {

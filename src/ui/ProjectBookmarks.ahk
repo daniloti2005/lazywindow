@@ -235,42 +235,46 @@ class ProjectBookmarks {
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "LazyWindow - Project Bookmarks")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "1a1a2e"
+        this.gui.BackColor := "1B2838"
 
         ; Header instructions
-        this.gui.SetFont("s11 c0f3460", "Segoe UI")
+        this.gui.SetFont("s11 c7EB8DA", "Cascadia Code")
         this.gui.AddText("x15 y10 w900 h25", "Digite: [nº][ação] + Enter     Ex: 1N=nvim  2S=shell  3R=remover  4G=tag  5P=perfil")
-        this.gui.SetFont("s10 cGray", "Segoe UI")
+        this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
         this.gui.AddText("x15 y35 w900 h22", "Sem nº: A=adicionar  B=browse pasta  |  Texto livre = filtrar por nome/caminho  |  ESC=fechar")
 
         ; Input box
-        this.gui.SetFont("s13 cWhite", "Consolas")
-        this.inputBox := this.gui.AddEdit("x15 y65 w550 h32 Background0f3460")
+        this.gui.SetFont("s13 cA8D8B9", "Cascadia Code")
+        this.inputBox := this.gui.AddEdit("x15 y65 w550 h32 Background152230")
         this.inputBox.OnEvent("Change", (*) => this.OnInputChange())
 
         ; Tag filter dropdown
-        this.gui.SetFont("s10 cWhite", "Segoe UI")
+        this.gui.SetFont("s10 cD0D8E0", "Cascadia Code")
         this.gui.AddText("x580 y70 w35 h25", "Tag:")
         this.RefreshTags()
         tagChoices := ["Todas"]
         for t in this.allTags {
             tagChoices.Push(t)
         }
-        this.tagFilter := this.gui.AddDropDownList("x620 y67 w140 Choose1 Background0f3460", tagChoices)
+        this.tagFilter := this.gui.AddDropDownList("x620 y67 w140 Choose1 Background152230", tagChoices)
         this.tagFilter.OnEvent("Change", (*) => this.ApplyFilter())
 
         ; ListView — "Terminal" column instead of "Shell"
-        this.gui.SetFont("s11 cWhite", "Consolas")
-        this.listView := this.gui.AddListView("x15 y105 w900 h450 Background16213e +Report -Multi +Grid", ["#", "Nome", "Caminho", "Tag", "Terminal", "Aberto"])
+        this.gui.SetFont("s11 cD0D8E0", "Cascadia Code")
+        this.listView := this.gui.AddListView("x15 y105 w900 h450 +Report -Multi -E0x200 +LV0x10020 Background0D1926 c7EB8DA", ["#", "Nome", "Caminho", "Tag", "Terminal", "Aberto"])
         this.listView.ModifyCol(1, 40)
         this.listView.ModifyCol(2, 160)
         this.listView.ModifyCol(3, 350)
         this.listView.ModifyCol(4, 90)
         this.listView.ModifyCol(5, 160)
         this.listView.ModifyCol(6, 80)
+        DllCall("uxtheme\SetWindowTheme", "Ptr", this.listView.Hwnd, "Str", "DarkMode_Explorer", "Ptr", 0)
+        SendMessage(0x1001, 0, 0x26190D, this.listView)
+        SendMessage(0x1026, 0, 0x26190D, this.listView)
+        SendMessage(0x1024, 0, 0xDAB87E, this.listView)
 
         ; Footer
-        this.gui.SetFont("s10 cGray", "Segoe UI")
+        this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
         this.footerText := this.gui.AddText("x15 y565 w900 h22", "")
 
         this.gui.OnEvent("Size", (guiObj, minMax, w, h) => this.OnResize(w, h))
@@ -296,6 +300,7 @@ class ProjectBookmarks {
         this.gui.Show("x" work.x " y" work.y " w" work.width " h" work.height)
         this.OnResize(work.width, work.height)
         WinMaximize("ahk_id " this.gui.Hwnd)
+        WinSetTransparent(215, this.gui)
     }
 
     static OnResize(width, height) {

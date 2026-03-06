@@ -24,21 +24,25 @@ class WindowSwitcher {
     
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop -MinimizeBox", "LazyWindow - Seletor de Janelas")
-        this.gui.BackColor := "1a1a2e"
-        this.gui.SetFont("s11 c0f3460", "Segoe UI")
+        this.gui.BackColor := "1B2838"
+        this.gui.SetFont("s11 c7EB8DA", "Cascadia Code")
         
         this.gui.AddText("x10 y10 w500", "Digite: [número][posição] (Ex: 1, 2C, 3RD)")
-        this.gui.AddText("x10 y35 w500 cGray", "Posições: C=Centro T=Topo E=Esquerda D=Direita R=Rodapé")
+        this.gui.AddText("x10 y35 w500 c5A7A94", "Posições: C=Centro T=Topo E=Esquerda D=Direita R=Rodapé")
         
-        this.gui.SetFont("s10 cWhite", "Consolas")
-        this.inputBox := this.gui.AddEdit("x10 y65 w500 h30 Background0f3460")
+        this.gui.SetFont("s10 cA8D8B9", "Cascadia Code")
+        this.inputBox := this.gui.AddEdit("x10 y65 w500 h30 Background152230")
         this.inputBox.OnEvent("Change", (*) => this.OnInputChange())
         
-        this.gui.SetFont("s10 cWhite", "Segoe UI")
-        this.listView := this.gui.AddListView("x10 y105 w500 h300 Background16213e -Hdr +Report", ["#", "Processo", "Janela"])
+        this.gui.SetFont("s10 cD0D8E0", "Cascadia Code")
+        this.listView := this.gui.AddListView("x10 y105 w500 h300 -Hdr +Report -E0x200 +LV0x10020 Background0D1926 c7EB8DA", ["#", "Processo", "Janela"])
         this.listView.ModifyCol(1, 35)
         this.listView.ModifyCol(2, 120)
         this.listView.ModifyCol(3, 335)
+        DllCall("uxtheme\SetWindowTheme", "Ptr", this.listView.Hwnd, "Str", "DarkMode_Explorer", "Ptr", 0)
+        SendMessage(0x1001, 0, 0x26190D, this.listView)
+        SendMessage(0x1026, 0, 0x26190D, this.listView)
+        SendMessage(0x1024, 0, 0xDAB87E, this.listView)
         
         ; Populate list
         for idx, win in this.windows {

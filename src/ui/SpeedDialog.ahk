@@ -17,16 +17,16 @@ class SpeedDialog {
         }
 
         this.gui := Gui("+AlwaysOnTop +ToolWindow", "Velocidade do Mouse")
-        this.gui.BackColor := "1a1a2e"
-        this.gui.SetFont("s11 cFFFFFF", "Segoe UI")
+        this.gui.BackColor := "1B2838"
+        this.gui.SetFont("s11 cD0D8E0", "Cascadia Code")
 
         this.gui.AddText("x12 y12 w360", "Digite a velocidade (DPI 1 a 50):")
 
-        this.gui.SetFont("s14 c000000", "Segoe UI")
-        this.edit := this.gui.AddEdit("x12 y40 w120 h34 Number BackgroundFFFFFF")
+        this.gui.SetFont("s14 cA8D8B9", "Cascadia Code")
+        this.edit := this.gui.AddEdit("x12 y40 w120 h34 Number Background152230 cA8D8B9")
         this.edit.Value := ArrowMouse.GetSpeedPercent()
 
-        this.gui.SetFont("s11 cFFFFFF", "Segoe UI")
+        this.gui.SetFont("s11 cD0D8E0", "Cascadia Code")
         okBtn := this.gui.AddButton("x150 y40 w80 h34 Default", "OK")
         cancelBtn := this.gui.AddButton("x240 y40 w100 h34", "Cancelar")
 

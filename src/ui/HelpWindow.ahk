@@ -49,13 +49,13 @@ class HelpWindow {
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize", "LazyWindow - Ajuda")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "1a1a2e"
-        this.gui.SetFont("s10 cFFFFFF", "Consolas")
+        this.gui.BackColor := "1B2838"
+        this.gui.SetFont("s10 cD0D8E0", "Cascadia Code")
 
         this.edit := this.gui.AddEdit("x10 y10 w740 h460 +ReadOnly +VScroll +Multi -Wrap")
-        this.edit.Opt("Background16213e")
+        this.edit.Opt("Background0D1926")
 
-        this.gui.SetFont("s10 cFFFFFF", "Segoe UI")
+        this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
         this.footer := this.gui.AddText("x10 y478 w740", "Use [ / ] (scroll), PgUp/PgDn ou a barra de rolagem | ESC fecha")
 
         this.gui.OnEvent("Size", (guiObj, minMax, width, height) => this.OnResize(width, height))
@@ -74,6 +74,7 @@ class HelpWindow {
         this.gui.Show("x" work.x " y" work.y " w" work.width " h" work.height)
         this.OnResize(work.width, work.height)
         WinMaximize("ahk_id " this.gui.Hwnd)
+        WinSetTransparent(215, this.gui)
     }
 
     static OnResize(width, height) {

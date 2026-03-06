@@ -133,23 +133,27 @@ class CommandPalette {
 
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop -MinimizeBox +ToolWindow", "LazyWindow - Command Palette")
-        this.gui.BackColor := "1a1a2e"
+        this.gui.BackColor := "1B2838"
 
-        this.gui.SetFont("s11 c0f3460", "Segoe UI")
+        this.gui.SetFont("s11 c7EB8DA", "Cascadia Code")
         this.gui.AddText("x10 y10 w580", "Digite para buscar comandos (↑↓ navegar, Enter executar):")
 
-        this.gui.SetFont("s12 cWhite", "Consolas")
-        this.searchEdit := this.gui.AddEdit("x10 y40 w580 h30 Background0f3460")
+        this.gui.SetFont("s12 cA8D8B9", "Cascadia Code")
+        this.searchEdit := this.gui.AddEdit("x10 y40 w580 h30 Background152230")
         this.searchEdit.OnEvent("Change", (*) => this.OnSearchChange())
 
-        this.gui.SetFont("s10 cWhite", "Segoe UI")
-        this.listView := this.gui.AddListView("x10 y80 w580 h340 Background16213e +Report -Multi", ["Nome", "Hotkey", "Descrição"])
+        this.gui.SetFont("s10 cD0D8E0", "Cascadia Code")
+        this.listView := this.gui.AddListView("x10 y80 w580 h340 +Report -Multi -E0x200 +LV0x10020 Background0D1926 c7EB8DA", ["Nome", "Hotkey", "Descrição"])
         this.listView.ModifyCol(1, 190)
         this.listView.ModifyCol(2, 120)
         this.listView.ModifyCol(3, 250)
+        DllCall("uxtheme\SetWindowTheme", "Ptr", this.listView.Hwnd, "Str", "DarkMode_Explorer", "Ptr", 0)
+        SendMessage(0x1001, 0, 0x26190D, this.listView)
+        SendMessage(0x1026, 0, 0x26190D, this.listView)
+        SendMessage(0x1024, 0, 0xDAB87E, this.listView)
         this.listView.OnEvent("DoubleClick", (*) => this.Execute())
 
-        this.gui.SetFont("s9 cGray", "Segoe UI")
+        this.gui.SetFont("s9 c5A7A94", "Cascadia Code")
         this.footerText := this.gui.AddText("x10 y425 w580 h20", this.commands.Length " comandos disponíveis")
 
         ; Populate with all commands
