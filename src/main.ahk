@@ -19,6 +19,7 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "ui\PromptManager.ahk"
 #Include "ui\StoryTelling.ahk"
 #Include "ui\EvidencePicker.ahk"
+#Include "ui\DownloadVersionManager.ahk"
 #Include "utils\CodeBeautify.ahk"
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
@@ -108,6 +109,7 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^F4::StoryTelling.Toggle()                  ; Ctrl+F4 = Story Telling
 ^+F4::StoryTelling.QuickAdd()               ; Ctrl+Shift+F4 = Quick-Add passo
 ^!F4::StoryTelling.Flush()                  ; Ctrl+Alt+F4 = Flush prompt
+^+d::DownloadVersionManager.Toggle()       ; Ctrl+Shift+D = Download Version Manager
 
 [::Send "{WheelUp}"           ; Scroll up
 ]::Send "{WheelDown}"         ; Scroll down
@@ -386,6 +388,9 @@ StoryTelling.Init()
 
 ; Initialize evidence picker
 EvidencePicker.Init()
+
+; Initialize download version manager
+DownloadVersionManager.Init()
 
 ; Hotkeys for mouse markers (Ctrl+N = save, Alt+N = go, Ctrl+Alt+N = go and click)
 #HotIf g_hotkeysEnabled

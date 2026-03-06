@@ -75,6 +75,9 @@ class CommandPalette {
         this.Add("Quick-Add Passo", "Ctrl+Shift+F4", "Adiciona clipboard como evidência do próximo passo", (*) => StoryTelling.QuickAdd())
         this.Add("Flush Prompt", "Ctrl+Alt+F4", "Gera prompt com a história completa para clipboard", (*) => StoryTelling.Flush())
 
+        ; -- Download Version Manager --
+        this.Add("Download Version Manager", "Ctrl+Shift+D", "Versionar duplicatas da pasta Downloads", (*) => DownloadVersionManager.Toggle())
+
         ; -- Sistema --
         this.Add("Recarregar LazyWindow", "", "Recarrega o script completamente", (*) => Reload())
         this.Add("Sair do LazyWindow", "", "Encerra o aplicativo", (*) => ExitApp())

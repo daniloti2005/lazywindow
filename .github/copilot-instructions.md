@@ -36,7 +36,8 @@ lazywindow/
 │   │   ├── ProjectBookmarks.ahk # Marcadores de projetos (Ctrl+Shift+O)
 │   │   ├── PromptManager.ahk  # Gestor de prompts de terminal (Ctrl+Shift+F8)
 │   │   ├── StoryTelling.ahk   # Histórias com evidências para IA (Ctrl+F4)
-│   │   └── EvidencePicker.ahk # Seletor visual de evidências com preview (usado pelo StoryTelling)
+│   │   ├── EvidencePicker.ahk # Seletor visual de evidências com preview (usado pelo StoryTelling)
+│   │   └── DownloadVersionManager.ahk # Gestor de versões de downloads (Ctrl+Shift+D)
 │   ├── snippets/
 │   │   ├── SnippetManager.ahk # GUI do gestor de snippets (Ctrl+Alt+F10)
 │   │   ├── SnippetStore.ahk   # Armazena e carrega snippets
@@ -261,6 +262,25 @@ ActivateGrid(monitorNumber) {
   - PowerShell: `function prompt { ... }`, Bash: `export PS1='...'`
 - **Persistência:** `~/.lazywindow/prompts.json`
 - **Inicialização:** Chamada em `main.ahk` via `PromptManager.Init()`
+
+### Download Version Manager (Gestor de Versões de Downloads)
+
+- **Hotkey:** `Ctrl+Shift+D` (requer `g_hotkeysEnabled`)
+- **Propósito:** Detectar duplicatas em `~/Downloads` e versionar em `~/.downloads-version/`
+- **Módulo:** `ui/DownloadVersionManager.ahk`
+- **GUI:** Janela fullscreen, input por `[nº][letra]` + Enter (estilo ProjectBookmarks)
+- **Funcionalidades:**
+  - Detecta duplicatas agrupando por nome base (remove sufixos `(N)`, `Copia (N)`, `Copy (N)`)
+  - Versiona copiando para `~/.downloads-version/<basename>/YYYYMMDD-HHmmss_<basename>`
+  - Preserva arquivo original em Downloads, apaga apenas cópias `(N)`
+  - Controle anti-retrabalho: compara originalName + fileSize + fileModified no versions.json
+  - Metadata em `versions.json` com nome original, path, tamanho, data de modificação
+  - Três modos GUI: Duplicatas (padrão), Versões Salvas, Detalhe de Versões
+  - Comandos modo Duplicatas: `[nº]V`=versionar, `[nº]O`=abrir, `T`=todas, `L`=versões, `R`=refresh
+  - Comandos modo Versões: `[nº]L`=listar, `[nº]O`=abrir, `[nº]R`=restaurar, `D`=duplicatas
+  - Restaurar copia versão de volta para Downloads com nome original
+- **Persistência:** `~/.downloads-version/<basename>/versions.json`
+- **Inicialização:** Chamada em `main.ahk` via `DownloadVersionManager.Init()`
 
 ## Guia de Implementação
 

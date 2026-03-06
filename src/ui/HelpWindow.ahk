@@ -317,6 +317,25 @@ SNIPPET MANAGER [requer Alt+Home]:
     - ${ClassName}, ${FunctionName} = palavra selecionada
     - ${date} = data atual
     - ${user} = nome do usuario
+ 
+  DOWNLOAD VERSION MANAGER [requer Alt+Home]:
+  Ctrl+Shift+D = Abre/Fecha o Download Version Manager
+ 
+  Funcionalidades:
+    - Detecta duplicatas em ~/Downloads (Arquivo.txt, Arquivo (1).txt, etc.)
+    - Versiona copiando para ~/.downloads-version/<nome>/YYYYMMDD-HHmmss_<nome>
+    - Preserva o original em Downloads, apaga apenas copias (N)
+    - Controle anti-retrabalho: nao duplica versoes ja transferidas
+    - Modo Versoes: visualizar e restaurar versoes salvas
+ 
+  Comandos (modo Duplicatas):
+    [no]V = Versionar grupo     [no]O = Abrir no Explorer
+    T = Versionar todas          L = Ver versoes salvas
+    R = Refresh                  ESC = Fechar
+ 
+  Comandos (modo Versoes):
+    [no]L = Listar versoes      [no]O = Abrir pasta
+    [no]R = Restaurar ultima    D = Voltar duplicatas
 
 NOTA: Enter funciona normalmente em qualquer aplicacao com cursor ligado.
       O LazyWindow usa pass-through para nao bloquear o Enter do sistema.

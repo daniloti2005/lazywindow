@@ -319,6 +319,41 @@ Mantenha uma lista de projetos de software e abra-os rapidamente no Neovim ou te
 
 ---
 
+### 📥 Download Version Manager
+
+**Hotkey:** `Ctrl+Shift+D` (requer `Alt+Home` = ON)
+
+Gerenciador de versões de arquivos baixados. Detecta duplicatas em `~/Downloads` (ex: `Arquivo.txt`, `Arquivo (1).txt`, `Arquivo (2).txt`) e versiona organizando em `~/.downloads-version/`.
+
+**Funcionalidades:**
+- Detecta automaticamente grupos de duplicatas (mesmo nome base)
+- Versiona copiando para `~/.downloads-version/<nome>/YYYYMMDD-HHmmss_<nome>`
+- **Preserva o original** em Downloads — apaga apenas as cópias `(N)`
+- **Controle anti-retrabalho:** não duplica versões já transferidas (compara nome + tamanho + data)
+- Metadata em `versions.json` rastreia nome original, path, tamanho e data de cada versão
+- Modo Versões: visualizar versões salvas, listar detalhes, restaurar para Downloads
+
+**Comandos (modo Duplicatas):**
+- `[nº]V` = Versionar grupo | `[nº]O` = Abrir no Explorer
+- `T` = Versionar todas | `L` = Ver versões salvas | `R` = Refresh
+
+**Comandos (modo Versões):**
+- `[nº]L` = Listar versões | `[nº]O` = Abrir pasta | `[nº]R` = Restaurar última
+- `D` = Voltar para duplicatas
+
+**Estrutura de versionamento:**
+```
+~/.downloads-version/
+├── Relatorio.xlsx/
+│   ├── versions.json
+│   ├── 20260301-093000_Relatorio.xlsx
+│   └── 20260306-145501_Relatorio.xlsx
+```
+
+**Arquivo de persistência:** `~/.downloads-version/<nome>/versions.json`
+
+---
+
 ## 📋 Casos de Uso
 
 ### UC01: Clicar em um botão específico na tela
@@ -472,6 +507,7 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+F8` | Prompt Manager (gestor de prompts de terminal) |
 | `Ctrl+F8` | Quick-Apply prompt favorito no terminal ativo |
 | `Ctrl+Alt+F8` | Quick-Save prompt do terminal ativo |
+| `Ctrl+Shift+D` | Download Version Manager (versionar duplicatas) |
 | `Ctrl+1..9` | Salvar posição do mouse no marcador |
 | `Alt+1..9` | Mover cursor para o marcador |
 | `Ctrl+Alt+1..9` | Mover e clicar no marcador |
