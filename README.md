@@ -134,18 +134,20 @@ Grava a tela como GIF animado. A gravação segue automaticamente o monitor onde
 **Atalhos:**
 | Atalho | Ação |
 |--------|------|
-| `Ctrl+Shift+F5` | Iniciar gravação GIF (15 FPS, 50% resolução, máx 5 min) |
-| `Ctrl+F5` | Parar gravação, salvar GIF e copiar caminho para clipboard |
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (15 FPS, resolução nativa, máx 60s) |
+| `Ctrl+F5` | Parar gravação, salvar GIF + pasta `_steps` com 1 PNG/s |
 
 **Detalhes:**
-- Resolução 50% (metade da resolução nativa, 960×540 para 1080p) para captura rápida
+- Resolução nativa (1920×1080 para monitores 1080p)
 - **15 FPS** — fluido como vídeo, captura toda a ação na tela
-- Limite de 5 minutos por gravação (15 FPS × 300s = 4500 frames)
+- Limite de **60 segundos** por gravação (15 FPS × 60s = 900 frames)
 - **Cursor do mouse** é desenhado em cada frame (visível no GIF)
-- **Cliques do mouse aparecem com círculo amarelo** no GIF (persiste 3 frames)
-- Se o mouse muda de monitor, os próximos frames são capturados no novo monitor (redimensionados para o tamanho do canvas inicial)
-- Criação do GIF: usa FFmpeg se disponível, ou fallback automático via `System.Drawing` (nativo no Windows)
-- Salvo em `~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif`
+- **Cliques do mouse aparecem com círculo amarelo** no GIF (persiste 5 frames)
+- Se o mouse muda de monitor, os próximos frames são capturados no novo monitor
+- Criação do GIF: usa FFmpeg se disponível, ou fallback automático via `System.Drawing`
+- **Pasta `_steps/`**: contém 1 PNG por segundo (step_001.png, step_002.png, ...) — cole o caminho da pasta no chat da IA para análise passo a passo
+- Salvo em `~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif` + `_steps/`
+- **Clipboard** recebe o caminho da pasta `_steps` (não o GIF)
 - StatusBar mostra `⏺ REC (N frames)` durante a gravação
 
 ---
@@ -431,8 +433,8 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+F6` | Print da janela ativa (caminho do arquivo PNG → clipboard) |
 | `Ctrl+F7` | Selecionar região com mouse (imagem no clipboard + salva PNG) |
 | `Ctrl+Shift+F7` | Selecionar região com mouse (caminho do arquivo PNG → clipboard) |
-| `Ctrl+Shift+F5` | Iniciar gravação GIF (15 FPS, cursor+clique, máx 5 min) |
-| `Ctrl+F5` | Parar gravação GIF e copiar caminho para clipboard |
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (15 FPS, resolução nativa, máx 60s) |
+| `Ctrl+F5` | Parar gravação GIF, gerar pasta _steps (1 PNG/s) → clipboard |
 | `Ctrl+Shift+B` | Beautify clipboard (formata JSON/XML/YAML automaticamente) |
 | `Ctrl+Shift+A` | Encode clipboard para Base64 |
 | `Ctrl+Alt+A` | Decode Base64 do clipboard |

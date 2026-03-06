@@ -7,7 +7,7 @@ class GifRecorder {
     static tempDir     := ""
     static outputPath  := ""
     static fps         := 15       ; frames per second (15 = smooth screen recording)
-    static scale       := 0.5      ; resolution scale (0.5 = fast capture, legible for AI)
+    static scale       := 1.0      ; resolution scale (1.0 = native monitor resolution)
     static canvasW     := 0        ; scaled canvas width
     static canvasH     := 0
     static gdipToken   := 0
@@ -56,7 +56,7 @@ class GifRecorder {
             this.tickFn := this.Tick.Bind(this)
         SetTimer(this.tickFn, Round(1000 / this.fps))
 
-        ToolTip("⏺ GIF gravando (Ctrl+F5 = parar)`nGrave por pelo menos 10s para um bom resultado")
+        ToolTip("⏺ GIF gravando (Ctrl+F5 = parar)`nMáximo 60s | Steps PNG copiados para pasta")
         SetTimer(() => ToolTip(), -4000)
     }
 
@@ -64,9 +64,9 @@ class GifRecorder {
         if (!this.recording)
             return
 
-        ; Safety cap: 5 minutes at current FPS
-        if (this.frameCount >= this.fps * 300) {
-            ToolTip("⚠ Limite de 5 min atingido. Parando gravação.")
+        ; Safety cap: 60 seconds at current FPS
+        if (this.frameCount >= this.fps * 60) {
+            ToolTip("⚠ Limite de 60s atingido. Parando gravação.")
             SetTimer(() => ToolTip(), -3000)
             this.Stop()
             return
@@ -134,12 +134,15 @@ class GifRecorder {
         ; Launch PS non-blocking (shell = "", hide window)
         Run("powershell -STA -NoProfile -ExecutionPolicy Bypass -File `"" psFile "`"", , "Hide")
 
-        ; Poll every 500ms for the output file (up to 2 min)
+        ; Steps folder path (same as GIF but _steps suffix)
+        stepsDir := RegExReplace(this.outputPath, "\.gif$", "_steps")
+
+        ; Poll every 500ms for the output file (up to 10 min)
         outPath  := this.outputPath
         tempDir  := this.tempDir
         this.tempDir := ""   ; prevent early cleanup
 
-        this.pollFn := this._PollGifDone.Bind(this, outPath, tempDir, A_TickCount)
+        this.pollFn := this._PollGifDone.Bind(this, outPath, stepsDir, tempDir, A_TickCount)
         SetTimer(this.pollFn, 500)
     }
 
@@ -163,18 +166,19 @@ class GifRecorder {
 
     ; ── Private helpers ────────────────────────────────────────────────────────
 
-    static _PollGifDone(outPath, tempDir, startTick) {
-        if (FileExist(outPath)) {
+    static _PollGifDone(outPath, stepsDir, tempDir, startTick) {
+        ; Wait for both GIF and _steps folder to be ready
+        if (FileExist(outPath) && DirExist(stepsDir)) {
             SetTimer(this.pollFn, 0)
-            A_Clipboard := outPath
-            ToolTip("✅ GIF salvo:`n" outPath "`nCaminho copiado!")
-            SetTimer(() => ToolTip(), -4000)
+            A_Clipboard := stepsDir
+            ToolTip("✅ GIF + Steps salvos:`n" stepsDir "`nCaminho da pasta copiado!")
+            SetTimer(() => ToolTip(), -5000)
             try DirDelete(tempDir, true)
             return
         }
-        if (A_TickCount - startTick > 600000) {  ; 10 min timeout for large GIFs
+        if (A_TickCount - startTick > 600000) {  ; 10 min timeout
             SetTimer(this.pollFn, 0)
-            ToolTip("⚠ Timeout ao criar GIF")
+            ToolTip("⚠ Timeout ao criar GIF/Steps")
             SetTimer(() => ToolTip(), -3000)
             try DirDelete(tempDir, true)
         }
@@ -298,6 +302,25 @@ class GifRecorder {
         s .= "    if (Get-Command $c -ErrorAction SilentlyContinue) { $ffmpeg = $c; break }`n"
         s .= "    if (Test-Path $c) { $ffmpeg = $c; break }`n"
         s .= "}`n"
+        s .= "$files = Get-ChildItem $tempDir -Filter 'frame_*.png' | Sort-Object Name`n"
+        s .= "if ($files.Count -eq 0) { exit 1 }`n"
+        s .= "`n"
+
+        ; ── Create _steps folder with 1 PNG per second (before GIF, uses temp frames) ──
+        s .= "# Create steps folder with 1 frame per second for AI analysis`n"
+        s .= "$stepsDir = $outPath -replace '\.gif$', '_steps'`n"
+        s .= "New-Item -ItemType Directory -Force -Path $stepsDir | Out-Null`n"
+        s .= "$stepInterval = [math]::Max(1, $fps)`n"
+        s .= "$stepNum = 1`n"
+        s .= "for ($i = 0; $i -lt $files.Count; $i += $stepInterval) {`n"
+        s .= "    $src = $files[$i].FullName`n"
+        s .= "    $dst = Join-Path $stepsDir ('step_{0:D3}.png' -f $stepNum)`n"
+        s .= "    Copy-Item $src $dst`n"
+        s .= "    $stepNum++`n"
+        s .= "}`n"
+        s .= "`n"
+
+        ; ── Build GIF ──
         s .= "if ($ffmpeg) {`n"
         s .= "    & $ffmpeg -framerate $fps -i `"$tempDir\frame_%04d.png`" -vf `"split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a`" -loop 0 -y `"$outPath`" 2>`$null`n"
         s .= "    exit $LASTEXITCODE`n"
@@ -306,8 +329,6 @@ class GifRecorder {
 
         ; ── Fallback: System.Drawing MultiFrame GIF encoder (no extra tools) ──
         s .= "Add-Type -AssemblyName System.Drawing`n"
-        s .= "$files = Get-ChildItem $tempDir -Filter 'frame_*.png' | Sort-Object Name`n"
-        s .= "if ($files.Count -eq 0) { exit 1 }`n"
         s .= "`n"
         s .= "$gifCodec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/gif' }`n"
         s .= "$enc = [System.Drawing.Imaging.Encoder]`n"
