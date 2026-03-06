@@ -6,8 +6,8 @@ class GifRecorder {
     static frameCount  := 0
     static tempDir     := ""
     static outputPath  := ""
-    static fps         := 5        ; frames per second (lower = smaller GIF)
-    static scale       := 0.75     ; resolution scale (0.75 = legible for AI analysis)
+    static fps         := 15       ; frames per second (15 = smooth screen recording)
+    static scale       := 0.5      ; resolution scale (0.5 = fast capture, legible for AI)
     static canvasW     := 0        ; scaled canvas width
     static canvasH     := 0
     static gdipToken   := 0
@@ -85,7 +85,7 @@ class GifRecorder {
         lBtn := DllCall("GetAsyncKeyState", "Int", 0x01, "Short")
         rBtn := DllCall("GetAsyncKeyState", "Int", 0x02, "Short")
         if (lBtn & 0x8000) || (rBtn & 0x8000)
-            this.clickFrames := 3   ; show ring for 3 frames
+            this.clickFrames := 5   ; show ring for 5 frames (~333ms at 15fps)
 
         ; Mouse position relative to monitor, scaled
         relX := Round((mx - mon.l) * this.scale)
@@ -299,7 +299,7 @@ class GifRecorder {
         s .= "    if (Test-Path $c) { $ffmpeg = $c; break }`n"
         s .= "}`n"
         s .= "if ($ffmpeg) {`n"
-        s .= "    & $ffmpeg -framerate $fps -i `"$tempDir\frame_%04d.png`" -loop 0 -y `"$outPath`" 2>`$null`n"
+        s .= "    & $ffmpeg -framerate $fps -i `"$tempDir\frame_%04d.png`" -vf `"split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a`" -loop 0 -y `"$outPath`" 2>`$null`n"
         s .= "    exit $LASTEXITCODE`n"
         s .= "}`n"
         s .= "`n"
