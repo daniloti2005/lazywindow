@@ -103,35 +103,35 @@ class StoryTelling {
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "📖 StoryTelling — LazyWindow")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "11111b"  ; Catppuccin Mocha crust
+        this.gui.BackColor := "1B2838"  ; Metallic blue background
 
         ; ── Title bar ──
-        this.gui.SetFont("s14 cCDD6F4 Bold", "Cascadia Code")  ; Catppuccin text
+        this.gui.SetFont("s14 cE8EDF3 Bold", "Cascadia Code")
         this.headerCtrl := this.gui.AddText("x20 y12 w1800", "")
         this._RefreshHeader()
 
         ; ── Separator line ──
-        this.gui.SetFont("s6 c45475A", "Consolas")  ; Catppuccin surface1
+        this.gui.SetFont("s6 c3A5068", "Consolas")
         this.gui.AddText("x20 y42 w1800", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         ; ── Input area ──
-        this.gui.SetFont("s12 cF38BA8", "Cascadia Code")  ; Catppuccin pink
+        this.gui.SetFont("s12 c7EB8DA", "Cascadia Code")  ; Teal accent
         this.promptLabel := this.gui.AddText("x20 y55 w110 h30 +0x200", "❯ Comando")
-        this.gui.SetFont("s12 cA6E3A1", "Cascadia Code")  ; Catppuccin green
-        this.inputBox := this.gui.AddEdit("x140 y53 w500 h30 Background1E1E2E cA6E3A1 -E0x200")
+        this.gui.SetFont("s12 cA8D8B9", "Cascadia Code")  ; Soft green
+        this.inputBox := this.gui.AddEdit("x140 y53 w500 h30 Background152230 cA8D8B9 -E0x200")
 
         ; ── Command help panel ──
-        this.gui.SetFont("s9 c585B70", "Cascadia Code")  ; Catppuccin overlay0
+        this.gui.SetFont("s9 c5A7A94", "Cascadia Code")  ; Muted steel blue
         helpLine1 := "  N Nova    A Add passo    L Listar    F Flush    [nº]E Editar    [nº]V Ver    [nº]U ↑    [nº]D ↓    [nº]R Remover    ESC Voltar"
         this.gui.AddText("x20 y88 w1800", helpLine1)
 
         ; ── Separator ──
-        this.gui.SetFont("s6 c313244", "Consolas")  ; Catppuccin surface0
+        this.gui.SetFont("s6 c2A3F54", "Consolas")
         this.gui.AddText("x20 y106 w1800", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         ; ── ListView ──
-        this.gui.SetFont("s11 cCDD6F4", "Cascadia Code")  ; Catppuccin text
-        this.listView := this.gui.AddListView("x20 y118 w1800 h570 +Report -Multi +Grid Background181825 cCDD6F4"
+        this.gui.SetFont("s11 cD0D8E0", "Cascadia Code")
+        this.listView := this.gui.AddListView("x20 y118 w1800 h570 +Report -Multi +Grid Background152230 cD0D8E0"
             , ["#", "Tipo", "Evidência", "Contexto"])
         this.listView.ModifyCol(1, 45)
         this.listView.ModifyCol(2, 80)
@@ -139,7 +139,7 @@ class StoryTelling {
         this.listView.ModifyCol(4, 900)
 
         ; ── Footer / Status bar ──
-        this.gui.SetFont("s10 c6C7086", "Cascadia Code")  ; Catppuccin overlay1
+        this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
         this.footerText := this.gui.AddText("x20 y700 w1800 h25", "")
 
         this.inputBox.OnEvent("Change", (*) => this._OnInputChange())
@@ -167,6 +167,7 @@ class StoryTelling {
         h := wB - wT
         this.gui.Show("x" wL " y" wT " w" w " h" h)
         WinMaximize("ahk_id " this.gui.Hwnd)
+        WinSetTransparent(215, this.gui)  ; Semi-transparent (~85% opacity)
     }
 
     static _GetMonitorFromMouse() {
