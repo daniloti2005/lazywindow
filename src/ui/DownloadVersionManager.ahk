@@ -42,14 +42,21 @@ class DownloadVersionManager {
             this.wasArrowMouseOn := false
         }
 
-        this.mode := "duplicates"
-        this.ScanDownloads()
-        this.CreateGui()
-        this.isVisible := true
+        try {
+            this.mode := "duplicates"
+            this.ScanDownloads()
+            this.CreateGui()
+            this.isVisible := true
+        } catch as err {
+            ToolTip("DVM Erro: " err.Message "`n" err.File ":" err.Line)
+            SetTimer(() => ToolTip(), -8000)
+            this.Hide()
+        }
     }
 
     static Hide() {
         try Hotkey("*Enter", "Off")
+        try Hotkey("Escape", "Off")
         if (this.gui) {
             try this.gui.Destroy()
             this.gui := ""
@@ -324,7 +331,8 @@ class DownloadVersionManager {
     ; ── GUI ──
 
     static CreateGui() {
-        this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "LazyWindow - Download Version Manager")
+        ; No +ToolWindow — avoids focus issues on some Windows versions
+        this.gui := Gui("+AlwaysOnTop +Resize +OwnDialogs", "LazyWindow - Download Version Manager")
         this.gui.Opt("-DPIScale")
         this.gui.BackColor := "1B2838"
 
@@ -352,15 +360,34 @@ class DownloadVersionManager {
         this.footerText := this.gui.AddText("x15 y565 w900 h22", "")
 
         this.gui.OnEvent("Size", (guiObj, minMax, w, h) => this.OnResize(w, h))
-        this.gui.OnEvent("Escape", (*) => this.HandleEscape())
         this.gui.OnEvent("Close", (*) => this.Hide())
 
-        ; Populate and show fullscreen
-        this.PopulateCurrentMode()
+        ; Register global hotkeys (work even without GUI focus)
+        Hotkey("*Enter", (*) => this.Execute(), "On")
+        Hotkey("Escape", (*) => this.HandleEscape(), "On")
+
+        ; Show fullscreen FIRST
         this.ShowFullScreen()
+
+        ; Populate AFTER window is visible
+        try this.PopulateCurrentMode()
+
+        ; Force activation and focus
+        WinActivate("ahk_id " this.gui.Hwnd)
         this.inputBox.Focus()
 
-        Hotkey("*Enter", (*) => this.Execute(), "On")
+        ; Backup: delayed re-focus in case something steals it
+        SetTimer(() => this.DelayedFocus(), -300)
+    }
+
+    static DelayedFocus() {
+        if (!this.gui || !this.isVisible || !this.inputBox)
+            return
+        try {
+            WinActivate("ahk_id " this.gui.Hwnd)
+            this.inputBox.Focus()
+        }
+    }
     }
 
     static GetHeaderText() {
