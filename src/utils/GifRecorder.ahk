@@ -310,7 +310,7 @@ class GifRecorder {
         s .= "# Create steps folder with 1 frame per second for AI analysis`n"
         s .= "$stepsDir = $outPath -replace '\.gif$', '_steps'`n"
         s .= "New-Item -ItemType Directory -Force -Path $stepsDir | Out-Null`n"
-        s .= "$stepInterval = [math]::Max(1, $fps)`n"
+        s .= "$stepInterval = [math]::Max(1, [math]::Round($fps / 2))`n"
         s .= "$stepNum = 1`n"
         s .= "for ($i = 0; $i -lt $files.Count; $i += $stepInterval) {`n"
         s .= "    $src = $files[$i].FullName`n"
