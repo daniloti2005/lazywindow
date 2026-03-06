@@ -21,6 +21,7 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
 #Include "utils\ScreenshotRegion.ahk"
+#Include "utils\GifRecorder.ahk"
 #Include "grid\GridOverlay.ahk"
 #Include "grid\GridNavigation.ahk"
 #Include "window\WindowList.ahk"
@@ -88,6 +89,8 @@ F8::WinClose("A")             ; F8 = Fechar janela ativa
 ^+F6::TakeWindowShotPathOnly() ; Ctrl+Shift+F6 = Print da janela ativa (caminho no clipboard)
 ^F7::TakeRegionShot()          ; Ctrl+F7 = Selecionar região (imagem no clipboard + arquivo)
 ^+F7::TakeRegionShotPathOnly() ; Ctrl+Shift+F7 = Selecionar região (caminho no clipboard)
+^+F5::GifRecorder.Start()      ; Ctrl+Shift+F5 = Iniciar gravação GIF (monitor do mouse)
+^F5::GifRecorder.Stop()        ; Ctrl+F5 = Parar gravação GIF e copiar caminho
 ^+b::CodeBeautify.Beautify()   ; Ctrl+Shift+B = Beautify clipboard (JSON/XML)
 ^+a::Base64.Encode()           ; Ctrl+Shift+A = Encode clipboard para Base64
 ^!a::Base64.Decode()           ; Ctrl+Alt+A = Decode Base64 do clipboard

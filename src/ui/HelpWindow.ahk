@@ -189,6 +189,13 @@ JANELA ATIVA [requer Alt+Home]:
   Ctrl+F7     = Selecionar região com mouse (imagem no clipboard + arquivo)
   Ctrl+Shift+F7 = Selecionar região com mouse (caminho do arquivo no clipboard)
 
+GRAVACAO GIF [requer Alt+Home]:
+  Ctrl+Shift+F5 = Iniciar gravacao GIF do monitor onde o mouse esta
+                  (se o mouse mudar de monitor, a gravacao segue automaticamente)
+  Ctrl+F5       = Parar gravacao, salvar GIF e copiar caminho para o clipboard
+  Limite: 60 segundos por gravacao (10 FPS)
+  Salvo em: ~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif
+
 MARCADORES DE POSICAO [requer Alt+Home]:
   Ctrl+1..9   = Salvar posicao atual no marcador
   Alt+1..9    = Mover cursor para o marcador

@@ -127,6 +127,25 @@ Capture screenshots da janela ativa ou de uma região selecionada. As imagens s�
 
 ---
 
+### 🎬 Gravação de GIF
+
+Grava a tela como GIF animado. A gravação segue automaticamente o monitor onde o mouse está — se o mouse mudar de monitor durante a gravação, a captura acompanha.
+
+**Atalhos:**
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (10 FPS, monitor do mouse) |
+| `Ctrl+F5` | Parar gravação, salvar GIF e copiar caminho para clipboard |
+
+**Detalhes:**
+- Limite de 60 segundos por gravação
+- Se o mouse muda de monitor, os próximos frames são capturados no novo monitor (redimensionados para o tamanho do canvas inicial)
+- Criação do GIF: usa FFmpeg se disponível, ou fallback automático via `System.Drawing` (nativo no Windows)
+- Salvo em `~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif`
+- StatusBar mostra `⏺ REC (N frames)` durante a gravação
+
+---
+
 ### 📝 Snippet Manager
 
 Gestor de snippets de código que funciona em qualquer editor ou terminal. Detecta automaticamente a linguagem baseado na janela ativa e substitui placeholders com contexto.
@@ -408,6 +427,8 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+F6` | Print da janela ativa (caminho do arquivo PNG → clipboard) |
 | `Ctrl+F7` | Selecionar região com mouse (imagem no clipboard + salva PNG) |
 | `Ctrl+Shift+F7` | Selecionar região com mouse (caminho do arquivo PNG → clipboard) |
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (monitor do mouse, 10 FPS) |
+| `Ctrl+F5` | Parar gravação GIF e copiar caminho para clipboard |
 | `Ctrl+Shift+B` | Beautify clipboard (formata JSON/XML/YAML automaticamente) |
 | `Ctrl+Shift+A` | Encode clipboard para Base64 |
 | `Ctrl+Alt+A` | Decode Base64 do clipboard |

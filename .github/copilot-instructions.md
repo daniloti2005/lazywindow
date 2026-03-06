@@ -42,6 +42,7 @@ lazywindow/
 │   └── utils/
 │       ├── Monitor.ahk       # Detecção e informações de monitores
 │       ├── ScreenshotRegion.ahk # Seleção interativa de região para screenshot
+│       └── GifRecorder.ahk      # Gravação de tela como GIF animado (segue monitor do mouse)
 │       ├── CodeBeautify.ahk  # Formatador JSON/XML/YAML
 │       ├── Base64.ahk        # Encode/Decode Base64
 │       └── Timestamp.ahk     # Conversor Epoch <-> Data
@@ -162,6 +163,7 @@ ActivateGrid(monitorNumber) {
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
 - **Screenshot:** `Ctrl+F6` (janela ativa → clipboard + PNG), `Ctrl+Shift+F6` (janela ativa → PNG + caminho no clipboard), `Ctrl+F7` (seleção de região → clipboard + PNG), `Ctrl+Shift+F7` (seleção de região → PNG + caminho no clipboard)
+- **GIF Recorder:** `Ctrl+Shift+F5` (iniciar gravação do monitor do mouse, 10 FPS), `Ctrl+F5` (parar e copiar caminho do GIF). Segue o mouse entre monitores. Fallback System.Drawing se FFmpeg ausente.
 
 ### StatusBar (Barra de Status)
 
@@ -360,7 +362,8 @@ Para testar manualmente:
 11. Pressione `Shift+End` para testar toggle de velocidade 5 dpi
 12. Pressione `Ctrl+F7` para testar screenshot por região (clique e arraste)
 13. Pressione `Ctrl+Shift+F7` para testar screenshot por região (caminho no clipboard)
-14. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
+14. Pressione `Ctrl+Shift+F5` para testar gravação GIF (mova o mouse e depois pare com `Ctrl+F5`)
+15. Pressione `Ctrl+Alt+F10` para testar Snippet Manager
 15. Pressione `Ctrl+Shift+P` para testar Command Palette (buscar "grid", "base64", etc.)
 16. Pressione `Ctrl+Shift+O` para testar Project Bookmarks (adicionar projeto, abrir com nvim)
 17. Pressione `Ctrl+Shift+F8` para testar Prompt Manager (aplicar prompt, criar custom)

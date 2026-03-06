@@ -97,7 +97,12 @@ class StatusBar {
         try vel := ArrowMouse.GetSpeedPercent()
 
         if (cursorOn) {
-            this.text.Value := "ON | Vel: " vel " dpi | F3=AJUDA | F10=TEAMS | F11=VIM | Alt+Home=OFF"
+            rec := ""
+            try {
+                if (GifRecorder.IsRecording())
+                    rec := "⏺ REC (" GifRecorder.GetFrameCount() " frames) | "
+            }
+            this.text.Value := rec "ON | Vel: " vel " dpi | F3=AJUDA | F10=TEAMS | F11=VIM | Alt+Home=OFF"
         } else {
             this.text.Value := "OFF | Alt+Home=LIGAR | F3=AJUDA"
         }

@@ -1,0 +1,316 @@
+#Requires AutoHotkey v2.0
+
+class GifRecorder {
+    ; ── State ──────────────────────────────────────────────────────────────────
+    static recording   := false
+    static frameCount  := 0
+    static tempDir     := ""
+    static outputPath  := ""
+    static fps         := 10       ; frames per second
+    static canvasW     := 0        ; first-frame monitor width (canvas size)
+    static canvasH     := 0
+    static gdipToken   := 0
+    static pngClsid    := ""
+    static tickFn      := ""
+    static pollFn      := ""
+
+    ; ── Public API ─────────────────────────────────────────────────────────────
+
+    static Start() {
+        if (this.recording)
+            return
+
+        ; Temp folder for PNG frames
+        ts := FormatTime(, "yyyyMMdd_HHmmss")
+        this.tempDir := A_Temp "\LazyWindow_GIF_" ts
+        DirCreate(this.tempDir)
+
+        ; Output path in ~/.screenshot/
+        screenshotDir := EnvGet("USERPROFILE") "\.screenshot"
+        try DirCreate(screenshotDir)
+
+        seq := 1
+        Loop Files screenshotDir "\LazyWindow_GIF_*.gif" {
+            if RegExMatch(A_LoopFileName, "^LazyWindow_GIF_(\d+)_", &m) {
+                n := m[1] + 0
+                if (n >= seq)
+                    seq := n + 1
+            }
+        }
+        this.outputPath := screenshotDir "\LazyWindow_GIF_" Format("{:03}", seq) "_" ts ".gif"
+
+        ; Reset counters and canvas
+        this.frameCount := 0
+        this.canvasW    := 0
+        this.canvasH    := 0
+
+        ; Prepare GDI+ (lazy init)
+        this._GdipInit()
+
+        this.recording := true
+
+        if (!this.tickFn)
+            this.tickFn := this.Tick.Bind(this)
+        SetTimer(this.tickFn, Round(1000 / this.fps))
+
+        ToolTip("⏺ GIF gravando (Ctrl+F5 = parar)")
+        SetTimer(() => ToolTip(), -2000)
+    }
+
+    static Tick() {
+        if (!this.recording)
+            return
+
+        ; Safety cap: 60 seconds at current FPS
+        if (this.frameCount >= this.fps * 60) {
+            ToolTip("⚠ Limite de 60s atingido. Parando gravação.")
+            SetTimer(() => ToolTip(), -3000)
+            this.Stop()
+            return
+        }
+
+        MouseGetPos(&mx, &my)
+        mon := this._MonitorForPoint(mx, my)
+
+        ; Canvas size is fixed to the first frame's monitor
+        if (this.canvasW = 0) {
+            this.canvasW := mon.w
+            this.canvasH := mon.h
+        }
+
+        framePath := this.tempDir "\frame_" Format("{:04d}", this.frameCount) ".png"
+        this._CaptureFrame(mon.l, mon.t, mon.w, mon.h, framePath)
+        this.frameCount++
+    }
+
+    static Stop() {
+        if (!this.recording)
+            return
+
+        this.recording := false
+        SetTimer(this.tickFn, 0)
+
+        fc := this.frameCount
+        if (fc = 0) {
+            ToolTip("Nenhum frame capturado")
+            SetTimer(() => ToolTip(), -2000)
+            this._CleanTemp()
+            return
+        }
+
+        ToolTip("⏳ Criando GIF (" fc " frames)...")
+
+        ; Write PowerShell conversion script
+        psScript := this._BuildGifScript()
+        psFile    := this.tempDir "\make_gif.ps1"
+        try {
+            fh := FileOpen(psFile, "w", "UTF-8-RAW")
+            fh.Write(psScript)
+            fh.Close()
+        } catch {
+            ToolTip("Falha ao criar script PS")
+            SetTimer(() => ToolTip(), -2000)
+            this._CleanTemp()
+            return
+        }
+
+        ; Launch PS non-blocking (shell = "", hide window)
+        Run("powershell -STA -NoProfile -ExecutionPolicy Bypass -File `"" psFile "`"", , "Hide")
+
+        ; Poll every 500ms for the output file (up to 2 min)
+        outPath  := this.outputPath
+        tempDir  := this.tempDir
+        this.tempDir := ""   ; prevent early cleanup
+
+        this.pollFn := this._PollGifDone.Bind(this, outPath, tempDir, A_TickCount)
+        SetTimer(this.pollFn, 500)
+    }
+
+    static Cancel() {
+        if (!this.recording)
+            return
+        this.recording := false
+        SetTimer(this.tickFn, 0)
+        this._CleanTemp()
+        ToolTip("Gravação GIF cancelada")
+        SetTimer(() => ToolTip(), -1500)
+    }
+
+    static IsRecording() {
+        return this.recording
+    }
+
+    static GetFrameCount() {
+        return this.frameCount
+    }
+
+    ; ── Private helpers ────────────────────────────────────────────────────────
+
+    static _PollGifDone(outPath, tempDir, startTick) {
+        if (FileExist(outPath)) {
+            SetTimer(this.pollFn, 0)
+            A_Clipboard := outPath
+            ToolTip("✅ GIF salvo:`n" outPath "`nCaminho copiado!")
+            SetTimer(() => ToolTip(), -4000)
+            try DirDelete(tempDir, true)
+            return
+        }
+        if (A_TickCount - startTick > 120000) {
+            SetTimer(this.pollFn, 0)
+            ToolTip("⚠ Timeout ao criar GIF")
+            SetTimer(() => ToolTip(), -3000)
+            try DirDelete(tempDir, true)
+        }
+    }
+
+    static _MonitorForPoint(x, y) {
+        Loop MonitorGetCount() {
+            MonitorGet(A_Index, &l, &t, &r, &b)
+            if (x >= l && x < r && y >= t && y < b)
+                return {l: l, t: t, w: r - l, h: b - t}
+        }
+        n := MonitorGetPrimary()
+        MonitorGet(n, &l, &t, &r, &b)
+        return {l: l, t: t, w: r - l, h: b - t}
+    }
+
+    static _GdipInit() {
+        if (this.gdipToken)
+            return
+        if (!DllCall("GetModuleHandle", "Str", "gdiplus", "Ptr"))
+            DllCall("LoadLibrary", "Str", "gdiplus")
+        si := Buffer(24, 0)
+        NumPut("UInt", 1, si, 0)   ; GdiplusVersion = 1
+        DllCall("gdiplus\GdiplusStartup", "Ptr*", &tok := 0, "Ptr", si, "Ptr", 0)
+        this.gdipToken := tok
+        ; Cache PNG encoder CLSID
+        this.pngClsid := Buffer(16)
+        DllCall("ole32\CLSIDFromString",
+                "Str", "{557CF406-1A04-11D3-9A73-0000F81EF32E}",
+                "Ptr", this.pngClsid)
+    }
+
+    static _CaptureFrame(x, y, srcW, srcH, framePath) {
+        dstW := this.canvasW
+        dstH := this.canvasH
+
+        ; ── 1. BitBlt screen region into memory bitmap ──────────────────────
+        hScreen := DllCall("GetDC", "Ptr", 0, "Ptr")
+        hMemDC  := DllCall("CreateCompatibleDC", "Ptr", hScreen, "Ptr")
+        hBmp    := DllCall("CreateCompatibleBitmap", "Ptr", hScreen, "Int", srcW, "Int", srcH, "Ptr")
+        hOld    := DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hBmp, "Ptr")
+        DllCall("BitBlt",
+                "Ptr", hMemDC, "Int", 0, "Int", 0, "Int", srcW, "Int", srcH,
+                "Ptr", hScreen, "Int", x, "Int", y, "UInt", 0x00CC0020)
+        DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hOld)
+        DllCall("DeleteDC", "Ptr", hMemDC)
+        DllCall("ReleaseDC", "Ptr", 0, "Ptr", hScreen)
+
+        ; ── 2. Convert HBITMAP → GDI+ bitmap ────────────────────────────────
+        DllCall("gdiplus\GdipCreateBitmapFromHBITMAP", "Ptr", hBmp, "Ptr", 0, "Ptr*", &pSrc := 0)
+        DllCall("DeleteObject", "Ptr", hBmp)
+
+        ; ── 3. Resize to canvas dimensions if the monitor changed ────────────
+        if (srcW != dstW || srcH != dstH) {
+            ; Create empty canvas bitmap (PixelFormat32bppARGB = 0x26200A)
+            DllCall("gdiplus\GdipCreateBitmapFromScan0",
+                    "Int", dstW, "Int", dstH, "Int", 0, "Int", 0x26200A,
+                    "Ptr", 0, "Ptr*", &pDst := 0)
+            DllCall("gdiplus\GdipGetImageGraphicsContext", "Ptr", pDst, "Ptr*", &gfx := 0)
+            DllCall("gdiplus\GdipSetInterpolationMode", "Ptr", gfx, "Int", 7)  ; HighQualityBicubic
+            DllCall("gdiplus\GdipDrawImageRectRectI",
+                    "Ptr", gfx, "Ptr", pSrc,
+                    "Int", 0, "Int", 0, "Int", dstW, "Int", dstH,
+                    "Int", 0, "Int", 0, "Int", srcW, "Int", srcH,
+                    "Int", 2,   ; UnitPixel
+                    "Ptr", 0, "Ptr", 0, "Ptr", 0)
+            DllCall("gdiplus\GdipDeleteGraphics", "Ptr", gfx)
+            DllCall("gdiplus\GdipDisposeImage", "Ptr", pSrc)
+            pSave := pDst
+        } else {
+            pSave := pSrc
+        }
+
+        ; ── 4. Save as PNG ───────────────────────────────────────────────────
+        wPath := Buffer((StrLen(framePath) + 1) * 2)
+        StrPut(framePath, wPath, "UTF-16")
+        DllCall("gdiplus\GdipSaveImageToFile",
+                "Ptr", pSave, "Ptr", wPath, "Ptr", this.pngClsid, "Ptr", 0)
+        DllCall("gdiplus\GdipDisposeImage", "Ptr", pSave)
+    }
+
+    static _BuildGifScript() {
+        td  := this.tempDir
+        op  := this.outputPath
+        fp  := this.fps
+        dc  := Round(100 / fp)   ; centiseconds per frame (GIF unit)
+
+        s := ""
+        s .= "$tempDir  = `"" td "`"`n"
+        s .= "$outPath  = `"" op "`"`n"
+        s .= "$fps      = " fp "`n"
+        s .= "$delayCs  = " dc "`n"
+        s .= "`n"
+
+        ; ── Try FFmpeg (no external installer, might already be on PATH) ──
+        s .= "$ffmpeg = $null`n"
+        s .= "foreach ($c in @('ffmpeg','C:\ffmpeg\bin\ffmpeg.exe','C:\tools\ffmpeg.exe','C:\ProgramData\chocolatey\bin\ffmpeg.exe')) {`n"
+        s .= "    if (Get-Command $c -ErrorAction SilentlyContinue) { $ffmpeg = $c; break }`n"
+        s .= "    if (Test-Path $c) { $ffmpeg = $c; break }`n"
+        s .= "}`n"
+        s .= "if ($ffmpeg) {`n"
+        s .= "    & $ffmpeg -framerate $fps -i `"$tempDir\frame_%04d.png`" -loop 0 -y `"$outPath`" 2>`$null`n"
+        s .= "    exit $LASTEXITCODE`n"
+        s .= "}`n"
+        s .= "`n"
+
+        ; ── Fallback: System.Drawing MultiFrame GIF encoder (no extra tools) ──
+        s .= "Add-Type -AssemblyName System.Drawing`n"
+        s .= "$files = Get-ChildItem $tempDir -Filter 'frame_*.png' | Sort-Object Name`n"
+        s .= "if ($files.Count -eq 0) { exit 1 }`n"
+        s .= "`n"
+        s .= "$gifCodec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/gif' }`n"
+        s .= "$enc = [System.Drawing.Imaging.Encoder]`n"
+        s .= "$first = [System.Drawing.Image]::FromFile($files[0].FullName)`n"
+        s .= "`n"
+        s .= "$ep = New-Object System.Drawing.Imaging.EncoderParameters(1)`n"
+        s .= "$ep.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter(`n"
+        s .= "    $enc::SaveFlag, [long][System.Drawing.Imaging.EncoderValue]::MultiFrame)`n"
+        s .= "$first.Save($outPath, $gifCodec, $ep)`n"
+        s .= "`n"
+        s .= "for ($i = 1; $i -lt $files.Count; $i++) {`n"
+        s .= "    $frm = [System.Drawing.Image]::FromFile($files[$i].FullName)`n"
+        s .= "    $ep.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter(`n"
+        s .= "        $enc::SaveFlag, [long][System.Drawing.Imaging.EncoderValue]::FrameDimensionTime)`n"
+        s .= "    $first.SaveAdd($frm, $ep)`n"
+        s .= "    $frm.Dispose()`n"
+        s .= "}`n"
+        s .= "$ep.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter(`n"
+        s .= "    $enc::SaveFlag, [long][System.Drawing.Imaging.EncoderValue]::Flush)`n"
+        s .= "$first.SaveAdd($ep)`n"
+        s .= "$first.Dispose()`n"
+        s .= "`n"
+
+        ; ── Patch GCE delay bytes so the GIF plays at the correct speed ──────
+        ; GCE block: 0x21 0xF9 0x04 [flags] [delay_lo] [delay_hi] [tcidx] 0x00
+        s .= "$bytes = [System.IO.File]::ReadAllBytes($outPath)`n"
+        s .= "$i = 0`n"
+        s .= "while ($i -lt ($bytes.Length - 7)) {`n"
+        s .= "    if ($bytes[$i] -eq 0x21 -and $bytes[$i+1] -eq 0xF9 -and $bytes[$i+2] -eq 0x04) {`n"
+        s .= "        $bytes[$i+4] = [byte]($delayCs -band 0xFF)`n"
+        s .= "        $bytes[$i+5] = [byte](($delayCs -shr 8) -band 0xFF)`n"
+        s .= "        $i += 8`n"
+        s .= "    } else { $i++ }`n"
+        s .= "}`n"
+        s .= "[System.IO.File]::WriteAllBytes($outPath, $bytes)`n"
+        s .= "exit 0`n"
+
+        return s
+    }
+
+    static _CleanTemp() {
+        if (this.tempDir != "")
+            try DirDelete(this.tempDir, true)
+        this.tempDir := ""
+    }
+}
