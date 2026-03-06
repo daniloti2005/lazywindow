@@ -113,8 +113,14 @@ class StoryTelling {
         this.promptLabel := this.gui.AddText("x15 y65 w120 h32", "Comando:")
         this.inputBox := this.gui.AddEdit("x140 y62 w600 h32 Background0f3460 c00ff88")
 
+        ; Help panel — all commands visible
+        this.gui.SetFont("s10 c66ccff", "Consolas")
+        helpText := "N=Nova história  A=Add passo (clipboard)  L=Listar histórias  F=Flush prompt → clipboard"
+        helpText .= "    [nº]E=Editar contexto  [nº]V=Ver  [nº]U=↑  [nº]D=↓  [nº]R=Remover  ESC=Voltar/Fechar"
+        this.gui.AddText("x15 y100 w1800", helpText)
+
         this.gui.SetFont("s11 cDDDDDD", "Consolas")
-        this.listView := this.gui.AddListView("x15 y105 w1800 h600 +Report -Multi +Grid Background0f3460 cDDDDDD"
+        this.listView := this.gui.AddListView("x15 y130 w1800 h570 +Report -Multi +Grid Background0f3460 cDDDDDD"
             , ["#", "Tipo", "Evidência", "Contexto"])
         this.listView.ModifyCol(1, 50)
         this.listView.ModifyCol(2, 80)
@@ -169,7 +175,7 @@ class StoryTelling {
         if (!this.listView)
             return
         try {
-            this.listView.Move(15, 105, w - 30, h - 155)
+            this.listView.Move(15, 130, w - 30, h - 180)
             this.footerText.Move(15, h - 35, w - 30, 25)
             colW := w - 30 - 50 - 80 - 20
             this.listView.ModifyCol(3, Round(colW * 0.45))
