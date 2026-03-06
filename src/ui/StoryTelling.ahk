@@ -8,8 +8,15 @@ class StoryTelling {
     static listView := ""
     static inputBox := ""
     static headerCtrl := ""
+    static helpCtrl := ""
     static footerText := ""
     static promptLabel := ""
+    ; Modal overlay controls
+    static modalBg := ""
+    static modalLabel := ""
+    static modalInput := ""
+    static modalHint := ""
+    static modalVisible := false
     static stories := []
     static activeIndex := 0      ; index into stories[] (1-based)
     static configDir := ""
@@ -41,6 +48,7 @@ class StoryTelling {
             this.gui := ""
         }
         this.mode := "normal"
+        this.modalVisible := false
         this.CreateGui()
         this.isVisible := true
     }
@@ -52,6 +60,7 @@ class StoryTelling {
             this.gui := ""
         }
         this.mode := "normal"
+        this.modalVisible := false
         this.isVisible := false
     }
 
@@ -103,7 +112,7 @@ class StoryTelling {
     static CreateGui() {
         this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "📖 StoryTelling — LazyWindow")
         this.gui.Opt("-DPIScale")
-        this.gui.BackColor := "1B2838"  ; Metallic blue background
+        this.gui.BackColor := "1B2838"
 
         ; ── Title bar ──
         this.gui.SetFont("s14 cE8EDF3 Bold", "Cascadia Code")
@@ -114,16 +123,15 @@ class StoryTelling {
         this.gui.SetFont("s6 c3A5068", "Consolas")
         this.gui.AddText("x20 y42 w1800", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-        ; ── Input area ──
-        this.gui.SetFont("s12 c7EB8DA", "Cascadia Code")  ; Teal accent
+        ; ── Input area (commands only — normal/listing modes) ──
+        this.gui.SetFont("s12 c7EB8DA", "Cascadia Code")
         this.promptLabel := this.gui.AddText("x20 y55 w110 h30 +0x200", "❯ Comando")
-        this.gui.SetFont("s12 cA8D8B9", "Cascadia Code")  ; Soft green
+        this.gui.SetFont("s12 cA8D8B9", "Cascadia Code")
         this.inputBox := this.gui.AddEdit("x140 y53 w500 h30 Background152230 cA8D8B9 -E0x200")
 
-        ; ── Command help panel ──
-        this.gui.SetFont("s9 c5A7A94", "Cascadia Code")  ; Muted steel blue
-        helpLine1 := "  N Nova    A Add passo    L Listar    F Flush    [nº]E Editar    [nº]V Ver    [nº]U ↑    [nº]D ↓    [nº]R Remover    ESC Voltar"
-        this.gui.AddText("x20 y88 w1800", helpLine1)
+        ; ── Dynamic command help panel ──
+        this.gui.SetFont("s9 c5A7A94", "Cascadia Code")
+        this.helpCtrl := this.gui.AddText("x20 y88 w1800", "")
 
         ; ── Separator ──
         this.gui.SetFont("s6 c2A3F54", "Consolas")
@@ -138,6 +146,15 @@ class StoryTelling {
         this.listView.ModifyCol(3, 700)
         this.listView.ModifyCol(4, 900)
 
+        ; ── Modal overlay (hidden — appears over ListView for text input) ──
+        this.modalBg := this.gui.AddText("x20 y118 w1800 h570 Background0D1926 +Hidden", "")
+        this.gui.SetFont("s16 c7EB8DA Bold", "Cascadia Code")
+        this.modalLabel := this.gui.AddText("x300 y280 w1200 h35 +Center +Hidden +BackgroundTrans", "")
+        this.gui.SetFont("s14 cA8D8B9", "Cascadia Code")
+        this.modalInput := this.gui.AddEdit("x300 y325 w1200 h35 Background152230 cA8D8B9 -E0x200 +Hidden", "")
+        this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
+        this.modalHint := this.gui.AddText("x300 y370 w1200 h25 +Center +Hidden +BackgroundTrans", "")
+
         ; ── Footer / Status bar ──
         this.gui.SetFont("s10 c5A7A94", "Cascadia Code")
         this.footerText := this.gui.AddText("x20 y700 w1800 h25", "")
@@ -148,9 +165,59 @@ class StoryTelling {
         this.gui.OnEvent("Close", (*) => this.Hide())
 
         this.PopulateList()
+        this._UpdateHelp()
         this._ShowFullScreen()
         this.inputBox.Focus()
         Hotkey("*Enter", (*) => this._Execute(), "On")
+    }
+
+    ; ── Dynamic help text based on mode ──
+
+    static _UpdateHelp() {
+        if (!this.helpCtrl)
+            return
+        switch this.mode {
+            case "listing":
+                this.helpCtrl.Value := "  [nº] Ativar história    [nº]R Remover história    ESC Voltar aos passos"
+            default:
+                this.helpCtrl.Value := "  N Nova    A Evidência    L Histórias    F Flush    [nº]E Editar    [nº]V Ver    [nº]U ↑    [nº]D ↓    [nº]R Remover    ESC Sair"
+        }
+    }
+
+    ; ── Modal overlay methods ──
+
+    static _ShowModal(title, hint, defaultText := "") {
+        this.modalVisible := true
+        this.modalBg.Visible := true
+        this.modalLabel.Visible := true
+        this.modalLabel.Value := title
+        this.modalInput.Visible := true
+        this.modalInput.Value := defaultText
+        this.modalHint.Visible := true
+        this.modalHint.Value := hint
+        ; Hide command input
+        this.inputBox.Visible := false
+        this.promptLabel.Visible := false
+        this.helpCtrl.Value := ""
+        ; Focus modal input and select all
+        this.modalInput.Focus()
+        SendMessage(0x00B1, 0, -1, this.modalInput)
+    }
+
+    static _HideModal() {
+        this.modalVisible := false
+        this.modalBg.Visible := false
+        this.modalLabel.Visible := false
+        this.modalInput.Visible := false
+        this.modalHint.Visible := false
+        this.modalInput.Value := ""
+        ; Restore command input
+        this.inputBox.Visible := true
+        this.promptLabel.Visible := true
+        this.inputBox.Value := ""
+        this.promptLabel.Value := "❯ Comando"
+        this._UpdateHelp()
+        this.inputBox.Focus()
     }
 
     static _RefreshHeader() {
@@ -167,7 +234,7 @@ class StoryTelling {
         h := wB - wT
         this.gui.Show("x" wL " y" wT " w" w " h" h)
         WinMaximize("ahk_id " this.gui.Hwnd)
-        WinSetTransparent(215, this.gui)  ; Semi-transparent (~85% opacity)
+        WinSetTransparent(215, this.gui)
     }
 
     static _GetMonitorFromMouse() {
@@ -186,16 +253,34 @@ class StoryTelling {
         if (!this.listView)
             return
         try {
-            this.listView.Move(20, 118, w - 40, h - 170)
+            listH := h - 170
+            this.listView.Move(20, 118, w - 40, listH)
             this.footerText.Move(20, h - 38, w - 40, 25)
             colW := w - 40 - 45 - 80 - 20
             this.listView.ModifyCol(3, Round(colW * 0.45))
             this.listView.ModifyCol(4, Round(colW * 0.55))
+            ; Modal overlay follows ListView area
+            this.modalBg.Move(20, 118, w - 40, listH)
+            mX := Round(w * 0.15)
+            mW := Round(w * 0.7)
+            mY := 118 + Round(listH / 2) - 50
+            this.modalLabel.Move(mX, mY, mW, 35)
+            this.modalInput.Move(mX, mY + 45, mW, 35)
+            this.modalHint.Move(mX, mY + 90, mW, 25)
         }
     }
 
     static _OnEscape() {
-        if (this.mode != "normal") {
+        if (this.modalVisible) {
+            ; Close modal and return to previous state
+            this._HideModal()
+            if (this.mode = "naming" || this.mode = "context" || this.mode = "editing") {
+                this.mode := "normal"
+                this.PopulateList()
+            }
+            return
+        }
+        if (this.mode = "listing") {
             this.mode := "normal"
             this.inputBox.Value := ""
             this.promptLabel.Value := "❯ Comando"
@@ -209,6 +294,7 @@ class StoryTelling {
         if (!this.listView)
             return
         this.listView.Delete()
+        this._UpdateHelp()
         if (this.activeIndex < 1 || this.activeIndex > this.stories.Length) {
             this.footerText.Value := "  Nenhuma história ativa  ·  N + Enter para criar"
             return
@@ -240,9 +326,15 @@ class StoryTelling {
     }
 
     static _Execute() {
-        if (!this.isVisible || !this.inputBox)
+        if (!this.isVisible)
             return
-        text := Trim(this.inputBox.Value)
+
+        ; Route: modal input for naming/context/editing, command input for normal/listing
+        if (this.modalVisible) {
+            text := Trim(this.modalInput.Value)
+        } else {
+            text := Trim(this.inputBox.Value)
+        }
 
         ; Handle state machine modes
         switch this.mode {
@@ -313,15 +405,12 @@ class StoryTelling {
 
     static _StartNaming() {
         this.mode := "naming"
-        this.inputBox.Value := ""
-        this.promptLabel.Value := "✦ Nome"
-        this.footerText.Value := "✎ Digite o nome da nova história e pressione Enter  ·  ESC cancelar"
+        this._ShowModal("✦ Nome da Nova História", "Enter confirmar  ·  ESC cancelar")
     }
 
     static _FinishNaming(text) {
         this.mode := "normal"
-        this.promptLabel.Value := "❯ Comando"
-        this.inputBox.Value := ""
+        this._HideModal()
         if (Trim(text) = "")
             text := "História " FormatTime(, "yyyyMMdd_HHmmss")
         story := {name: Trim(text), createdAt: this._Now(), steps: []}
@@ -354,18 +443,16 @@ class StoryTelling {
         this.pendingType := item.type
         this.pendingEvidence := item.path
         this.mode := "context"
-        this.inputBox.Value := ""
-        this.promptLabel.Value := "✦ Contexto"
         evidPreview := StrLen(item.path) > 60 ? SubStr(item.path, 1, 60) "..." : item.path
         evidPreview := StrReplace(evidPreview, "`n", " ")
-        this.footerText.Value := "📎 " item.type ": " evidPreview "  ·  Digite o contexto e Enter  ·  ESC cancelar"
-        this.inputBox.Focus()
+        this._ShowModal("✦ Contexto — " item.type, "📎 " evidPreview "  ·  Enter confirmar  ·  ESC cancelar")
     }
 
     static _OnEvidenceCancelled() {
         ; Re-enable our Enter hotkey and return to normal
         Hotkey("*Enter", (*) => this._Execute(), "On")
         this.mode := "normal"
+        this._UpdateHelp()
         this.inputBox.Value := ""
         this.promptLabel.Value := "❯ Comando"
         this.inputBox.Focus()
@@ -373,8 +460,7 @@ class StoryTelling {
 
     static _FinishContext(text) {
         this.mode := "normal"
-        this.promptLabel.Value := "❯ Comando"
-        this.inputBox.Value := ""
+        this._HideModal()
         if (Trim(text) = "")
             text := "(sem contexto)"
         story := this.stories[this.activeIndex]
@@ -392,18 +478,13 @@ class StoryTelling {
         this.editingStep := num
         story := this.stories[this.activeIndex]
         step := story.steps[num]
-        this.inputBox.Value := step.context
-        this.promptLabel.Value := "✎ Passo " num
-        this.footerText.Value := "✎ Editando contexto do passo " num "  ·  Enter salvar  ·  ESC cancelar"
-        ; Select all text in the input box
-        SendMessage(0x00B1, 0, -1, this.inputBox)
+        this._ShowModal("✎ Editando Contexto — Passo " num, "Enter salvar  ·  ESC cancelar", step.context)
     }
 
     static _FinishEditing(text) {
         num := this.editingStep
         this.mode := "normal"
-        this.promptLabel.Value := "❯ Comando"
-        this.inputBox.Value := ""
+        this._HideModal()
         this.editingStep := 0
         if (this.activeIndex < 1)
             return
@@ -425,12 +506,13 @@ class StoryTelling {
         this.mode := "listing"
         this.inputBox.Value := ""
         this.promptLabel.Value := "✦ Nº"
+        this._UpdateHelp()
         this.listView.Delete()
         for i, s in this.stories {
             marker := (i = this.activeIndex) ? "● ATIVA" : ""
             this.listView.Add("", i, marker, s.name, s.steps.Length " passos  ·  " s.createdAt)
         }
-        this.footerText.Value := this.stories.Length " histórias | [nº]=ativar  [nº]R=remover  ESC=voltar"
+        this.footerText.Value := this.stories.Length " histórias"
     }
 
     static _FinishListing(text) {
@@ -482,7 +564,6 @@ class StoryTelling {
     static _CmdViewEvidence(num) {
         story := this.stories[this.activeIndex]
         step := story.steps[num]
-        ; Show evidence in ListView temporarily
         this.listView.Delete()
         lines := StrSplit(SubStr(step.evidence, 1, 3000), "`n")
         this.listView.Add("", "", step.type, "── EVIDÊNCIA DO PASSO " num " ──", step.context)

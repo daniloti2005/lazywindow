@@ -109,12 +109,13 @@ class EvidencePicker {
         ; Sort non-clipboard items by date descending (bubble sort)
         startIdx := (A_Clipboard != "") ? 2 : 1
         n := this.items.Length
-        if (n > startIdx) {
+        sortCount := n - startIdx
+        if (sortCount > 0) {
             loop {
                 swapped := false
-                Loop n - startIdx {
+                Loop sortCount {
                     i := startIdx + A_Index - 1
-                    if (i < n && this.items[i].date < this.items[i + 1].date) {
+                    if (i < n && StrCompare(this.items[i].date, this.items[i + 1].date) < 0) {
                         temp := this.items[i]
                         this.items[i] := this.items[i + 1]
                         this.items[i + 1] := temp
