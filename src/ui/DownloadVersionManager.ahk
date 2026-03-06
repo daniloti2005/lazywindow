@@ -5,6 +5,8 @@ class DownloadVersionManager {
     static listView := ""
     static inputBox := ""
     static footerText := ""
+    static headerText := ""
+    static helpText := ""
     static isVisible := false
     static wasArrowMouseOn := false
     static downloadsDir := ""
@@ -49,7 +51,7 @@ class DownloadVersionManager {
     static Hide() {
         try Hotkey("*Enter", "Off")
         if (this.gui) {
-            this.gui.Destroy()
+            try this.gui.Destroy()
             this.gui := ""
         }
         this.isVisible := false
@@ -353,17 +355,12 @@ class DownloadVersionManager {
         this.gui.OnEvent("Escape", (*) => this.HandleEscape())
         this.gui.OnEvent("Close", (*) => this.Hide())
 
+        ; Populate and show fullscreen
         this.PopulateCurrentMode()
         this.ShowFullScreen()
-
-        ; Ensure window is active and input has focus
-        WinActivate("ahk_id " this.gui.Hwnd)
         this.inputBox.Focus()
 
         Hotkey("*Enter", (*) => this.Execute(), "On")
-
-        ; Re-focus after window settles (WinMaximize can steal focus)
-        SetTimer(() => (this.gui ? this.inputBox.Focus() : 0), -100)
     }
 
     static GetHeaderText() {
@@ -407,7 +404,6 @@ class DownloadVersionManager {
         this.OnResize(work.width, work.height)
         WinMaximize("ahk_id " this.gui.Hwnd)
         WinSetTransparent(215, this.gui)
-        WinActivate("ahk_id " this.gui.Hwnd)
     }
 
     static OnResize(width, height) {
@@ -537,10 +533,8 @@ class DownloadVersionManager {
         try text := Trim(this.inputBox.Value)
         catch
             return
-        if (text = "") {
-            this.Hide()
+        if (text = "")
             return
-        }
 
         cmd := StrUpper(text)
 
