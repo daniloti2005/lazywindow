@@ -307,15 +307,12 @@ class GifRecorder {
         s .= "`n"
 
         ; ── Create _steps folder with 1 PNG per second (before GIF, uses temp frames) ──
-        s .= "# Create steps folder with 1 frame per second for AI analysis`n"
+        s .= "# Create steps folder with every frame for AI analysis`n"
         s .= "$stepsDir = $outPath -replace '\.gif$', '_steps'`n"
         s .= "New-Item -ItemType Directory -Force -Path $stepsDir | Out-Null`n"
-        s .= "$stepInterval = [math]::Max(1, [math]::Round($fps / 2))`n"
         s .= "$stepNum = 1`n"
-        s .= "for ($i = 0; $i -lt $files.Count; $i += $stepInterval) {`n"
-        s .= "    $src = $files[$i].FullName`n"
-        s .= "    $dst = Join-Path $stepsDir ('step_{0:D3}.png' -f $stepNum)`n"
-        s .= "    Copy-Item $src $dst`n"
+        s .= "foreach ($f in $files) {`n"
+        s .= "    Copy-Item $f.FullName (Join-Path $stepsDir ('step_{0:D5}.png' -f $stepNum))`n"
         s .= "    $stepNum++`n"
         s .= "}`n"
         s .= "`n"

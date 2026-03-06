@@ -163,7 +163,7 @@ ActivateGrid(monitorNumber) {
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
 - **Screenshot:** `Ctrl+F6` (janela ativa → clipboard + PNG), `Ctrl+Shift+F6` (janela ativa → PNG + caminho no clipboard), `Ctrl+F7` (seleção de região → clipboard + PNG), `Ctrl+Shift+F7` (seleção de região → PNG + caminho no clipboard)
-- **GIF Recorder:** `Ctrl+Shift+F5` (iniciar gravação, resolução 50%, 60 FPS, máx 60s), `Ctrl+F5` (parar, gerar GIF + pasta `_steps` com 1 PNG/500ms, copiar caminho da pasta para clipboard). Segue o mouse entre monitores. Cursor do mouse e cliques (círculo amarelo) aparecem. Cole o caminho da pasta _steps no chat da IA para análise passo a passo.
+- **GIF Recorder:** `Ctrl+Shift+F5` (iniciar gravação, resolução 50%, 60 FPS, máx 60s), `Ctrl+F5` (parar, gerar GIF + pasta `_steps` com 1 PNG/frame, copiar caminho da pasta para clipboard). Segue o mouse entre monitores. Cursor do mouse e cliques (círculo amarelo) aparecem. Cole o caminho da pasta _steps no chat da IA para análise passo a passo.
 
 ### StatusBar (Barra de Status)
 

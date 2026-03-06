@@ -194,7 +194,7 @@ GRAVACAO GIF [requer Alt+Home]:
                   (se o mouse mudar de monitor, a gravacao segue automaticamente)
                   Resolucao 50%, 60 FPS, maximo 60 segundos
                   Cursor do mouse e cliques (circulo amarelo) aparecem no GIF
-  Ctrl+F5       = Parar gravacao, salvar GIF + pasta _steps (1 PNG a cada 500ms)
+  Ctrl+F5       = Parar gravacao, salvar GIF + pasta _steps (1 PNG por frame)
                   Caminho da pasta _steps copiado para clipboard
                   Cole o caminho no chat da IA para analise passo a passo
   Salvo em: ~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif
