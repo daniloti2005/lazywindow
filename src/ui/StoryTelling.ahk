@@ -1,17 +1,26 @@
 ; StoryTelling.ahk — Menu de Histórias com Evidências para análise por IA
 ; Permite documentar fluxos passo a passo com evidências e contexto narrativo
 ; Gera prompt formatado para colar no chat da IA
+; Usa state machine inline — sem InputBox (Enter hotkey bloquearia dialogs)
 
 class StoryTelling {
     static gui := ""
     static listView := ""
     static inputBox := ""
+    static headerCtrl := ""
     static footerText := ""
+    static promptLabel := ""
     static stories := []
     static activeIndex := 0      ; index into stories[] (1-based)
     static configDir := ""
     static configPath := ""
     static isVisible := false
+
+    ; State machine: "normal", "naming", "context", "editing", "listing"
+    static mode := "normal"
+    static pendingEvidence := ""
+    static pendingType := ""
+    static editingStep := 0
 
     static Init() {
         this.configDir := EnvGet("USERPROFILE") "\.lazywindow"
@@ -20,11 +29,10 @@ class StoryTelling {
     }
 
     static Toggle() {
-        if (this.isVisible) {
+        if (this.isVisible)
             this.Hide()
-        } else {
+        else
             this.Show()
-        }
     }
 
     static Show() {
@@ -32,6 +40,7 @@ class StoryTelling {
             try this.gui.Destroy()
             this.gui := ""
         }
+        this.mode := "normal"
         this.CreateGui()
         this.isVisible := true
     }
@@ -42,32 +51,30 @@ class StoryTelling {
             try this.gui.Destroy()
             this.gui := ""
         }
+        this.mode := "normal"
         this.isVisible := false
     }
 
     ; ── Quick-Add: cola clipboard como evidência + pede contexto ──
     static QuickAdd() {
-        if (this.stories.Length = 0) {
-            this._EnsureStory()
-        }
         clip := A_Clipboard
         if (clip = "") {
             ToolTip("Clipboard vazio — copie uma evidência primeiro")
             SetTimer(() => ToolTip(), -2000)
             return
         }
-        type := this._DetectType(clip)
-        context := this._AskContext()
-        if (context = false)
-            return
-        story := this.stories[this.activeIndex]
-        story.steps.Push({order: story.steps.Length + 1, type: type, evidence: clip, context: context})
-        this.Persist()
-        ToolTip("Passo " story.steps.Length " adicionado à história '" story.name "'")
-        SetTimer(() => ToolTip(), -2000)
-        if (this.isVisible) {
-            this.PopulateList()
+        if (this.stories.Length = 0) {
+            this.stories.Push({name: "História " FormatTime(, "yyyyMMdd_HHmmss"), createdAt: this._Now(), steps: []})
+            this.activeIndex := 1
         }
+        type := this._DetectType(clip)
+        story := this.stories[this.activeIndex]
+        story.steps.Push({order: story.steps.Length + 1, type: type, evidence: clip, context: "(sem contexto)"})
+        this.Persist()
+        ToolTip("Passo " story.steps.Length " adicionado (" type ") — abra Ctrl+F4 para editar contexto")
+        SetTimer(() => ToolTip(), -3000)
+        if (this.isVisible)
+            this.PopulateList()
     }
 
     ; ── Flush: gerar prompt e copiar para clipboard ──
@@ -97,18 +104,14 @@ class StoryTelling {
         this.gui := Gui("+AlwaysOnTop +ToolWindow +Resize +OwnDialogs", "StoryTelling — LazyWindow")
         this.gui.Opt("-DPIScale")
         this.gui.BackColor := "1a1a2e"
-        this.gui.SetFont("s12 c00ff88", "Consolas")
-
-        storyName := this.activeIndex > 0 ? this.stories[this.activeIndex].name : "(nenhuma)"
-        headerText := "STORY TELLING — História: " storyName "`n"
-        headerText .= "N=Nova | A=Add passo | L=Listar | F=Flush prompt | [nº]E=Editar | [nº]U/D=Mover | [nº]R=Remover | [nº]V=Ver | ESC=Fechar"
 
         this.gui.SetFont("s11 cAAAAAA", "Consolas")
-        this.gui.AddText("x15 y10 w1800", headerText)
+        this.headerCtrl := this.gui.AddText("x15 y10 w1800", "")
+        this._RefreshHeader()
 
         this.gui.SetFont("s12 c00ff88", "Consolas")
-        this.gui.AddText("x15 y65 w100 h32", "Comando:")
-        this.inputBox := this.gui.AddEdit("x120 y62 w400 h32 Background0f3460 c00ff88")
+        this.promptLabel := this.gui.AddText("x15 y65 w120 h32", "Comando:")
+        this.inputBox := this.gui.AddEdit("x140 y62 w600 h32 Background0f3460 c00ff88")
 
         this.gui.SetFont("s11 cDDDDDD", "Consolas")
         this.listView := this.gui.AddListView("x15 y105 w1800 h600 +Report -Multi +Grid Background0f3460 cDDDDDD"
@@ -123,13 +126,22 @@ class StoryTelling {
 
         this.inputBox.OnEvent("Change", (*) => this._OnInputChange())
         this.gui.OnEvent("Size", (g, m, w, h) => this._OnResize(w, h))
-        this.gui.OnEvent("Escape", (*) => this.Hide())
+        this.gui.OnEvent("Escape", (*) => this._OnEscape())
         this.gui.OnEvent("Close", (*) => this.Hide())
 
         this.PopulateList()
         this._ShowFullScreen()
         this.inputBox.Focus()
         Hotkey("*Enter", (*) => this._Execute(), "On")
+    }
+
+    static _RefreshHeader() {
+        if (!this.headerCtrl)
+            return
+        storyName := this.activeIndex > 0 ? this.stories[this.activeIndex].name : "(nenhuma)"
+        headerText := "STORY TELLING — História: " storyName "`n"
+        headerText .= "N=Nova | A=Add passo | L=Listar | F=Flush | [nº]E=Editar | [nº]U/D=Mover | [nº]R=Remover | [nº]V=Ver | ESC=Voltar/Fechar"
+        this.headerCtrl.Value := headerText
     }
 
     static _ShowFullScreen() {
@@ -165,12 +177,23 @@ class StoryTelling {
         }
     }
 
+    static _OnEscape() {
+        if (this.mode != "normal") {
+            this.mode := "normal"
+            this.inputBox.Value := ""
+            this.promptLabel.Value := "Comando:"
+            this.PopulateList()
+        } else {
+            this.Hide()
+        }
+    }
+
     static PopulateList() {
         if (!this.listView)
             return
         this.listView.Delete()
         if (this.activeIndex < 1 || this.activeIndex > this.stories.Length) {
-            this.footerText.Value := "Nenhuma história ativa — pressione N para criar"
+            this.footerText.Value := "Nenhuma história ativa — pressione N + Enter para criar"
             return
         }
         story := this.stories[this.activeIndex]
@@ -185,10 +208,12 @@ class StoryTelling {
     }
 
     ; ══════════════════════════════════════════════════════════════
-    ; Input Handling
+    ; Input Handling — State Machine
     ; ══════════════════════════════════════════════════════════════
 
     static _OnInputChange() {
+        if (this.mode != "normal")
+            return
         text := this.inputBox.Value
         if (RegExMatch(text, "^(\d+)", &match)) {
             num := Integer(match[1])
@@ -201,22 +226,41 @@ class StoryTelling {
         if (!this.isVisible || !this.inputBox)
             return
         text := Trim(this.inputBox.Value)
+
+        ; Handle state machine modes
+        switch this.mode {
+            case "naming":
+                this._FinishNaming(text)
+                return
+            case "context":
+                this._FinishContext(text)
+                return
+            case "editing":
+                this._FinishEditing(text)
+                return
+            case "listing":
+                this._FinishListing(text)
+                return
+        }
+
+        ; Normal mode
         this.inputBox.Value := ""
         if (text = "")
             return
 
-        ; Single-letter commands
         upper := StrUpper(text)
+
+        ; Single-letter commands
         if (upper = "N") {
-            this._CmdNewStory()
+            this._StartNaming()
             return
         }
         if (upper = "A") {
-            this._CmdAddStep()
+            this._StartAddStep()
             return
         }
         if (upper = "L") {
-            this._CmdListStories()
+            this._StartListing()
             return
         }
         if (upper = "F") {
@@ -229,18 +273,16 @@ class StoryTelling {
             num := Integer(m[1])
             cmd := m[2]
             if (this.activeIndex < 1) {
-                ToolTip("Nenhuma história ativa")
-                SetTimer(() => ToolTip(), -2000)
+                this.footerText.Value := "⚠ Nenhuma história ativa — pressione N"
                 return
             }
             story := this.stories[this.activeIndex]
             if (num < 1 || num > story.steps.Length) {
-                ToolTip("Passo " num " não existe")
-                SetTimer(() => ToolTip(), -2000)
+                this.footerText.Value := "⚠ Passo " num " não existe (total: " story.steps.Length ")"
                 return
             }
             switch cmd {
-                case "E": this._CmdEditContext(num)
+                case "E": this._StartEditing(num)
                 case "V": this._CmdViewEvidence(num)
                 case "U": this._CmdMoveUp(num)
                 case "D": this._CmdMoveDown(num)
@@ -248,87 +290,144 @@ class StoryTelling {
             }
             return
         }
-
-        ; Number alone to select story from list mode
-        if (RegExMatch(upper, "^\d+$")) {
-            ; handled by _OnInputChange highlight
-            return
-        }
     }
 
-    ; ── Commands ──
+    ; ── State: Naming (create new story) ──
 
-    static _CmdNewStory() {
-        ib := InputBox("Nome da nova história:", "Nova História", "w400 h120")
-        if (ib.Result = "Cancel" || Trim(ib.Value) = "")
-            return
-        story := {name: Trim(ib.Value), createdAt: this._Now(), steps: []}
+    static _StartNaming() {
+        this.mode := "naming"
+        this.inputBox.Value := ""
+        this.promptLabel.Value := "Nome:"
+        this.footerText.Value := "Digite o nome da nova história e pressione Enter (ESC=cancelar)"
+    }
+
+    static _FinishNaming(text) {
+        this.mode := "normal"
+        this.promptLabel.Value := "Comando:"
+        this.inputBox.Value := ""
+        if (Trim(text) = "")
+            text := "História " FormatTime(, "yyyyMMdd_HHmmss")
+        story := {name: Trim(text), createdAt: this._Now(), steps: []}
         this.stories.Push(story)
         this.activeIndex := this.stories.Length
         this.Persist()
+        this._RefreshHeader()
         this.PopulateList()
-        this._UpdateHeader()
     }
 
-    static _CmdAddStep() {
-        if (this.stories.Length = 0)
-            this._EnsureStory()
-        clip := A_Clipboard
-        if (clip = "") {
-            ToolTip("Clipboard vazio — copie uma evidência primeiro")
-            SetTimer(() => ToolTip(), -2000)
+    ; ── State: Add step (context input) ──
+
+    static _StartAddStep() {
+        if (this.stories.Length = 0) {
+            this.footerText.Value := "⚠ Crie uma história primeiro (N)"
             return
         }
-        type := this._DetectType(clip)
-        context := this._AskContext()
-        if (context = false)
+        clip := A_Clipboard
+        if (clip = "") {
+            this.footerText.Value := "⚠ Clipboard vazio — copie uma evidência antes de usar A"
             return
+        }
+        this.pendingType := this._DetectType(clip)
+        this.pendingEvidence := clip
+        this.mode := "context"
+        this.inputBox.Value := ""
+        this.promptLabel.Value := "Contexto:"
+        evidPreview := StrLen(clip) > 60 ? SubStr(clip, 1, 60) "..." : clip
+        evidPreview := StrReplace(evidPreview, "`n", " ")
+        this.footerText.Value := "Evidência (" this.pendingType "): " evidPreview " | Digite o contexto e Enter (ESC=cancelar)"
+    }
+
+    static _FinishContext(text) {
+        this.mode := "normal"
+        this.promptLabel.Value := "Comando:"
+        this.inputBox.Value := ""
+        if (Trim(text) = "")
+            text := "(sem contexto)"
         story := this.stories[this.activeIndex]
-        story.steps.Push({order: story.steps.Length + 1, type: type, evidence: clip, context: context})
+        story.steps.Push({order: story.steps.Length + 1, type: this.pendingType, evidence: this.pendingEvidence, context: Trim(text)})
+        this.pendingEvidence := ""
+        this.pendingType := ""
         this.Persist()
         this.PopulateList()
     }
 
-    static _CmdListStories() {
+    ; ── State: Editing context ──
+
+    static _StartEditing(num) {
+        this.mode := "editing"
+        this.editingStep := num
+        story := this.stories[this.activeIndex]
+        step := story.steps[num]
+        this.inputBox.Value := step.context
+        this.promptLabel.Value := "Editar " num ":"
+        this.footerText.Value := "Editando contexto do passo " num " — modifique e pressione Enter (ESC=cancelar)"
+        ; Select all text in the input box
+        SendMessage(0x00B1, 0, -1, this.inputBox)
+    }
+
+    static _FinishEditing(text) {
+        num := this.editingStep
+        this.mode := "normal"
+        this.promptLabel.Value := "Comando:"
+        this.inputBox.Value := ""
+        this.editingStep := 0
+        if (this.activeIndex < 1)
+            return
+        story := this.stories[this.activeIndex]
+        if (num < 1 || num > story.steps.Length)
+            return
+        story.steps[num].context := Trim(text)
+        this.Persist()
+        this.PopulateList()
+    }
+
+    ; ── State: Listing stories ──
+
+    static _StartListing() {
         if (this.stories.Length = 0) {
-            ToolTip("Nenhuma história salva — pressione N para criar")
-            SetTimer(() => ToolTip(), -2000)
+            this.footerText.Value := "⚠ Nenhuma história salva — pressione N para criar"
             return
         }
-        list := ""
+        this.mode := "listing"
+        this.inputBox.Value := ""
+        this.promptLabel.Value := "Nº:"
+        ; Show stories in the ListView
+        this.listView.Delete()
         for i, s in this.stories {
-            marker := (i = this.activeIndex) ? " ← ATIVA" : ""
-            list .= i ". " s.name " (" s.steps.Length " passos)" marker "`n"
+            marker := (i = this.activeIndex) ? "→ ATIVA" : ""
+            this.listView.Add("", i, marker, s.name, s.steps.Length " passos | " s.createdAt)
         }
-        ib := InputBox("Histórias salvas:`n" list "`nDigite o número para ativar:", "Listar Histórias", "w500 h300")
-        if (ib.Result = "Cancel" || Trim(ib.Value) = "")
-            return
+        this.footerText.Value := this.stories.Length " histórias | Digite o número para ativar e Enter (ESC=voltar)"
+    }
+
+    static _FinishListing(text) {
+        this.mode := "normal"
+        this.promptLabel.Value := "Comando:"
+        this.inputBox.Value := ""
         num := 0
-        try num := Integer(Trim(ib.Value))
+        try num := Integer(Trim(text))
         if (num >= 1 && num <= this.stories.Length) {
             this.activeIndex := num
             this.Persist()
-            this.PopulateList()
-            this._UpdateHeader()
+            this._RefreshHeader()
         }
-    }
-
-    static _CmdEditContext(num) {
-        story := this.stories[this.activeIndex]
-        step := story.steps[num]
-        ib := InputBox("Contexto atual:`n" SubStr(step.context, 1, 200) "`n`nNovo contexto:", "Editar Contexto — Passo " num, "w600 h250", step.context)
-        if (ib.Result = "Cancel")
-            return
-        step.context := ib.Value
-        this.Persist()
         this.PopulateList()
     }
+
+    ; ── Immediate commands (no state change) ──
 
     static _CmdViewEvidence(num) {
         story := this.stories[this.activeIndex]
         step := story.steps[num]
-        preview := SubStr(step.evidence, 1, 2000)
-        MsgBox("Tipo: " step.type "`nContexto: " step.context "`n`nEvidência:`n" preview, "Passo " num " — Evidência", "OK")
+        ; Show evidence in ListView temporarily
+        this.listView.Delete()
+        lines := StrSplit(SubStr(step.evidence, 1, 3000), "`n")
+        this.listView.Add("", "", step.type, "── EVIDÊNCIA DO PASSO " num " ──", step.context)
+        for i, line in lines {
+            this.listView.Add("", "", "", StrReplace(line, "`r", ""), "")
+        }
+        this.footerText.Value := "Visualizando passo " num " (" step.type ") | Pressione ESC para voltar"
+        this.mode := "listing"  ; ESC will return to normal and repopulate
     }
 
     static _CmdMoveUp(num) {
@@ -373,25 +472,10 @@ class StoryTelling {
     ; Helpers
     ; ══════════════════════════════════════════════════════════════
 
-    static _EnsureStory() {
-        if (this.stories.Length > 0 && this.activeIndex > 0)
-            return
-        ib := InputBox("Nenhuma história ativa.`nDigite o nome da nova história:", "Nova História", "w400 h150")
-        if (ib.Result = "Cancel" || Trim(ib.Value) = "") {
-            this.stories.Push({name: "História " FormatTime(, "yyyyMMdd_HHmmss"), createdAt: this._Now(), steps: []})
-        } else {
-            this.stories.Push({name: Trim(ib.Value), createdAt: this._Now(), steps: []})
-        }
-        this.activeIndex := this.stories.Length
-        this.Persist()
-    }
-
     static _DetectType(text) {
         clean := Trim(text)
-        ; Check if it's a folder path
         if (DirExist(clean))
             return "Pasta"
-        ; Check if it's an image file
         if (FileExist(clean)) {
             SplitPath(clean, , , &ext)
             if (RegExMatch(ext, "i)^(png|jpg|jpeg|gif|bmp|webp)$"))
@@ -399,20 +483,6 @@ class StoryTelling {
             return "Arquivo"
         }
         return "Texto"
-    }
-
-    static _AskContext() {
-        ib := InputBox("Descreva o contexto desta evidência:`n(o que está acontecendo, por que é relevante)", "Contexto do Passo", "w600 h200")
-        if (ib.Result = "Cancel")
-            return false
-        return ib.Value
-    }
-
-    static _UpdateHeader() {
-        ; Recreate GUI to update header with new story name
-        if (this.isVisible) {
-            this.Show()
-        }
     }
 
     static _Now() {
@@ -497,22 +567,17 @@ class StoryTelling {
         if (RegExMatch(content, '"activeIndex"\s*:\s*(\d+)', &m))
             this.activeIndex := Integer(m[1])
 
-        ; Parse stories by finding story objects
-        ; Split by story boundaries — find each {"name":...,"steps":[...]}
+        ; Parse stories
         pos := 1
         while (pos := InStr(content, '"name"', , pos)) {
-            ; Extract name
-            nameStart := pos
             if (!RegExMatch(content, '"name"\s*:\s*"((?:[^"\\]|\\.)*)"', &mName, pos))
                 break
             name := this._UnescJson(mName[1])
 
-            ; Extract createdAt
             createdAt := ""
             if (RegExMatch(content, '"createdAt"\s*:\s*"([^"]*)"', &mCA, pos))
                 createdAt := mCA[1]
 
-            ; Find steps array
             stepsStart := InStr(content, '"steps"', , pos)
             if (!stepsStart)
                 break
@@ -520,7 +585,6 @@ class StoryTelling {
             if (!bracketStart)
                 break
 
-            ; Find matching closing bracket
             depth := 1
             bracketEnd := bracketStart
             Loop {
@@ -539,7 +603,6 @@ class StoryTelling {
 
             stepsJson := SubStr(content, bracketStart, bracketEnd - bracketStart + 1)
 
-            ; Parse individual steps
             steps := []
             stepPos := 1
             while (stepPos := InStr(stepsJson, '"order"', , stepPos)) {
@@ -564,7 +627,6 @@ class StoryTelling {
             pos := bracketEnd + 1
         }
 
-        ; Validate activeIndex
         if (this.activeIndex < 1 || this.activeIndex > this.stories.Length)
             this.activeIndex := this.stories.Length > 0 ? 1 : 0
     }
