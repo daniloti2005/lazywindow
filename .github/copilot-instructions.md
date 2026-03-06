@@ -163,7 +163,7 @@ ActivateGrid(monitorNumber) {
 - **Base64:** `Ctrl+Shift+A` (encode), `Ctrl+Alt+A` (decode)
 - **Timestamp:** `Ctrl+Shift+T` (data→epoch), `Ctrl+Alt+T` (epoch→data)
 - **Screenshot:** `Ctrl+F6` (janela ativa → clipboard + PNG), `Ctrl+Shift+F6` (janela ativa → PNG + caminho no clipboard), `Ctrl+F7` (seleção de região → clipboard + PNG), `Ctrl+Shift+F7` (seleção de região → PNG + caminho no clipboard)
-- **GIF Recorder:** `Ctrl+Shift+F5` (iniciar gravação, 50% resolução, 5 FPS, máx 5 min), `Ctrl+F5` (parar e copiar caminho). Segue o mouse entre monitores. Cliques aparecem com círculo amarelo. Fallback System.Drawing se FFmpeg ausente.
+- **GIF Recorder:** `Ctrl+Shift+F5` (iniciar gravação, 75% resolução, 5 FPS, máx 5 min), `Ctrl+F5` (parar e copiar caminho). Segue o mouse entre monitores. Cursor do mouse e cliques (círculo amarelo) aparecem no GIF. Fallback System.Drawing se FFmpeg ausente.
 
 ### StatusBar (Barra de Status)
 

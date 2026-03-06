@@ -7,7 +7,7 @@ class GifRecorder {
     static tempDir     := ""
     static outputPath  := ""
     static fps         := 5        ; frames per second (lower = smaller GIF)
-    static scale       := 0.5      ; resolution scale (0.5 = half res, legible for analysis)
+    static scale       := 0.75     ; resolution scale (0.75 = legible for AI analysis)
     static canvasW     := 0        ; scaled canvas width
     static canvasH     := 0
     static gdipToken   := 0
@@ -56,8 +56,8 @@ class GifRecorder {
             this.tickFn := this.Tick.Bind(this)
         SetTimer(this.tickFn, Round(1000 / this.fps))
 
-        ToolTip("⏺ GIF gravando (Ctrl+F5 = parar)")
-        SetTimer(() => ToolTip(), -2000)
+        ToolTip("⏺ GIF gravando (Ctrl+F5 = parar)`nGrave por pelo menos 10s para um bom resultado")
+        SetTimer(() => ToolTip(), -4000)
     }
 
     static Tick() {
@@ -217,18 +217,44 @@ class GifRecorder {
         hBmp    := DllCall("CreateCompatibleBitmap", "Ptr", hScreen, "Int", dstW, "Int", dstH, "Ptr")
         hOld    := DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hBmp, "Ptr")
         DllCall("SetStretchBltMode", "Ptr", hMemDC, "Int", 4)  ; HALFTONE
+        DllCall("SetBrushOrgEx", "Ptr", hMemDC, "Int", 0, "Int", 0, "Ptr", 0)
         DllCall("StretchBlt",
                 "Ptr", hMemDC, "Int", 0, "Int", 0, "Int", dstW, "Int", dstH,
                 "Ptr", hScreen, "Int", x, "Int", y, "Int", srcW, "Int", srcH,
-                "UInt", 0x00CC0020)  ; SRCCOPY
+                "UInt", 0x40CC0020)  ; SRCCOPY | CAPTUREBLT
 
-        ; ── 2. Draw yellow click ring if mouse button is pressed ─────────────
+        ; ── 2. Draw mouse cursor on the captured frame ───────────────────────
+        ci := Buffer(24, 0)  ; CURSORINFO (64-bit)
+        NumPut("UInt", 24, ci, 0)
+        if DllCall("GetCursorInfo", "Ptr", ci) {
+            cFlags  := NumGet(ci, 4, "UInt")
+            hCursor := NumGet(ci, 8, "Ptr")
+            if (cFlags & 1) {  ; CURSOR_SHOWING
+                ; Get hotspot offset
+                ii := Buffer(32, 0)  ; ICONINFO (64-bit)
+                if DllCall("GetIconInfo", "Ptr", hCursor, "Ptr", ii) {
+                    hsX := NumGet(ii, 4, "UInt")
+                    hsY := NumGet(ii, 8, "UInt")
+                    hbmMask  := NumGet(ii, 16, "Ptr")
+                    hbmColor := NumGet(ii, 24, "Ptr")
+                    if (hbmMask)
+                        DllCall("DeleteObject", "Ptr", hbmMask)
+                    if (hbmColor)
+                        DllCall("DeleteObject", "Ptr", hbmColor)
+                    DllCall("DrawIconEx", "Ptr", hMemDC,
+                            "Int", mouseX - hsX, "Int", mouseY - hsY,
+                            "Ptr", hCursor, "Int", 0, "Int", 0,
+                            "UInt", 0, "Ptr", 0, "UInt", 3)  ; DI_NORMAL
+                }
+            }
+        }
+
+        ; ── 3. Draw yellow click ring if mouse button is pressed ─────────────
         if (showClick) {
-            radius := 18
-            ; Yellow in BGR = 0x0000FFFF
+            radius := 20
             hPen := DllCall("CreatePen", "Int", 0, "Int", 3, "UInt", 0x0000FFFF, "Ptr")
             hOldPen := DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hPen, "Ptr")
-            hNullBrush := DllCall("GetStockObject", "Int", 5, "Ptr")  ; NULL_BRUSH
+            hNullBrush := DllCall("GetStockObject", "Int", 5, "Ptr")
             hOldBrush := DllCall("SelectObject", "Ptr", hMemDC, "Ptr", hNullBrush, "Ptr")
             DllCall("Ellipse", "Ptr", hMemDC,
                     "Int", mouseX - radius, "Int", mouseY - radius,
@@ -242,7 +268,7 @@ class GifRecorder {
         DllCall("DeleteDC", "Ptr", hMemDC)
         DllCall("ReleaseDC", "Ptr", 0, "Ptr", hScreen)
 
-        ; ── 3. Convert HBITMAP → GDI+ bitmap → PNG ──────────────────────────
+        ; ── 4. Convert HBITMAP → GDI+ bitmap → PNG ──────────────────────────
         DllCall("gdiplus\GdipCreateBitmapFromHBITMAP", "Ptr", hBmp, "Ptr", 0, "Ptr*", &pBmp := 0)
         DllCall("DeleteObject", "Ptr", hBmp)
 

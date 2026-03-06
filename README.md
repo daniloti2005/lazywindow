@@ -134,12 +134,13 @@ Grava a tela como GIF animado. A gravação segue automaticamente o monitor onde
 **Atalhos:**
 | Atalho | Ação |
 |--------|------|
-| `Ctrl+Shift+F5` | Iniciar gravação GIF (50% resolução, 5 FPS, máx 5 min) |
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (75% resolução, 5 FPS, máx 5 min) |
 | `Ctrl+F5` | Parar gravação, salvar GIF e copiar caminho para clipboard |
 
 **Detalhes:**
-- Resolução 50% (metade da resolução nativa) para GIFs leves e legíveis
+- Resolução 75% (3/4 da resolução nativa) para GIFs legíveis por IA
 - Limite de 5 minutos por gravação (5 FPS × 300s = 1500 frames)
+- **Cursor do mouse** é desenhado em cada frame (visível no GIF)
 - **Cliques do mouse aparecem com círculo amarelo** no GIF (persiste 3 frames)
 - Se o mouse muda de monitor, os próximos frames são capturados no novo monitor (redimensionados para o tamanho do canvas inicial)
 - Criação do GIF: usa FFmpeg se disponível, ou fallback automático via `System.Drawing` (nativo no Windows)
@@ -429,7 +430,7 @@ Depois, nas propriedades do atalho, você pode definir uma **tecla de atalho** (
 | `Ctrl+Shift+F6` | Print da janela ativa (caminho do arquivo PNG → clipboard) |
 | `Ctrl+F7` | Selecionar região com mouse (imagem no clipboard + salva PNG) |
 | `Ctrl+Shift+F7` | Selecionar região com mouse (caminho do arquivo PNG → clipboard) |
-| `Ctrl+Shift+F5` | Iniciar gravação GIF (50% res, 5 FPS, clique amarelo, máx 5 min) |
+| `Ctrl+Shift+F5` | Iniciar gravação GIF (75% res, 5 FPS, cursor+clique, máx 5 min) |
 | `Ctrl+F5` | Parar gravação GIF e copiar caminho para clipboard |
 | `Ctrl+Shift+B` | Beautify clipboard (formata JSON/XML/YAML automaticamente) |
 | `Ctrl+Shift+A` | Encode clipboard para Base64 |
