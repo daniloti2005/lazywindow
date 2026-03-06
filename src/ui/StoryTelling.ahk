@@ -139,8 +139,9 @@ class StoryTelling {
 
         ; ── ListView ──
         this.gui.SetFont("s11 cD0D8E0", "Cascadia Code")
-        this.listView := this.gui.AddListView("x20 y118 w1800 h570 +Report -Multi +Grid Background152230 cD0D8E0"
+        this.listView := this.gui.AddListView("x20 y118 w1800 h570 +Report -Multi -E0x200 +LV0x10020 Background0D1926 c7EB8DA"
             , ["#", "Tipo", "Evidência", "Contexto"])
+        this._StyleDarkListView(this.listView)
         this.listView.ModifyCol(1, 45)
         this.listView.ModifyCol(2, 80)
         this.listView.ModifyCol(3, 700)
@@ -235,6 +236,16 @@ class StoryTelling {
         this.gui.Show("x" wL " y" wT " w" w " h" h)
         WinMaximize("ahk_id " this.gui.Hwnd)
         WinSetTransparent(215, this.gui)
+    }
+
+    static _StyleDarkListView(lv) {
+        ; DarkMode_Explorer: dark headers, dark scrollbars (Win10/11)
+        DllCall("uxtheme\SetWindowTheme", "Ptr", lv.Hwnd, "Str", "DarkMode_Explorer", "Ptr", 0)
+        ; BG #0D1926 → BGR 0x26190D
+        SendMessage(0x1001, 0, 0x26190D, lv)   ; LVM_SETBKCOLOR
+        SendMessage(0x1026, 0, 0x26190D, lv)   ; LVM_SETTEXTBKCOLOR
+        ; Text #7EB8DA → BGR 0xDAB87E
+        SendMessage(0x1024, 0, 0xDAB87E, lv)   ; LVM_SETTEXTCOLOR
     }
 
     static _GetMonitorFromMouse() {

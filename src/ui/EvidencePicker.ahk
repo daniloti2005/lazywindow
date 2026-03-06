@@ -151,8 +151,9 @@ class EvidencePicker {
 
         ; ── ListView (left ~50%) ──
         this.gui.SetFont("s11 cD0D8E0", "Cascadia Code")
-        this.listView := this.gui.AddListView("x20 y80 w860 h580 +Report -Multi Background152230 cD0D8E0"
+        this.listView := this.gui.AddListView("x20 y80 w860 h580 +Report -Multi -E0x200 +LV0x10020 Background0D1926 c7EB8DA"
             , ["#", "Tipo", "Nome", "Data", "Tamanho"])
+        this._StyleDarkListView(this.listView)
         this.listView.ModifyCol(1, 40)
         this.listView.ModifyCol(2, 100)
         this.listView.ModifyCol(3, 420)
@@ -211,6 +212,13 @@ class EvidencePicker {
         this.gui.Show("x" wL " y" wT " w" (wR - wL) " h" (wB - wT))
         WinMaximize("ahk_id " this.gui.Hwnd)
         WinSetTransparent(215, this.gui)
+    }
+
+    static _StyleDarkListView(lv) {
+        DllCall("uxtheme\SetWindowTheme", "Ptr", lv.Hwnd, "Str", "DarkMode_Explorer", "Ptr", 0)
+        SendMessage(0x1001, 0, 0x26190D, lv)   ; LVM_SETBKCOLOR  (#0D1926)
+        SendMessage(0x1026, 0, 0x26190D, lv)   ; LVM_SETTEXTBKCOLOR
+        SendMessage(0x1024, 0, 0xDAB87E, lv)   ; LVM_SETTEXTCOLOR (#7EB8DA)
     }
 
     static _OnResize(w, h) {
