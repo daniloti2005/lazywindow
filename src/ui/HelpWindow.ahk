@@ -192,9 +192,9 @@ JANELA ATIVA [requer Alt+Home]:
 GRAVACAO GIF [requer Alt+Home]:
   Ctrl+Shift+F5 = Iniciar gravacao GIF do monitor onde o mouse esta
                   (se o mouse mudar de monitor, a gravacao segue automaticamente)
-                  Resolucao nativa, 15 FPS, maximo 60 segundos
+                  Resolucao 50%, 60 FPS, maximo 60 segundos
                   Cursor do mouse e cliques (circulo amarelo) aparecem no GIF
-  Ctrl+F5       = Parar gravacao, salvar GIF + pasta _steps (1 PNG/s)
+  Ctrl+F5       = Parar gravacao, salvar GIF + pasta _steps (1 PNG a cada 500ms)
                   Caminho da pasta _steps copiado para clipboard
                   Cole o caminho no chat da IA para analise passo a passo
   Salvo em: ~\.screenshot\LazyWindow_GIF_NNN_yyyyMMdd_HHmmss.gif
