@@ -388,7 +388,6 @@ class DownloadVersionManager {
             this.inputBox.Focus()
         }
     }
-    }
 
     static GetHeaderText() {
         if (this.mode = "duplicates")
