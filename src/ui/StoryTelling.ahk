@@ -430,10 +430,40 @@ class StoryTelling {
             marker := (i = this.activeIndex) ? "● ATIVA" : ""
             this.listView.Add("", i, marker, s.name, s.steps.Length " passos  ·  " s.createdAt)
         }
-        this.footerText.Value := this.stories.Length " histórias | Digite o número para ativar e Enter (ESC=voltar)"
+        this.footerText.Value := this.stories.Length " histórias | [nº]=ativar  [nº]R=remover  ESC=voltar"
     }
 
     static _FinishListing(text) {
+        upper := StrUpper(Trim(text))
+
+        ; Support [nº]R to remove a story from listing mode
+        if (RegExMatch(upper, "^(\d+)R$", &m)) {
+            num := Integer(m[1])
+            if (num >= 1 && num <= this.stories.Length) {
+                this.stories.RemoveAt(num)
+                if (this.activeIndex > this.stories.Length)
+                    this.activeIndex := this.stories.Length
+                else if (this.activeIndex = num)
+                    this.activeIndex := this.stories.Length > 0 ? Min(num, this.stories.Length) : 0
+                else if (this.activeIndex > num)
+                    this.activeIndex--
+                this.Persist()
+                this._RefreshHeader()
+                if (this.stories.Length > 0) {
+                    this._StartListing()
+                } else {
+                    this.mode := "normal"
+                    this.promptLabel.Value := "❯ Comando"
+                    this.inputBox.Value := ""
+                    this.PopulateList()
+                }
+            } else {
+                this.footerText.Value := "⚠ História " num " não existe (total: " this.stories.Length ")"
+                this.inputBox.Value := ""
+            }
+            return
+        }
+
         this.mode := "normal"
         this.promptLabel.Value := "❯ Comando"
         this.inputBox.Value := ""
