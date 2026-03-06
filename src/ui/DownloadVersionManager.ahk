@@ -355,9 +355,15 @@ class DownloadVersionManager {
 
         this.PopulateCurrentMode()
         this.ShowFullScreen()
+
+        ; Ensure window is active and input has focus
+        WinActivate("ahk_id " this.gui.Hwnd)
         this.inputBox.Focus()
 
         Hotkey("*Enter", (*) => this.Execute(), "On")
+
+        ; Re-focus after window settles (WinMaximize can steal focus)
+        SetTimer(() => (this.gui ? this.inputBox.Focus() : 0), -100)
     }
 
     static GetHeaderText() {
@@ -401,6 +407,7 @@ class DownloadVersionManager {
         this.OnResize(work.width, work.height)
         WinMaximize("ahk_id " this.gui.Hwnd)
         WinSetTransparent(215, this.gui)
+        WinActivate("ahk_id " this.gui.Hwnd)
     }
 
     static OnResize(width, height) {
@@ -525,7 +532,7 @@ class DownloadVersionManager {
     }
 
     static Execute() {
-        if (!this.gui || !this.inputBox)
+        if (!this.gui || !this.inputBox || !this.isVisible)
             return
         try text := Trim(this.inputBox.Value)
         catch
@@ -641,12 +648,13 @@ class DownloadVersionManager {
 
         this.PopulateCurrentMode()
 
-        ; Re-apply column widths
+        ; Re-apply column widths and re-focus input
         if (this.gui) {
             try {
                 WinGetPos(, , &w, &h, this.gui)
                 this.OnResize(w, h)
             }
+            this.inputBox.Focus()
         }
     }
 
