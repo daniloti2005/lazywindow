@@ -7,7 +7,7 @@ class GifRecorder {
     static tempDir     := ""
     static outputPath  := ""
     static fps         := 60       ; frames per second (60 = video-like recording)
-    static scale       := 1.0      ; resolution scale (1.0 = native monitor resolution)
+    static scale       := 0.5      ; resolution scale (0.5 = half native resolution)
     static canvasW     := 0        ; scaled canvas width
     static canvasH     := 0
     static gdipToken   := 0
