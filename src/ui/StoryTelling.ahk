@@ -332,26 +332,43 @@ class StoryTelling {
         this.PopulateList()
     }
 
-    ; ── State: Add step (context input) ──
+    ; ── State: Add step (open evidence picker) ──
 
     static _StartAddStep() {
         if (this.stories.Length = 0) {
             this.footerText.Value := "⚠ Crie uma história primeiro  ·  N + Enter"
             return
         }
-        clip := A_Clipboard
-        if (clip = "") {
-            this.footerText.Value := "⚠ Clipboard vazio — copie uma evidência antes de usar A"
-            return
-        }
-        this.pendingType := this._DetectType(clip)
-        this.pendingEvidence := clip
+        ; Disable our Enter hotkey before opening picker
+        try Hotkey("*Enter", "Off")
+        ; Open evidence picker
+        EvidencePicker.Show(
+            (item) => this._OnEvidenceSelected(item),
+            () => this._OnEvidenceCancelled()
+        )
+    }
+
+    static _OnEvidenceSelected(item) {
+        ; Re-enable our Enter hotkey
+        Hotkey("*Enter", (*) => this._Execute(), "On")
+        this.pendingType := item.type
+        this.pendingEvidence := item.path
         this.mode := "context"
         this.inputBox.Value := ""
         this.promptLabel.Value := "✦ Contexto"
-        evidPreview := StrLen(clip) > 60 ? SubStr(clip, 1, 60) "..." : clip
+        evidPreview := StrLen(item.path) > 60 ? SubStr(item.path, 1, 60) "..." : item.path
         evidPreview := StrReplace(evidPreview, "`n", " ")
-        this.footerText.Value := "📎 " this.pendingType ": " evidPreview "  ·  Digite o contexto e Enter  ·  ESC cancelar"
+        this.footerText.Value := "📎 " item.type ": " evidPreview "  ·  Digite o contexto e Enter  ·  ESC cancelar"
+        this.inputBox.Focus()
+    }
+
+    static _OnEvidenceCancelled() {
+        ; Re-enable our Enter hotkey and return to normal
+        Hotkey("*Enter", (*) => this._Execute(), "On")
+        this.mode := "normal"
+        this.inputBox.Value := ""
+        this.promptLabel.Value := "❯ Comando"
+        this.inputBox.Focus()
     }
 
     static _FinishContext(text) {

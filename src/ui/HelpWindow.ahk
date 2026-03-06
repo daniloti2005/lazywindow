@@ -205,8 +205,12 @@ STORY TELLING [requer Alt+Home]:
   Ctrl+Shift+F4 = Quick-Add: cola clipboard como evidencia do proximo passo
   Ctrl+Alt+F4   = Flush: gera prompt com a historia completa para clipboard
   Comandos na GUI:
-    N=Nova historia | A=Adicionar passo | L=Listar historias | F=Flush
+    N=Nova historia | A=Seletor de evidencias | L=Listar historias | F=Flush
     [no]E=Editar contexto | [no]V=Ver evidencia | [no]U/D=Mover | [no]R=Remover
+  Seletor de Evidencias (comando A):
+    Lista clipboard, screenshots e pastas _steps do GIF em tela fullscreen
+    Preview a direita: imagem ou animacao 60fps para pastas de steps
+    Setas para navegar, Enter=selecionar, ESC=cancelar
   Tipos de evidencia: Texto (clipboard), Imagem (arquivo), Pasta (ex: _steps)
   Persistencia: ~/.lazywindow/stories.json
 

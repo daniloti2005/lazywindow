@@ -18,6 +18,7 @@ DllCall("SetThreadDpiAwarenessContext", "Ptr", -3, "Ptr")  ; DPI_AWARENESS_CONTE
 #Include "ui\ProjectBookmarks.ahk"
 #Include "ui\PromptManager.ahk"
 #Include "ui\StoryTelling.ahk"
+#Include "ui\EvidencePicker.ahk"
 #Include "utils\CodeBeautify.ahk"
 #Include "utils\Base64.ahk"
 #Include "utils\Timestamp.ahk"
@@ -382,6 +383,9 @@ PromptManager.Init()
 
 ; Initialize story telling
 StoryTelling.Init()
+
+; Initialize evidence picker
+EvidencePicker.Init()
 
 ; Hotkeys for mouse markers (Ctrl+N = save, Alt+N = go, Ctrl+Alt+N = go and click)
 #HotIf g_hotkeysEnabled

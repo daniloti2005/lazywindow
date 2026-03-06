@@ -164,11 +164,12 @@ Documenta fluxos passo a passo com evidências (textos, screenshots, pastas de f
 | `Ctrl+Alt+F4` | Flush: gera prompt formatado e copia para clipboard |
 
 **Detalhes:**
-- **Tipos de evidência**: Texto (clipboard), Imagem (PNG/JPG), Pasta (ex: `_steps` do GIF recorder)
-- **Detecção automática** de tipo ao adicionar passo
+- **Evidence Picker**: Ao adicionar passo (`A`), abre tela de seleção com clipboard + screenshots + pastas `_steps` do GIF
+- **Preview visual**: Screenshots exibidos à direita; pastas `_steps` animadas a 60fps
+- **Tipos de evidência**: Texto (clipboard), Imagem (PNG/JPG), Pasta (ex: `_steps` do GIF recorder), Steps (pastas com frames animados)
 - **Reordenação** de passos (mover para cima/baixo)
 - **Flush** gera prompt Markdown com todos os passos, evidências e contextos — pronto para colar na IA
-- Comandos na GUI: `N`=Nova, `A`=Add passo, `L`=Listar, `F`=Flush, `[nº]E/V/U/D/R`
+- Comandos na GUI: `N`=Nova, `A`=Seletor de evidências, `L`=Listar, `F`=Flush, `[nº]E/V/U/D/R`
 - Persistência em `~/.lazywindow/stories.json`
 
 ---
