@@ -2,7 +2,8 @@
 
 class StatusBar {
     static gui := ""
-    static text := ""
+    static line1 := ""
+    static line2 := ""
     static height := 28
     static refreshFn := ""
     static monitorNum := 1
@@ -20,14 +21,13 @@ class StatusBar {
             return
         }
 
-        ; Detect taskbar height for vertical centering
+        ; Detect taskbar height
         tbH := this.height
         try {
             WinGetPos(, , , &tbHeight, "ahk_class Shell_TrayWnd")
             if (tbHeight > 0)
                 tbH := tbHeight
         }
-        vOff := Max(2, (tbH - 16) // 2)
 
         this.shown := false
         this.gui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20")
@@ -36,12 +36,15 @@ class StatusBar {
         this.gui.MarginX := 0
         this.gui.MarginY := 0
 
-        ; Status text only — no decorations
-        this.gui.SetFont("s8 cD0D8E0", "Cascadia Code")
-        this.text := this.gui.AddText("x6 y" vOff " w" (work.width - 12) " h20", "")
+        ; Two lines after weather widget area (~115px from left)
+        xStart := 115
+        lineW := 210
+        this.gui.SetFont("s7 cD0D8E0", "Cascadia Code")
+        this.line1 := this.gui.AddText("x" xStart " y3 w" lineW " h14", "")
+        this.gui.SetFont("s7 c7EB8DA", "Cascadia Code")
+        this.line2 := this.gui.AddText("x" xStart " y" (tbH // 2 + 1) " w" lineW " h14", "")
 
         this.Dock()
-        ; Transparent background — text floats over taskbar
         WinSetTransColor(this.TRANSKEY, this.gui)
 
         this.refreshFn := this.Refresh.Bind(this)
@@ -83,7 +86,7 @@ class StatusBar {
     }
 
     static Refresh() {
-        if (!this.gui || !this.text) {
+        if (!this.gui || !this.line1 || !this.line2) {
             return
         }
 
@@ -99,11 +102,13 @@ class StatusBar {
             rec := ""
             try {
                 if (GifRecorder.IsRecording())
-                    rec := "⏺ REC (" GifRecorder.GetFrameCount() " frames) | "
+                    rec := "⏺REC "
             }
-            this.text.Value := rec "ON | Vel: " vel " dpi | F3=AJUDA | F10=TEAMS | F11=VIM | Alt+Home=OFF"
+            this.line1.Value := rec "ON | Vel: " vel " dpi"
+            this.line2.Value := "F3 F10 F11 | Alt+Home=OFF"
         } else {
-            this.text.Value := "OFF | Alt+Home=LIGAR | F3=AJUDA"
+            this.line1.Value := "OFF | Alt+Home=LIGAR"
+            this.line2.Value := "F3=AJUDA"
         }
     }
 }
